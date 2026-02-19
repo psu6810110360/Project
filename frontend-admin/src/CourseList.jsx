@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; // 🌟 เพิ่ม useNavigate เข้ามาช่วย
 import axios from 'axios';
 
 export default function CourseList({ isAdmin }) {
   const [courses, setCourses] = useState([]);
+  const navigate = useNavigate(); // 🌟 สำหรับย้ายหน้า
 
   const fetchCourses = async () => {
     try {
@@ -29,7 +30,6 @@ export default function CourseList({ isAdmin }) {
     }
   };
 
-  
   const displayedCourses = courses.filter((course) => {
     if (isAdmin) return true; 
     return course.isActive === true; 
@@ -48,12 +48,8 @@ export default function CourseList({ isAdmin }) {
       )}
 
       <div style={{ display: 'grid', gap: '25px', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
-        
-        
         {displayedCourses.map((course) => (
-         
           <div key={course.id} style={{ background: '#FFFFFF', border: '1px solid #eee', padding: '20px', borderRadius: '16px', boxShadow: '0 8px 20px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-            
             
             {isAdmin && (
               <div style={{
@@ -88,21 +84,41 @@ export default function CourseList({ isAdmin }) {
               <span style={{ color: '#F2984A', fontWeight: 'bold', fontSize: '24px' }}>฿{course.salePrice}</span>
             </div>
             
-            {isAdmin ? (
-              <div style={{ display: 'flex', gap: '10px', marginTop: 'auto' }}>
-                <Link to={`/edit/${course.id}`} style={{ flex: 1 }}>
-                  <button style={{ width: '100%', padding: '10px', background: '#003366', color: '#FFFFFF', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>แก้ไข</button>
+            {/* 🌟 ปรับปรุงส่วนปุ่มสำหรับ Admin ให้มี "ดูรายละเอียด" ด้วย */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: 'auto' }}>
+              {isAdmin ? (
+                <>
+                  {/* ปุ่มดูรายละเอียดสำหรับ Admin */}
+                  <Link to={`/course/${course.id}`} style={{ textDecoration: 'none' }}>
+                    <button style={{ width: '100%', padding: '10px', background: '#e6f7ff', color: '#003366', border: '1px solid #91d5ff', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+                      🔍 ดูรายละเอียด (Preview)
+                    </button>
+                  </Link>
+
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <Link to={`/edit/${course.id}`} style={{ flex: 1 }}>
+                      <button style={{ width: '100%', padding: '10px', background: '#003366', color: '#FFFFFF', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>แก้ไข</button>
+                    </Link>
+                    
+                    <button onClick={() => handleDelete(course.id)} style={{ padding: '10px 15px', background: '#dc3545', color: '#FFFFFF', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+                      ลบ
+                    </button>
+                  </div>
+                </>
+              ) : (
+                /* ปุ่มรายละเอียดสำหรับ User ทั่วไป */
+                <Link to={`/course/${course.id}`} style={{ textDecoration: 'none' }}>
+                  <button style={{ 
+                    width: '100%', padding: '12px', background: '#F2984A', 
+                    color: '#FFFFFF', border: 'none', borderRadius: '8px', 
+                    cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', 
+                    boxShadow: '0 4px 6px rgba(242, 152, 74, 0.3)' 
+                  }}>
+                    รายละเอียด
+                  </button>
                 </Link>
-                
-                <button onClick={() => handleDelete(course.id)} style={{ padding: '10px 15px', background: '#dc3545', color: '#FFFFFF', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
-                  ลบ
-                </button>
-              </div>
-            ) : (
-              <button style={{ width: '100%', padding: '12px', background: '#F2984A', color: '#FFFFFF', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', marginTop: 'auto', boxShadow: '0 4px 6px rgba(242, 152, 74, 0.3)' }}>
-                รายละเอียด
-              </button>
-            )}
+              )}
+            </div>
 
           </div>
         ))}

@@ -6,32 +6,44 @@ export class Course {
   id: string;
 
   @Column()
-  title: string; // ชื่อคอร์ส
+  title: string;
 
   @Column({ type: 'text', nullable: true })
-  shortDescription: string; // รายละเอียดสั้น
+  shortDescription: string;
 
   @Column({ default: true })
-  isActive: boolean; // สถานะ (true = Active, false = Inactive)
+  isActive: boolean;
+
+  // ใช้ type 'decimal' สำหรับราคาเพื่อความแม่นยำแบบวิศวกร PSU
+  @Column('decimal', { precision: 10, scale: 2 })
+  originalPrice: number;
 
   @Column('decimal', { precision: 10, scale: 2 })
-  originalPrice: number; // ราคาเดิม
-
-  @Column('decimal', { precision: 10, scale: 2 })
-  salePrice: number; // ราคาขาย
+  salePrice: number;
 
   @Column({ nullable: true })
-  coverImageUrl: string; // รูปภาพปก (เก็บเป็น Path หรือ URL)
+  coverImageUrl: string;
 
   @Column({ nullable: true })
-  sampleVideoUrl: string; // วิดีโอตัวอย่างคอร์ส (เก็บเป็น Path หรือ URL)
+  sampleVideoUrl: string;
   
   @Column({ nullable: true })
-  instructorName: string; // ชื่อครูผู้สอน
+  instructorName: string;
 
   @Column({ nullable: true })
-  instructorImageUrl: string; // รูปครูผู้สอน
-  
+  instructorImageUrl: string;
+
+  // 🌟 เปลี่ยนจาก @Prop() เป็น @Column() ให้หมด
+  @Column({ nullable: true })
+  suitableFor: string; // เหมาะสำหรับ
+
+  @Column({ nullable: true })
+  classTime: string;   // เวลาเรียน
+
+  // 🌟 สำหรับ Array ของ Object ใน TypeORM ให้ใช้ type 'json' หรือ 'simple-json'
+  @Column({ type: 'json', nullable: true })
+  courseContents: any[];
+
   @CreateDateColumn()
   createdAt: Date;
 

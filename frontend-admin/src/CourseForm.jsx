@@ -8,9 +8,17 @@ export default function CourseForm() {
   const isEditMode = Boolean(id);
 
   const [formData, setFormData] = useState({
-    title: '', shortDescription: '', isActive: true, originalPrice: '', salePrice: '', instructorName: '',
+    title: '',
+    shortDescription: '',
+    isActive: true,
+    originalPrice: '',
+    salePrice: '',
+    instructorName: '',
+    suitableFor: '', // 🌟 เพิ่มใหม่
+    classTime: '',   // 🌟 เพิ่มใหม่
   });
 
+  const [courseContents, setCourseContents] = useState([{ title: '', lessons: '', problems: '' }]);
   const [coverImage, setCoverImage] = useState(null);
   const [instructorImage, setInstructorImage] = useState(null);
 
@@ -21,12 +29,22 @@ export default function CourseForm() {
         setFormData({
           title: course.title || '',
           shortDescription: course.shortDescription || '',
-        
           isActive: course.isActive === true || course.isActive === "true" || course.isActive === 1,
           originalPrice: course.originalPrice || '',
           salePrice: course.salePrice || '',
           instructorName: course.instructorName || '',
+          suitableFor: course.suitableFor || '', // 🌟 ดึงข้อมูลมาแสดงตอนแก้ไข
+          classTime: course.classTime || '',     // 🌟 ดึงข้อมูลมาแสดงตอนแก้ไข
         });
+
+        // 🌟 ดึงข้อมูลรายละเอียดคอร์สย่อย (ถ้ามี)
+        if (course.courseContents) {
+          // ตรวจสอบว่าถ้าส่งมาเป็น String (JSON) ให้ Parse ก่อน แต่ถ้าเป็น Array อยู่แล้วก็ใช้ได้เลย
+          const contents = typeof course.courseContents === 'string' 
+            ? JSON.parse(course.courseContents) 
+            : course.courseContents;
+          setCourseContents(contents);
+        }
       });
     }
   }, [id, isEditMode]);
@@ -39,8 +57,8 @@ export default function CourseForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const data = new FormData();
-    
-    
+
+    // 1. ใส่ข้อมูลจาก formData ทั้งหมด
     Object.keys(formData).forEach(key => {
       if (key === 'isActive') {
         data.append('isActive', formData.isActive ? 'true' : 'false');
@@ -49,6 +67,10 @@ export default function CourseForm() {
       }
     });
 
+    // 2. 🌟 ใส่ข้อมูลรายละเอียดคอร์สย่อย (ส่งเป็น JSON String)
+    data.append('courseContents', JSON.stringify(courseContents));
+
+    // 3. จัดการไฟล์รูปภาพ
     if (coverImage) data.append('coverImage', coverImage);
     if (instructorImage) data.append('instructorImage', instructorImage);
 
@@ -65,7 +87,6 @@ export default function CourseForm() {
     }
   };
 
-  
   const inputStyle = { padding: '10px', borderRadius: '6px', border: '1px solid #ccc', outlineColor: '#003366', fontSize: '14px', width: '100%', boxSizing: 'border-box' };
   const labelStyle = { fontWeight: 'bold', marginBottom: '8px', color: '#003366' };
 
@@ -74,9 +95,9 @@ export default function CourseForm() {
       <h2 style={{ color: '#003366', borderBottom: '2px solid #f0f0f0', paddingBottom: '15px', marginBottom: '25px', marginTop: 0 }}>
         {isEditMode ? '✏️ แก้ไขคอร์สเรียน' : ' เพิ่มคอร์สเรียนใหม่'}
       </h2>
-      
+
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        
+
         <div>
           <label style={labelStyle}>ชื่อคอร์ส:</label>
           <input type="text" name="title" value={formData.title} onChange={handleChange} required style={inputStyle} />
@@ -104,28 +125,82 @@ export default function CourseForm() {
         </div>
 
         <hr style={{ border: '0', borderTop: '1px solid #eee', margin: '10px 0' }} />
-        
+
         <div style={{ display: 'flex', gap: '20px' }}>
-           <div style={{ flex: 1 }}>
-              <label style={labelStyle}>ชื่อครูผู้สอน:</label>
-              <input type="text" name="instructorName" value={formData.instructorName} onChange={handleChange} style={inputStyle} />
-           </div>
-           <div style={{ flex: 1 }}>
-              <label style={labelStyle}>รูปครูผู้สอน:</label>
-              <input type="file" onChange={(e) => setInstructorImage(e.target.files[0])} accept="image/*" style={{ width: '100%', marginTop: '5px' }} />
-           </div>
+          <div style={{ flex: 1 }}>
+            <label style={labelStyle}>ชื่อครูผู้สอน:</label>
+            <input type="text" name="instructorName" value={formData.instructorName} onChange={handleChange} style={inputStyle} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <label style={labelStyle}>รูปครูผู้สอน:</label>
+            <input type="file" onChange={(e) => setInstructorImage(e.target.files[0])} accept="image/*" style={{ width: '100%', marginTop: '5px' }} />
+          </div>
+        </div>
+
+        {/* ส่วนข้อมูลเพิ่มเติม */}
+        <div style={{ display: 'flex', gap: '20px' }}>
+          <div style={{ flex: 1 }}>
+            <label style={labelStyle}>🎯 เหมาะสำหรับ:</label>
+            <input type="text" name="suitableFor" value={formData.suitableFor} onChange={handleChange} placeholder="เช่น นักเรียน ม.4-6" style={inputStyle} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <label style={labelStyle}>⏰ เวลาเรียน:</label>
+            <input type="text" name="classTime" value={formData.classTime} onChange={handleChange} placeholder="เช่น เสาร์-อาทิตย์ 09:00-12:00" style={inputStyle} />
+          </div>
+        </div>
+
+        <hr style={{ border: '0', borderTop: '1px solid #eee', margin: '20px 0' }} />
+
+        {/* ส่วนจัดการรายละเอียดคอร์สย่อย */}
+        <div>
+          <label style={labelStyle}>📚 รายละเอียดคอร์สย่อย:</label>
+          {courseContents.map((item, index) => (
+            <div key={index} style={{ background: '#fcfcfc', padding: '15px', borderRadius: '8px', marginBottom: '15px', border: '1px solid #eee' }}>
+              <input
+                type="text" placeholder={`ชื่อคอร์สที่ (${index + 1}.)`}
+                value={item.title} onChange={(e) => {
+                  const newItems = [...courseContents];
+                  newItems[index].title = e.target.value;
+                  setCourseContents(newItems);
+                }}
+                style={{ ...inputStyle, marginBottom: '10px' }}
+              />
+              <textarea
+                placeholder="บทที่สอน (เช่น บทที่ 1, บทที่ 2)"
+                value={item.lessons} onChange={(e) => {
+                  const newItems = [...courseContents];
+                  newItems[index].lessons = e.target.value;
+                  setCourseContents(newItems);
+                }}
+                style={{ ...inputStyle, height: '60px', marginBottom: '10px' }}
+              />
+              <input
+                type="text" placeholder="โจทย์ที่พาลุย :"
+                value={item.problems} onChange={(e) => {
+                  const newItems = [...courseContents];
+                  newItems[index].problems = e.target.value;
+                  setCourseContents(newItems);
+                }}
+                style={inputStyle}
+              />
+              {courseContents.length > 1 && (
+                <button type="button" onClick={() => setCourseContents(courseContents.filter((_, i) => i !== index))} style={{ color: 'red', marginTop: '10px', border: 'none', background: 'none', cursor: 'pointer' }}>ลบรายการนี้</button>
+              )}
+            </div>
+          ))}
+          <button type="button" onClick={() => setCourseContents([...courseContents, { title: '', lessons: '', problems: '' }])} style={{ padding: '8px 12px', cursor: 'pointer', background: '#f0f0f0', border: '1px solid #ccc', borderRadius: '4px' }}>+ เพิ่มคอร์สย่อย</button>
         </div>
 
         <div style={{ marginTop: '10px', padding: '15px', background: '#f8f9fa', borderRadius: '8px' }}>
           <label style={{ cursor: 'pointer', fontWeight: 'bold', color: '#003366', display: 'flex', alignItems: 'center' }}>
-            <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleChange} style={{ marginRight: '10px', width: '18px', height: '18px' }} /> 
+            <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleChange} style={{ marginRight: '10px', width: '18px', height: '18px' }} />
             เปิดใช้งานคอร์สนี้ทันที (Active)
           </label>
         </div>
 
         <div style={{ marginTop: '10px', display: 'flex', gap: '15px' }}>
           <button type="submit" style={{ flex: 2, padding: '12px', background: '#F2984A', color: '#FFFFFF', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px', boxShadow: '0 4px 6px rgba(242, 152, 74, 0.3)' }}>
-             บันทึกข้อมูล
+            บันทึกข้อมูล
           </button>
           <button type="button" onClick={() => navigate('/')} style={{ flex: 1, padding: '12px', background: '#e9ecef', color: '#003366', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}>
             ยกเลิก

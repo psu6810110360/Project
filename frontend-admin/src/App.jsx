@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import CourseList from './CourseList';
 import CourseForm from './CourseForm';
-
+import CourseDetail from './CourseDetail';
 
 import { FaFacebook, FaLinkedin, FaYoutube, FaInstagram } from 'react-icons/fa';
 
@@ -66,6 +66,7 @@ function App() {
           <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
             <Routes>
               <Route path="/" element={<CourseList isAdmin={isAdmin} />} />
+              <Route path="/course/:id" element={<CourseDetail />} />
               <Route path="/add" element={<CourseForm />} />
               <Route path="/edit/:id" element={<CourseForm />} />
             </Routes>

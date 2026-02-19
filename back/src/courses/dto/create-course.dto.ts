@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsNumber, IsOptional, IsBoolean } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsOptional, IsBoolean, IsArray } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class CreateCourseDto {
@@ -46,4 +46,16 @@ export class CreateCourseDto {
   @IsString()
   @IsOptional()
   instructorImageUrl?: string;
+
+  @IsString()
+  @IsOptional()
+  suitableFor?: string;
+
+  @IsString()
+  @IsOptional()
+  classTime?: string;
+
+  @IsOptional()
+  @IsArray() 
+  courseContents?: any[];
 }
