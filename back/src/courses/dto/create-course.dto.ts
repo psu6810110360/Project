@@ -1,3 +1,4 @@
+//create-course.dto.ts
 import { IsString, IsNotEmpty, IsNumber, IsOptional, IsBoolean, IsArray } from 'class-validator';
 import { Transform } from 'class-transformer';
 

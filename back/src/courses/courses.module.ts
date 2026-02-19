@@ -1,3 +1,4 @@
+//courses.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CoursesService } from './courses.service';
