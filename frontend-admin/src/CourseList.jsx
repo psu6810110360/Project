@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // 🌟 เพิ่ม useNavigate เข้ามาช่วย
+import { Link, useNavigate } from 'react-router-dom'; 
 import axios from 'axios';
 
 export default function CourseList({ isAdmin }) {
   const [courses, setCourses] = useState([]);
-  const navigate = useNavigate(); // 🌟 สำหรับย้ายหน้า
+  const navigate = useNavigate(); 
 
   const fetchCourses = async () => {
     try {
@@ -84,11 +84,11 @@ export default function CourseList({ isAdmin }) {
               <span style={{ color: '#F2984A', fontWeight: 'bold', fontSize: '24px' }}>฿{course.salePrice}</span>
             </div>
             
-            {/* 🌟 ปรับปรุงส่วนปุ่มสำหรับ Admin ให้มี "ดูรายละเอียด" ด้วย */}
+           
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: 'auto' }}>
               {isAdmin ? (
                 <>
-                  {/* ปุ่มดูรายละเอียดสำหรับ Admin */}
+                  
                   <Link to={`/course/${course.id}`} style={{ textDecoration: 'none' }}>
                     <button style={{ width: '100%', padding: '10px', background: '#e6f7ff', color: '#003366', border: '1px solid #91d5ff', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
                       🔍 ดูรายละเอียด (Preview)
@@ -106,7 +106,7 @@ export default function CourseList({ isAdmin }) {
                   </div>
                 </>
               ) : (
-                /* ปุ่มรายละเอียดสำหรับ User ทั่วไป */
+                
                 <Link to={`/course/${course.id}`} style={{ textDecoration: 'none' }}>
                   <button style={{ 
                     width: '100%', padding: '12px', background: '#F2984A', 

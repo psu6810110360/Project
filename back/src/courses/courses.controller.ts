@@ -27,7 +27,7 @@ export class CoursesController {
     { name: 'instructorImage', maxCount: 1 },
   ], multerOptions))
   create(
-    @Body() createCourseDto: any, // รับเป็น any เพื่อจัดการการ Parse ข้อมูล
+    @Body() createCourseDto: any, 
     @UploadedFiles() files: any
   ) {
     this.prepareData(createCourseDto, files);
@@ -49,22 +49,20 @@ export class CoursesController {
     return this.coursesService.update(id, updateCourseDto);
   }
 
-  // ---------------------------------------------------------
-  // 🌟 Helper Method: จัดการไฟล์และแปลง JSON (Clean Code)
-  // ---------------------------------------------------------
+  
   private prepareData(dto: any, files: any) {
-    // 1. จัดการไฟล์พื้นฐาน
+   
     if (files?.coverImage) dto.coverImageUrl = `/uploads/${files.coverImage[0].filename}`;
     if (files?.sampleVideo) dto.sampleVideoUrl = `/uploads/${files.sampleVideo[0].filename}`;
     if (files?.instructorImage) dto.instructorImageUrl = `/uploads/${files.instructorImage[0].filename}`;
 
-    // 2. 🌟 เพิ่มตรงนี้: แปลง isActive จาก String เป็น Boolean
+    
     if (dto.isActive !== undefined) {
-      // ตรวจสอบว่าถ้าส่งมาเป็นตัวอักษร "true" หรือเลข 1 ให้เป็น true นอกนั้นเป็น false
+     
       dto.isActive = (String(dto.isActive) === 'true' || dto.isActive === '1');
     }
 
-    // 3. แปลง courseContents (JSON String -> Object)
+   
     if (dto.courseContents && typeof dto.courseContents === 'string') {
       try {
         dto.courseContents = JSON.parse(dto.courseContents);
@@ -73,7 +71,7 @@ export class CoursesController {
       }
     }
 
-    // 🌟 เช็คผลลัพธ์ผ่าน Terminal
+    
     console.log('--- ตรวจสอบสถานะ Active ---');
     console.log('Value:', dto.isActive, ' | Type:', typeof dto.isActive);
   }

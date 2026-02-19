@@ -14,8 +14,8 @@ export default function CourseForm() {
     originalPrice: '',
     salePrice: '',
     instructorName: '',
-    suitableFor: '', // 🌟 เพิ่มใหม่
-    classTime: '',   // 🌟 เพิ่มใหม่
+    suitableFor: '', 
+    classTime: '',  
   });
 
   const [courseContents, setCourseContents] = useState([{ title: '', lessons: '', problems: '' }]);
@@ -33,13 +33,13 @@ export default function CourseForm() {
           originalPrice: course.originalPrice || '',
           salePrice: course.salePrice || '',
           instructorName: course.instructorName || '',
-          suitableFor: course.suitableFor || '', // 🌟 ดึงข้อมูลมาแสดงตอนแก้ไข
-          classTime: course.classTime || '',     // 🌟 ดึงข้อมูลมาแสดงตอนแก้ไข
+          suitableFor: course.suitableFor || '', 
+          classTime: course.classTime || '',     
         });
 
-        // 🌟 ดึงข้อมูลรายละเอียดคอร์สย่อย (ถ้ามี)
+        
         if (course.courseContents) {
-          // ตรวจสอบว่าถ้าส่งมาเป็น String (JSON) ให้ Parse ก่อน แต่ถ้าเป็น Array อยู่แล้วก็ใช้ได้เลย
+          
           const contents = typeof course.courseContents === 'string' 
             ? JSON.parse(course.courseContents) 
             : course.courseContents;
@@ -58,7 +58,7 @@ export default function CourseForm() {
     e.preventDefault();
     const data = new FormData();
 
-    // 1. ใส่ข้อมูลจาก formData ทั้งหมด
+    
     Object.keys(formData).forEach(key => {
       if (key === 'isActive') {
         data.append('isActive', formData.isActive ? 'true' : 'false');
@@ -67,10 +67,10 @@ export default function CourseForm() {
       }
     });
 
-    // 2. 🌟 ใส่ข้อมูลรายละเอียดคอร์สย่อย (ส่งเป็น JSON String)
+    
     data.append('courseContents', JSON.stringify(courseContents));
 
-    // 3. จัดการไฟล์รูปภาพ
+    
     if (coverImage) data.append('coverImage', coverImage);
     if (instructorImage) data.append('instructorImage', instructorImage);
 
@@ -137,7 +137,7 @@ export default function CourseForm() {
           </div>
         </div>
 
-        {/* ส่วนข้อมูลเพิ่มเติม */}
+       
         <div style={{ display: 'flex', gap: '20px' }}>
           <div style={{ flex: 1 }}>
             <label style={labelStyle}>🎯 เหมาะสำหรับ:</label>
@@ -151,7 +151,7 @@ export default function CourseForm() {
 
         <hr style={{ border: '0', borderTop: '1px solid #eee', margin: '20px 0' }} />
 
-        {/* ส่วนจัดการรายละเอียดคอร์สย่อย */}
+        
         <div>
           <label style={labelStyle}>📚 รายละเอียดคอร์สย่อย:</label>
           {courseContents.map((item, index) => (

@@ -26,13 +26,13 @@ export default function CourseDetail() {
   if (loading) return <div style={{ textAlign: 'center', padding: '50px' }}>กำลังโหลด...</div>;
   if (!course) return <div style={{ textAlign: 'center', padding: '50px' }}>ไม่พบข้อมูลคอร์ส</div>;
 
-  // สไตล์สำหรับเส้นบรรทัดตามแบบในรูป
+  
   const lineStyle = { borderBottom: '1px solid #ddd', marginBottom: '8px', width: '100%', height: '1px' };
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 20px', backgroundColor: '#fff', color: '#333' }}>
       
-      {/* ส่วนบน: ข้อมูลทั่วไป */}
+     
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '50px', marginBottom: '60px' }}>
         <div>
           {course.coverImageUrl && (
@@ -58,7 +58,7 @@ export default function CourseDetail() {
         </div>
       </div>
 
-      {/* ส่วนล่าง: รายละเอียดคอร์สเรียน */}
+      
       <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '60px' }}>
         
         <div>
@@ -66,7 +66,7 @@ export default function CourseDetail() {
             รายละเอียดคอร์สเรียน
           </h2>
 
-          {/* วนลูปแสดงคอร์สย่อยจากฐานข้อมูล */}
+          
           {course.courseContents && Array.isArray(course.courseContents) ? (
             course.courseContents.map((content, index) => (
               <div key={index} style={{ marginBottom: '40px' }}>
@@ -90,7 +90,7 @@ export default function CourseDetail() {
           )}
         </div>
 
-        {/* ส่วนผู้สอน */}
+       
         <div>
           <h2 style={{ color: '#003366', fontSize: '24px', marginBottom: '25px' }}>ผู้สอน</h2>
           {course.instructorName && (
