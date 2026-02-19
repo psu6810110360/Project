@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FaClock, FaUserGraduate, FaBookOpen } from 'react-icons/fa';
+import { FaClock, FaUserGraduate } from 'react-icons/fa';
 
-export default function CourseDetail() {
+export default function CourseDetail({ isAdmin }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const [course, setCourse] = useState(null);
@@ -26,7 +26,6 @@ export default function CourseDetail() {
   if (loading) return <div style={{ textAlign: 'center', padding: '50px' }}>กำลังโหลด...</div>;
   if (!course) return <div style={{ textAlign: 'center', padding: '50px' }}>ไม่พบข้อมูลคอร์ส</div>;
 
-  
   const lineStyle = { borderBottom: '1px solid #ddd', marginBottom: '8px', width: '100%', height: '1px' };
 
   return (
@@ -52,6 +51,7 @@ export default function CourseDetail() {
             {course.salePrice?.toLocaleString()} <span style={{ fontSize: '18px' }}>บาท</span>
           </h2>
 
+          
           <button style={{ width: '100%', padding: '15px', backgroundColor: '#003366', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' }}>
             สั่งซื้อ
           </button>
@@ -61,12 +61,12 @@ export default function CourseDetail() {
       
       <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '60px' }}>
         
+        
         <div>
           <h2 style={{ color: '#003366', fontSize: '24px', borderBottom: '2px solid #003366', paddingBottom: '10px', marginBottom: '25px' }}>
             รายละเอียดคอร์สเรียน
           </h2>
 
-          
           {course.courseContents && Array.isArray(course.courseContents) ? (
             course.courseContents.map((content, index) => (
               <div key={index} style={{ marginBottom: '40px' }}>
@@ -90,24 +90,52 @@ export default function CourseDetail() {
           )}
         </div>
 
-       
+        
         <div>
-          <h2 style={{ color: '#003366', fontSize: '24px', marginBottom: '25px' }}>ผู้สอน</h2>
-          {course.instructorName && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-              <div style={{ width: '100px', height: '100px', borderRadius: '50%', overflow: 'hidden', border: '3px solid #F2984A' }}>
-                <img 
-                  src={course.instructorImageUrl ? `http://localhost:3000${course.instructorImageUrl}` : '/default-avatar.png'} 
-                  alt="Instructor" 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                />
+          <h2 style={{ color: '#003366', fontSize: '24px', marginBottom: '25px' }}>ทีมผู้สอน</h2>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+            
+          
+            {course.instructors && Array.isArray(course.instructors) && course.instructors.length > 0 ? (
+              course.instructors.map((inst, index) => (
+                <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                 
+                  <div style={{ width: '100px', height: '100px', borderRadius: '50%', overflow: 'hidden', border: '3px solid #F2984A', flexShrink: 0 }}>
+                    <img 
+                      src={inst.imageUrl ? `http://localhost:3000${inst.imageUrl}` : '/default-avatar.png'} 
+                      alt={`Instructor ${inst.name}`} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
+                  </div>
+                  <div>
+                    <p style={{ fontWeight: 'bold', fontSize: '18px', margin: '0 0 5px 0' }}>{inst.name}</p>
+                    <p style={{ fontSize: '14px', color: '#888', margin: 0 }}>อุดมการณ์การศึกษา</p>
+                  </div>
+                </div>
+              ))
+            ) : course.instructorName ? (
+              
+             
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div style={{ width: '100px', height: '100px', borderRadius: '50%', overflow: 'hidden', border: '3px solid #F2984A', flexShrink: 0 }}>
+                  <img 
+                    src={course.instructorImageUrl ? `http://localhost:3000${course.instructorImageUrl}` : '/default-avatar.png'} 
+                    alt="Instructor" 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  />
+                </div>
+                <div>
+                  <p style={{ fontWeight: 'bold', fontSize: '18px', margin: '0 0 5px 0' }}>{course.instructorName}</p>
+                  <p style={{ fontSize: '14px', color: '#888', margin: 0 }}>อุดมการณ์การศึกษา</p>
+                </div>
               </div>
-              <div>
-                <p style={{ fontWeight: 'bold', fontSize: '18px', margin: 0 }}>{course.instructorName}</p>
-                <p style={{ fontSize: '14px', color: '#888', margin: 0 }}>อุดมการณ์การศึกษา</p>
-              </div>
-            </div>
-          )}
+
+            ) : (
+              <p style={{ color: '#888' }}>ยังไม่ระบุข้อมูลผู้สอน</p>
+            )}
+
+          </div>
         </div>
 
       </div>

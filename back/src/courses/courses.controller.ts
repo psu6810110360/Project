@@ -24,7 +24,7 @@ export class CoursesController {
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'coverImage', maxCount: 1 },
     { name: 'sampleVideo', maxCount: 1 },
-    { name: 'instructorImage', maxCount: 1 },
+    { name: 'instructorImage', maxCount: 10 },
   ], multerOptions))
   create(
     @Body() createCourseDto: any, 
@@ -38,7 +38,7 @@ export class CoursesController {
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'coverImage', maxCount: 1 },
     { name: 'sampleVideo', maxCount: 1 },
-    { name: 'instructorImage', maxCount: 1 },
+    { name: 'instructorImage', maxCount: 10 },
   ], multerOptions))
   update(
     @Param('id') id: string, 
@@ -54,7 +54,23 @@ export class CoursesController {
    
     if (files?.coverImage) dto.coverImageUrl = `/uploads/${files.coverImage[0].filename}`;
     if (files?.sampleVideo) dto.sampleVideoUrl = `/uploads/${files.sampleVideo[0].filename}`;
-    if (files?.instructorImage) dto.instructorImageUrl = `/uploads/${files.instructorImage[0].filename}`;
+    if (dto.instructorNames) {
+      
+      const names = Array.isArray(dto.instructorNames) ? dto.instructorNames : [dto.instructorNames];
+      
+     
+      dto.instructors = names.map((name, index) => {
+        return {
+          name: name,
+          imageUrl: files?.instructorImages?.[index] 
+            ? `/uploads/${files.instructorImages[index].filename}` 
+            : null
+        };
+      });
+
+      
+      delete dto.instructorNames;
+    }
 
     
     if (dto.isActive !== undefined) {

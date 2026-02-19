@@ -77,8 +77,8 @@ export default function CourseList({ isAdmin }) {
             
             <h3 style={{ fontSize: '18px', color: '#003366', margin: '15px 0 5px 0', lineHeight: '1.4', flexGrow: 1 }}>{course.title}</h3>
             
-            <p style={{ color: '#666', fontSize: '14px', marginBottom: '15px' }}>สอนโดย: <span style={{ fontWeight: 'bold', color: '#333' }}>{course.instructorName || 'ไม่ระบุ'}</span></p>
-            
+            <p style={{ color: '#666', fontSize: '14px', marginBottom: '15px',display: '-webkit-box',WebkitLineClamp: 2,WebkitBoxOrient: 'vertical',overflow: 'hidden',}}>รายละเอียด: <span style={{ fontWeight: 'bold', color: '#333' }}>
+            {course.shortDescription || 'ไม่ระบุ'}</span></p>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '20px' }}>
               <span style={{ textDecoration: 'line-through', color: '#aaa', fontSize: '14px' }}>฿{course.originalPrice}</span>
               <span style={{ color: '#F2984A', fontWeight: 'bold', fontSize: '24px' }}>฿{course.salePrice}</span>

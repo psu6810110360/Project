@@ -39,13 +39,9 @@ export class CreateCourseDto {
   @IsOptional()
   sampleVideoUrl?: string;
 
-  @IsString()
   @IsOptional()
-  instructorName?: string;
-
-  @IsString()
-  @IsOptional()
-  instructorImageUrl?: string;
+  @IsArray()
+  instructors?: any[];
 
   @IsString()
   @IsOptional()

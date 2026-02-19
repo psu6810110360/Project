@@ -14,7 +14,7 @@ export class Course {
   @Column({ default: true })
   isActive: boolean;
 
-  // ใช้ type 'decimal' สำหรับราคาเพื่อความแม่นยำแบบวิศวกร PSU
+  
   @Column('decimal', { precision: 10, scale: 2 })
   originalPrice: number;
 
@@ -27,20 +27,18 @@ export class Course {
   @Column({ nullable: true })
   sampleVideoUrl: string;
   
+  @Column({ type: 'json', nullable: true })
+  instructors: any[];
+
+
+  
   @Column({ nullable: true })
-  instructorName: string;
+  suitableFor: string; 
 
   @Column({ nullable: true })
-  instructorImageUrl: string;
+  classTime: string;   
 
-  // 🌟 เปลี่ยนจาก @Prop() เป็น @Column() ให้หมด
-  @Column({ nullable: true })
-  suitableFor: string; // เหมาะสำหรับ
-
-  @Column({ nullable: true })
-  classTime: string;   // เวลาเรียน
-
-  // 🌟 สำหรับ Array ของ Object ใน TypeORM ให้ใช้ type 'json' หรือ 'simple-json'
+  
   @Column({ type: 'json', nullable: true })
   courseContents: any[];
 
