@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FaClock, FaUserGraduate } from 'react-icons/fa';
+import { FaClock, FaUserGraduate, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 export default function CourseDetail({ isAdmin }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  
+  const [activeMedia, setActiveMedia] = useState(0);
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -27,22 +30,68 @@ export default function CourseDetail({ isAdmin }) {
   if (!course) return <div style={{ textAlign: 'center', padding: '50px' }}>ไม่พบข้อมูลคอร์ส</div>;
 
   const lineStyle = { borderBottom: '1px solid #ddd', marginBottom: '8px', width: '100%', height: '1px' };
+  
+ 
+  const hasVideo = Boolean(course.sampleVideoUrl);
+
+  const toggleMedia = () => {
+    if (hasVideo) {
+      setActiveMedia(prev => (prev === 0 ? 1 : 0));
+    }
+  };
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 20px', backgroundColor: '#fff', color: '#333' }}>
       
-     
+      
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '50px', marginBottom: '60px' }}>
+        
+       
         <div>
-          {course.coverImageUrl && (
-            <img src={`http://localhost:3000${course.coverImageUrl}`} alt="Cover" style={{ width: '100%', borderRadius: '15px' }} />
-          )}
+          <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', borderRadius: '15px', overflow: 'hidden', backgroundColor: '#000', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+            
+           
+            {activeMedia === 0 ? (
+              <img 
+                src={course.coverImageUrl ? `http://localhost:3000${course.coverImageUrl}` : '/default-cover.jpg'} 
+                alt="Cover" 
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+              />
+            ) : (
+              <video 
+                src={`http://localhost:3000${course.sampleVideoUrl}`} 
+                controls 
+                autoPlay 
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+              />
+            )}
+
+           
+            {hasVideo && (
+              <>
+                <button onClick={toggleMedia} style={{ position: 'absolute', top: '50%', left: '10px', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', color: '#333' }}>
+                  <FaChevronLeft />
+                </button>
+                <button onClick={toggleMedia} style={{ position: 'absolute', top: '50%', right: '10px', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', color: '#333' }}>
+                  <FaChevronRight />
+                </button>
+                
+                
+                <div style={{ position: 'absolute', bottom: '15px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px' }}>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: activeMedia === 0 ? '#F2984A' : 'rgba(255,255,255,0.5)', cursor: 'pointer' }} onClick={() => setActiveMedia(0)}></div>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: activeMedia === 1 ? '#F2984A' : 'rgba(255,255,255,0.5)', cursor: 'pointer' }} onClick={() => setActiveMedia(1)}></div>
+                </div>
+              </>
+            )}
+          </div>
+
           <div style={{ marginTop: '20px', color: '#666', fontSize: '15px' }}>
             <p><FaClock style={{ marginRight: '8px' }} /> <strong>เวลาเรียน:</strong> {course.classTime || '-'}</p>
-            
+    
           </div>
         </div>
 
+        
         <div>
           <h1 style={{ color: '#003366', fontSize: '32px', marginBottom: '10px' }}>{course.title}</h1>
           <p style={{ color: '#888', marginBottom: '20px' }}>เหมาะสำหรับ : {course.suitableFor || '-'}</p>
@@ -90,17 +139,13 @@ export default function CourseDetail({ isAdmin }) {
           )}
         </div>
 
-        
         <div>
           <h2 style={{ color: '#003366', fontSize: '24px', marginBottom: '25px' }}>ทีมผู้สอน</h2>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
-            
-          
             {course.instructors && Array.isArray(course.instructors) && course.instructors.length > 0 ? (
               course.instructors.map((inst, index) => (
                 <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                 
                   <div style={{ width: '100px', height: '100px', borderRadius: '50%', overflow: 'hidden', border: '3px solid #F2984A', flexShrink: 0 }}>
                     <img 
                       src={inst.imageUrl ? `http://localhost:3000${inst.imageUrl}` : '/default-avatar.png'} 
@@ -115,8 +160,6 @@ export default function CourseDetail({ isAdmin }) {
                 </div>
               ))
             ) : course.instructorName ? (
-              
-             
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                 <div style={{ width: '100px', height: '100px', borderRadius: '50%', overflow: 'hidden', border: '3px solid #F2984A', flexShrink: 0 }}>
                   <img 
@@ -130,14 +173,11 @@ export default function CourseDetail({ isAdmin }) {
                   <p style={{ fontSize: '14px', color: '#888', margin: 0 }}>อุดมการณ์การศึกษา</p>
                 </div>
               </div>
-
             ) : (
               <p style={{ color: '#888' }}>ยังไม่ระบุข้อมูลผู้สอน</p>
             )}
-
           </div>
         </div>
-
       </div>
     </div>
   );

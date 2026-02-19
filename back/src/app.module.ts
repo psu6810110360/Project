@@ -5,6 +5,7 @@ import { CoursesModule } from './courses/courses.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 
+
 @Module({
   imports: [
     
