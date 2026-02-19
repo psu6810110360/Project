@@ -22,9 +22,7 @@ const multerOptions = {
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
-  // ---------------------------------------------------------
-  // 1. เพิ่มข้อมูล (Create)
-  // ---------------------------------------------------------
+  
   @Post()
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'coverImage', maxCount: 1 },
@@ -35,7 +33,7 @@ export class CoursesController {
     @Body() createCourseDto: CreateCourseDto,
     @UploadedFiles() files: { coverImage?: Express.Multer.File[], sampleVideo?: Express.Multer.File[], instructorImage?: Express.Multer.File[] }
   ) {
-    // เช็คว่ามีไฟล์แนบมาไหม ถ้ามีให้เอา Path ไปใส่ใน DTO
+
     if (files?.coverImage) {
       createCourseDto.coverImageUrl = `/uploads/${files.coverImage[0].filename}`;
     }
@@ -49,25 +47,19 @@ export class CoursesController {
     return this.coursesService.create(createCourseDto);
   }
 
-  // ---------------------------------------------------------
-  // 2. ดึงข้อมูลทั้งหมด (Read All)
-  // ---------------------------------------------------------
+ 
   @Get()
   findAll() {
     return this.coursesService.findAll();
   }
 
-  // ---------------------------------------------------------
-  // 3. ดึงข้อมูล 1 รายการ (Read One)
-  // ---------------------------------------------------------
+  
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.coursesService.findOne(id); // สังเกตว่าไม่มีเครื่องหมาย + หน้า id แล้ว
   }
 
-  // ---------------------------------------------------------
-  // 4. แก้ไขข้อมูล (Update)
-  // ---------------------------------------------------------
+  
   @Patch(':id')
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'coverImage', maxCount: 1 },
@@ -79,7 +71,7 @@ export class CoursesController {
     @Body() updateCourseDto: UpdateCourseDto,
     @UploadedFiles() files: { coverImage?: Express.Multer.File[], sampleVideo?: Express.Multer.File[], instructorImage?: Express.Multer.File[] }
   ) {
-    // โลจิกเหมือนตอน Create เลย คือรับไฟล์ใหม่มาเซฟทับ
+
     if (files?.coverImage) {
       updateCourseDto.coverImageUrl = `/uploads/${files.coverImage[0].filename}`;
     }
@@ -89,15 +81,17 @@ export class CoursesController {
     if (files?.instructorImage) {
       updateCourseDto.instructorImageUrl = `/uploads/${files.instructorImage[0].filename}`;
     }
+  
 
+    console.log('--- ตรวจสอบข้อมูลจาก DTO ---');
+    console.log('isActive:', updateCourseDto.isActive);
+    console.log('Type:', typeof updateCourseDto.isActive);
     return this.coursesService.update(id, updateCourseDto);
   }
 
-  // ---------------------------------------------------------
-  // 5. ลบข้อมูล (Delete)
-  // ---------------------------------------------------------
+ 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.coursesService.remove(id); // ไม่มีเครื่องหมาย + หน้า id เช่นกัน
+    return this.coursesService.remove(id); 
   }
 }
