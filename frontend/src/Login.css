@@ -1,0 +1,303 @@
+/* คอนเทนเนอร์หลัก จัดกึ่งกลาง และใช้สีพื้นหลังตาม Figma */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 80px); /* หักความสูง Header ออก */
+  background-color: #F5F8FF; /* สีพื้นหลังเทาอมฟ้าอ่อนๆ ตาม Figma */
+  font-family: 'Prompt', sans-serif;
+  padding: 40px 20px; /* แก้ไข: เพิ่ม Padding บน-ล่าง ป้องกันการ์ดยาวๆ ชนขอบจอ */
+}
+
+/* การ์ดล็อกอินสีขาว */
+.login-card {
+  display: flex;
+  width: 100%;
+  max-width: 1000px; /* ความกว้างสูงสุดตามดีไซน์ */
+  min-height: 650px; /* เพิ่มความสูงขั้นต่ำ */
+  height: auto; /* แก้ไข: ปล่อยให้ความสูงขยายตามเนื้อหาอัตโนมัติ */
+  background-color: #FFFFFF;
+  border-radius: 40px; /* ขอบมน 40px ตาม Figma */
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08); /* เงาฟุ้งๆ ดูมีมิติ */
+  overflow: hidden; /* สำคัญ: ป้องกันขอบเหลี่ยมทะลุขอบมน */
+}
+
+/* --- ส่วนฟอร์มฝั่งซ้าย --- */
+.login-form-section {
+  flex: 1.1; 
+  padding: 60px 80px; 
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative; /* <-- เพิ่มบรรทัดนี้เข้ามาครับ */
+}
+
+/* --- ปุ่มสลับ Login / Sign up (ทำเป็นแบบ Tabs ตาม Figma) --- */
+.toggle-buttons {
+  display: inline-flex;
+  background-color: #F5F6FA; /* สีพื้นหลังเทาอ่อนของแถบ Tabs */
+  padding: 6px; /* ระยะห่างระหว่างขอบแถบกับปุ่ม */
+  border-radius: 14px; /* ขอบมนของแถบ Tabs */
+  margin-bottom: 40px;
+  width: fit-content; /* ความกว้างพอดีกับเนื้อหา */
+}
+
+.toggle-btn {
+  padding: 12px 40px; /* ขนาดปุ่ม */
+  border: none;
+  background: transparent; /* พื้นหลังใสสำหรับปุ่มปกติ */
+  font-weight: 600;
+  font-size: 16px;
+  color: #8E94A3; /* สีเทาสำหรับปุ่มที่ไม่ได้เลือก */
+  cursor: pointer;
+  border-radius: 12px; /* ขอบมนของปุ่ม */
+  transition: all 0.3s ease;
+}
+
+.toggle-btn.active {
+  background-color: #FF9F43; /* สีส้มสำหรับปุ่มที่เลือก */
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 159, 67, 0.3); /* เงาสีส้ม */
+}
+
+/* หัวข้อและคำอธิบาย */
+.form-title {
+  font-size: 40px; /* ขนาดหัวข้อใหญ่ขึ้น */
+  font-weight: 800;
+  color: #2D3436;
+  margin-top: 0;
+  margin-bottom: 10px;
+  letter-spacing: -0.5px;
+}
+
+.form-subtitle {
+  font-size: 15px;
+  color: #636E72;
+  margin-bottom: 40px;
+  font-weight: 400;
+}
+
+/* กลุ่มช่องกรอกข้อมูล */
+.input-group {
+  margin-bottom: 25px;
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2D3436;
+  margin-bottom: 10px;
+}
+
+/* ปรับช่อง Input ให้ดูดีขึ้น */
+.input-group input {
+  padding: 16px 20px; /* เพิ่มพื้นที่ด้านในให้พิมพ์ง่าย */
+  border: 1px solid #E0E0E0;
+  border-radius: 12px;
+  font-size: 15px;
+  background-color: #FDFDFD;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.input-group input::placeholder {
+  color: #B2BCC8; /* สี Placeholder */
+}
+
+.input-group input:focus {
+  border-color: #FF9F43; /* สีขอบตอนคลิก */
+  background-color: #FFFFFF;
+}
+
+.forgot-password {
+  font-size: 13px;
+  color: #2D3436;
+  text-decoration: none;
+  font-weight: 700;
+  margin-top: 12px;
+  align-self: flex-end;
+}
+
+/* ปุ่ม Login */
+.login-submit-btn {
+  width: 100%;
+  padding: 18px;
+  margin-top: 20px;
+  background-color: #003366; /* สีน้ำเงินหลัก */
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0, 51, 102, 0.2);
+  transition: all 0.3s;
+}
+
+.login-submit-btn:hover {
+  background-color: #002244;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(0, 51, 102, 0.3);
+}
+
+/* ลิงก์ Sign Up ด้านล่าง */
+.signup-link {
+  text-align: center;
+  font-size: 14px;
+  color: #636E72;
+  margin-top: 30px;
+}
+
+.signup-link a {
+  color: #2D3436;
+  text-decoration: none;
+  font-weight: 800;
+}
+
+/* --- ส่วนรูปภาพฝั่งขวา --- */
+.login-image-section {
+  flex: 1;
+  background-color: #003366;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end; /* ให้รูปชิดขอบล่าง */
+  position: relative;
+  overflow: hidden; 
+}
+
+.student-img {
+  height: 90%; 
+  width: auto; 
+  object-fit: contain;
+  object-position: bottom; 
+}
+
+/* ========================================================
+   --- สไตล์เฉพาะฟอร์ม Sign Up (โหมดขยายเต็มจอ ไม่มีรูป) ---
+   ======================================================== */
+
+/* จัดให้หน้า Sign Up ขยายเต็มความกว้าง */
+.login-form-section.signup-mode {
+  flex: 1;
+  padding: 40px 60px; /* จัดระยะขอบให้สวยงามเวลาฟอร์มกว้างขึ้น */
+  align-items: center; /* จัดให้อยู่กึ่งกลาง */
+}
+
+/* แก้ไข: ทำให้ฟอร์มยืดตามเนื้อหา ไม่ต้องมี Scrollbar แล้ว */
+.signup-form-scroll {
+  width: 100%;
+  max-width: 650px; 
+  height: auto; /* ปล่อยให้ความสูงไหลตามเนื้อหาอัตโนมัติ */
+  overflow: visible; /* เอา Scrollbar ออก */
+  padding-bottom: 20px; /* เว้นระยะด้านล่างปุ่มนิดหน่อย */
+}
+
+/* หัวข้อแบ่งหมวดหมู่ */
+.section-header {
+  font-size: 16px;
+  color: #003366;
+  margin: 25px 0 15px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #F1F5F9;
+  width: 100%;
+}
+
+/* จัด Layout ช่องกรอกข้อมูลแบบคู่/คี่ */
+.form-row {
+  display: grid;
+  gap: 15px;
+  width: 100%;
+}
+
+.two-cols {
+  grid-template-columns: 1fr 1fr;
+}
+
+.three-cols {
+  grid-template-columns: 0.8fr 1.5fr 1.5fr; /* ให้คำนำหน้าแคบหน่อย ชื่อ-สกุลกว้างๆ */
+}
+
+/* ปรับแต่ง Select Dropdown ให้หน้าตาเหมือน Input */
+.input-group select {
+  padding: 16px 20px;
+  border: 1px solid #E0E0E0;
+  border-radius: 12px;
+  font-size: 15px;
+  background-color: #FDFDFD;
+  outline: none;
+  font-family: 'Prompt', sans-serif;
+  color: #2D3436;
+  cursor: pointer;
+  appearance: none; /* เอาลูกศรเดิมๆ ของเบราว์เซอร์ออก (บางส่วน) */
+}
+
+.input-group select:focus {
+  border-color: #FF9F43;
+  background-color: #FFFFFF;
+}
+
+/* ในหน้า Sign up ลด Margin ของ Input Group ลงจะได้ไม่ห่างไป */
+.signup-form-scroll .input-group {
+  margin-bottom: 15px;
+}
+
+/* ========================================================
+   --- ส่วนเพิ่มเติมสำหรับไอคอนรหัสผ่าน (ตาปิด/เปิด) ---
+   ======================================================== */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 45px; /* เว้นที่ด้านขวาไม่ให้ตัวหนังสือทับไอคอน */
+  box-sizing: border-box; /* สำคัญ: ป้องกันไม่ให้ input ทะลุกรอบ */
+}
+
+.eye-btn {
+  position: absolute;
+  right: 15px; /* ระยะห่างจากขอบขวา */
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #A0AABF; /* สีเทาอ่อนๆ */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color 0.3s ease;
+}
+
+.eye-btn:hover {
+  color: #2D3436; /* เปลี่ยนสีให้เข้มขึ้นตอนเอาเมาส์ชี้ */
+}
+/* ========================================================
+   --- ปุ่มสลับภาษา (TH / EN) ---
+   ======================================================== */
+.lang-toggle-btn {
+  position: absolute;
+  top: 30px;
+  right: 40px;
+  background-color: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  color: #475569;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.lang-toggle-btn:hover {
+  background-color: #003366;
+  color: #FFFFFF;
+  border-color: #003366;
+}

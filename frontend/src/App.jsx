@@ -1,10 +1,10 @@
-//App.jsx
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import CourseList from './CourseList';
 import CourseForm from './CourseForm';
 import CourseDetail from './CourseDetail';
 import HomePage from './HomePage';
+import Login from './Login'; // 1. เพิ่มการนำเข้าหน้า Login ตรงนี้
 
 import { FaFacebook, FaLinkedin, FaYoutube, FaInstagram } from 'react-icons/fa';
 
@@ -13,7 +13,6 @@ function App() {
 
   return (
     <BrowserRouter>
-      
       <div style={{ display: 'flex', flexDirection: 'column', backgroundColor: '#f9fafb', minHeight: '100vh', fontFamily: '"Prompt", sans-serif' }}>
         
         {/* Navigation Bar */}
@@ -41,35 +40,43 @@ function App() {
               
               <span style={{ cursor: 'pointer', color: '#333333', transition: 'color 0.2s' }} onMouseOver={(e) => e.target.style.color = '#F2984A'} onMouseOut={(e) => e.target.style.color = '#333333'}>บัญชีของฉัน</span>
               
-              <button 
-                onClick={() => setIsAdmin(!isAdmin)}
-                style={{ 
-                  padding: '10px 24px', 
-                  backgroundColor: isAdmin ? '#dc3545' : '#003366', 
-                  color: '#FFFFFF', 
-                  border: 'none', 
-                  borderRadius: '6px', 
-                  cursor: 'pointer',
-                  fontWeight: '600',
-                  fontSize: '15px',
-                  fontFamily: '"Prompt", sans-serif',
-                  transition: '0.3s',
-                  boxShadow: isAdmin ? 'none' : '0 4px 6px rgba(0, 51, 102, 0.2)'
-                }}
-              >
-                {isAdmin ? 'ออกจากระบบ (Admin)' : 'เข้าสู่ระบบ'}
-              </button>
+              {/* 2. แก้ไขปุ่ม เข้าสู่ระบบ / ออกจากระบบ */}
+              {isAdmin ? (
+                <button 
+                  onClick={() => setIsAdmin(false)}
+                  style={{ 
+                    padding: '10px 24px', backgroundColor: '#dc3545', color: '#FFFFFF', border: 'none', 
+                    borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '15px', 
+                    fontFamily: '"Prompt", sans-serif', transition: '0.3s'
+                  }}
+                >
+                  ออกจากระบบ (Admin)
+                </button>
+              ) : (
+                <Link 
+                  to="/login"
+                  style={{ 
+                    padding: '10px 24px', backgroundColor: '#003366', color: '#FFFFFF', textDecoration: 'none', 
+                    borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '15px', 
+                    fontFamily: '"Prompt", sans-serif', transition: '0.3s', display: 'inline-block',
+                    boxShadow: '0 4px 6px rgba(0, 51, 102, 0.2)'
+                  }}
+                >
+                  เข้าสู่ระบบ
+                </Link>
+              )}
             </div>
           </div>
         </header>
 
-        {/* Content Area - ปรับให้เต็มจอ */}
+        {/* Content Area */}
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <Routes>
-            {/* หน้าแรกจะไม่มี div ครอบเพื่อความเต็มจอ */}
             <Route path="/" element={<HomePage />} />
             
-            {/* หน้าอื่นๆ ให้มี div ครอบเพื่อจัดระเบียบให้มีพื้นที่ว่างด้านข้าง (Margin) */}
+            {/* 3. เพิ่ม Route สำหรับหน้า Login และส่ง setIsAdmin ไปให้ด้วย */}
+            <Route path="/login" element={<Login setIsAdmin={setIsAdmin} />} /> 
+            
             <Route path="/courses" element={<div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}><CourseList isAdmin={isAdmin} /></div>} />
             <Route path="/course/:id" element={<div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}><CourseDetail /></div>} />
             <Route path="/add" element={<div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}><CourseForm /></div>} />
@@ -84,10 +91,10 @@ function App() {
               P'8 Smart Science Pro
             </p>
             <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '20px', fontSize: '22px' }}>
-              <a href="#" style={{ color: '#FFFFFF', transition: 'color 0.2s', cursor: 'pointer' }}><FaFacebook /></a>
-              <a href="#" style={{ color: '#FFFFFF', transition: 'color 0.2s', cursor: 'pointer' }}><FaLinkedin /></a>
-              <a href="#" style={{ color: '#FFFFFF', transition: 'color 0.2s', cursor: 'pointer' }}><FaYoutube /></a>
-              <a href="#" style={{ color: '#FFFFFF', transition: 'color 0.2s', cursor: 'pointer' }}><FaInstagram /></a>
+              <a href="#" style={{ color: '#FFFFFF', transition: 'color 0.2s' }}><FaFacebook /></a>
+              <a href="#" style={{ color: '#FFFFFF', transition: 'color 0.2s' }}><FaLinkedin /></a>
+              <a href="#" style={{ color: '#FFFFFF', transition: 'color 0.2s' }}><FaYoutube /></a>
+              <a href="#" style={{ color: '#FFFFFF', transition: 'color 0.2s' }}><FaInstagram /></a>
             </div>
           </div>
         </footer>
