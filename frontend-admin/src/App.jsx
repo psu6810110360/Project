@@ -1,8 +1,10 @@
+//App.jsx
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import CourseList from './CourseList';
 import CourseForm from './CourseForm';
 import CourseDetail from './CourseDetail';
+import HomePage from './HomePage';
 
 import { FaFacebook, FaLinkedin, FaYoutube, FaInstagram } from 'react-icons/fa';
 
@@ -14,11 +16,10 @@ function App() {
       
       <div style={{ display: 'flex', flexDirection: 'column', backgroundColor: '#f9fafb', minHeight: '100vh', fontFamily: '"Prompt", sans-serif' }}>
         
-        
-        <header style={{ backgroundColor: '#FFFFFF', borderBottom: '1px solid #eaeaea', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+        {/* Navigation Bar */}
+        <header style={{ backgroundColor: '#FFFFFF', borderBottom: '1px solid #eaeaea', boxShadow: '0 2px 4px rgba(0,0,0,0.02)', position: 'relative', zIndex: 10 }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             
-           
             <Link to="/" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column' }}>
               <h1 style={{ margin: 0, fontSize: '28px', fontWeight: '800', letterSpacing: '-0.5px' }}>
                 <span style={{ color: '#003366' }}>Smart</span>
@@ -30,13 +31,15 @@ function App() {
               </span>
             </Link>
 
-            
-            <div style={{ display: 'flex', alignItems: 'center', gap: '30px', fontSize: '15px', fontWeight: '500', color: '#333333' }}>
-              <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={(e) => e.target.style.color = '#F2984A'} onMouseOut={(e) => e.target.style.color = '#333333'}>นักเรียนของเรา</span>
-              <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={(e) => e.target.style.color = '#F2984A'} onMouseOut={(e) => e.target.style.color = '#333333'}>ติดต่อเรา</span>
-              <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={(e) => e.target.style.color = '#F2984A'} onMouseOut={(e) => e.target.style.color = '#333333'}>คอร์สเรียน</span>
-              <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={(e) => e.target.style.color = '#F2984A'} onMouseOut={(e) => e.target.style.color = '#333333'}>บัญชีของฉัน</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '30px', fontSize: '15px', fontWeight: '500' }}>
+              <span style={{ cursor: 'pointer', color: '#333333', transition: 'color 0.2s' }} onMouseOver={(e) => e.target.style.color = '#F2984A'} onMouseOut={(e) => e.target.style.color = '#333333'}>นักเรียนของเรา</span>
+              <span style={{ cursor: 'pointer', color: '#333333', transition: 'color 0.2s' }} onMouseOver={(e) => e.target.style.color = '#F2984A'} onMouseOut={(e) => e.target.style.color = '#333333'}>ติดต่อเรา</span>
               
+              <Link to="/courses" style={{ textDecoration: 'none', color: '#333333', transition: 'color 0.2s' }} onMouseOver={(e) => e.target.style.color = '#F2984A'} onMouseOut={(e) => e.target.style.color = '#333333'}>
+                คอร์สเรียน
+              </Link>
+              
+              <span style={{ cursor: 'pointer', color: '#333333', transition: 'color 0.2s' }} onMouseOver={(e) => e.target.style.color = '#F2984A'} onMouseOut={(e) => e.target.style.color = '#333333'}>บัญชีของฉัน</span>
               
               <button 
                 onClick={() => setIsAdmin(!isAdmin)}
@@ -57,23 +60,24 @@ function App() {
                 {isAdmin ? 'ออกจากระบบ (Admin)' : 'เข้าสู่ระบบ'}
               </button>
             </div>
-
           </div>
         </header>
 
-        
-        <div style={{ flex: 1, padding: '40px 20px' }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <Routes>
-              <Route path="/" element={<CourseList isAdmin={isAdmin} />} />
-              <Route path="/course/:id" element={<CourseDetail />} />
-              <Route path="/add" element={<CourseForm />} />
-              <Route path="/edit/:id" element={<CourseForm />} />
-            </Routes>
-          </div>
-        </div>
+        {/* Content Area - ปรับให้เต็มจอ */}
+        <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <Routes>
+            {/* หน้าแรกจะไม่มี div ครอบเพื่อความเต็มจอ */}
+            <Route path="/" element={<HomePage />} />
+            
+            {/* หน้าอื่นๆ ให้มี div ครอบเพื่อจัดระเบียบให้มีพื้นที่ว่างด้านข้าง (Margin) */}
+            <Route path="/courses" element={<div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}><CourseList isAdmin={isAdmin} /></div>} />
+            <Route path="/course/:id" element={<div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}><CourseDetail /></div>} />
+            <Route path="/add" element={<div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}><CourseForm /></div>} />
+            <Route path="/edit/:id" element={<div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}><CourseForm /></div>} />
+          </Routes>
+        </main>
 
-        
+        {/* Footer */}
         <footer style={{ backgroundColor: '#003366', color: '#FFFFFF', padding: '40px 20px', marginTop: 'auto' }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'left' }}>
             <p style={{ margin: '0 0 15px 0', fontSize: '16px', letterSpacing: '0.5px' }}>
