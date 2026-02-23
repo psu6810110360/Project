@@ -2,7 +2,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CoursesModule } from './courses/courses.module';
+import { CoursesModule } from './modules/courses/courses.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 

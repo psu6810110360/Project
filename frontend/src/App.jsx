@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import CourseList from './CourseList';
-import CourseForm from './CourseForm';
-import CourseDetail from './CourseDetail';
-import HomePage from './HomePage';
-import Login from './Login'; // 1. เพิ่มการนำเข้าหน้า Login ตรงนี้
+import CourseList from './pages/Courses/CourseList';
+import CourseForm from './pages/Courses/CourseForm';
+import CourseDetail from './pages/Courses/CourseDetail';
+import HomePage from './pages/Home/HomePage';
+import Login from './pages/Login/Login'; // 1. เพิ่มการนำเข้าหน้า Login ตรงนี้
 
 import { FaFacebook, FaLinkedin, FaYoutube, FaInstagram } from 'react-icons/fa';
 

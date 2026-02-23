@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2'; // <--- เพิ่ม SweetAlert2 ตรงนี้
 import './Login.css';
-import studentImage from './assets/student.png'; 
+import studentImage from '../../assets/student.png'; 
 
 function Login({ setIsAdmin }) { 
   const [isLogin, setIsLogin] = useState(true); 
