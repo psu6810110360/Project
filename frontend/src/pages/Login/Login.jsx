@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Swal from 'sweetalert2'; // <--- เพิ่ม SweetAlert2 ตรงนี้
+import Swal from 'sweetalert2';
 import './Login.css';
 import studentImage from '../../assets/student.png'; 
 
 function Login({ setIsAdmin }) { 
   const [isLogin, setIsLogin] = useState(true); 
-  const [lang, setLang] = useState('TH'); 
 
   // State สำหรับหน้า Login
   const [loginEmail, setLoginEmail] = useState('');
@@ -23,137 +22,163 @@ function Login({ setIsAdmin }) {
   const navigate = useNavigate();
 
   // --------------------------------------------------------
-  // 📚 พจนานุกรมเก็บข้อความ 2 ภาษา
+  // 📚 ข้อความภาษาไทย
   // --------------------------------------------------------
-  const texts = {
-    TH: {
-      tabLogin: 'เข้าสู่ระบบ',
-      tabRegister: 'ลงทะเบียน',
-      subtitle: 'กรุณากรอกข้อมูลเพื่อเข้าสู่ระบบการเรียนรู้ของคุณ',
-      firstName: 'ชื่อจริง',
-      lastName: 'นามสกุล',
-      phone: 'เบอร์โทรศัพท์',
-      email: 'อีเมล',
-      password: 'รหัสผ่าน',
-      confirmPassword: 'ยืนยันรหัสผ่าน',
-      forgotPassword: 'ลืมรหัสผ่าน?',
-      btnSubmitLogin: 'เข้าสู่ระบบ',
-      btnSubmitReg: 'สร้างบัญชีผู้ใช้',
-      noAccount: 'ยังไม่มีบัญชีผู้ใช้? ',
-      hasAccount: 'มีบัญชีผู้ใช้อยู่แล้ว? ',
-      alertAdmin: 'เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับผู้ดูแลระบบ',
-      alertStudent: 'เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับน้องนักเรียน',
-      alertFail: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาลองใหม่',
-      alertPwdNotMatch: 'รหัสผ่านไม่ตรงกัน กรุณาตรวจสอบอีกครั้ง',
-      alertRegSuccess: 'ลงทะเบียนสำเร็จ! ข้อมูลพื้นฐานถูกบันทึกแล้ว',
-      promptReset: 'กรุณากรอกอีเมลของคุณเพื่อรับลิงก์รีเซ็ตรหัสผ่าน:',
-      alertResetSuccess: 'ลิงก์รีเซ็ตรหัสผ่านได้ถูกส่งไปยัง'
-    },
-    EN: {
-      tabLogin: 'Login',
-      tabRegister: 'Register',
-      subtitle: 'Enter your details to access your learning dashboard',
-      firstName: 'First Name',
-      lastName: 'Last Name',
-      phone: 'Phone Number',
-      email: 'Email',
-      password: 'Password',
-      confirmPassword: 'Confirm Password',
-      forgotPassword: 'Forgot Password?',
-      btnSubmitLogin: 'Login',
-      btnSubmitReg: 'Create Account',
-      noAccount: "Don't have an account? ",
-      hasAccount: 'Already have an account? ',
-      alertAdmin: 'Login successful! Welcome Admin.',
-      alertStudent: 'Login successful! Welcome Student.',
-      alertFail: 'Invalid email or password. Please try again.',
-      alertPwdNotMatch: 'Passwords do not match. Please try again.',
-      alertRegSuccess: 'Registration successful! Basic info saved.',
-      promptReset: 'Please enter your email to receive a password reset link:',
-      alertResetSuccess: 'A password reset link has been sent to'
-    }
+  const t = {
+    tabLogin: 'เข้าสู่ระบบ',
+    tabRegister: 'ลงทะเบียน',
+    subtitle: 'กรุณากรอกข้อมูลเพื่อเข้าสู่ระบบการเรียนรู้ของคุณ',
+    firstName: 'ชื่อจริง',
+    lastName: 'นามสกุล',
+    phone: 'เบอร์โทรศัพท์',
+    email: 'อีเมล',
+    password: 'รหัสผ่าน',
+    confirmPassword: 'ยืนยันรหัสผ่าน',
+    forgotPassword: 'ลืมรหัสผ่าน?',
+    btnSubmitLogin: 'เข้าสู่ระบบ',
+    btnSubmitReg: 'สร้างบัญชีผู้ใช้',
+    noAccount: 'ยังไม่มีบัญชีผู้ใช้? ',
+    hasAccount: 'มีบัญชีผู้ใช้อยู่แล้ว? ',
+    alertAdmin: 'เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับผู้ดูแลระบบ',
+    alertStudent: 'เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับน้องนักเรียน',
+    alertFail: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาลองใหม่',
+    alertPwdNotMatch: 'รหัสผ่านไม่ตรงกัน กรุณาตรวจสอบอีกครั้ง',
+    alertRegSuccess: 'ลงทะเบียนสำเร็จ! สามารถเข้าสู่ระบบได้เลย',
+    promptReset: 'กรุณากรอกอีเมลของคุณเพื่อรับลิงก์รีเซ็ตรหัสผ่าน:',
+    alertResetSuccess: 'ลิงก์รีเซ็ตรหัสผ่านได้ถูกส่งไปยัง'
   };
-
-  const t = texts[lang]; 
-
-  // --------------------------------------------------------
 
   const handleRegisterChange = (e) => {
     setRegisterData({ ...registerData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (isLogin) {
-      if (loginEmail === 'admin@test.com' && loginPassword === '1234') {
-        Swal.fire({
-          title: lang === 'TH' ? 'สำเร็จ!' : 'Success!',
-          text: t.alertAdmin,
-          icon: 'success',
-          confirmButtonColor: '#003366'
-        }).then(() => {
-          setIsAdmin(true); 
-          navigate('/courses'); 
+      // ==========================================
+      // 🟢 โหมด LOGIN (เชื่อมกับ Backend ของจริง)
+      // ==========================================
+      try {
+        const response = await fetch('http://localhost:3000/users/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email: loginEmail, password: loginPassword }),
         });
-      } else if (loginEmail === 'student@test.com' && loginPassword === '1234') {
+
+        if (response.ok) {
+          const data = await response.json();
+          // เช็คบทบาท (Role) ของ User ที่ล็อกอินเข้ามา
+          const isAdmin = data.user?.role === 'admin';
+
+          Swal.fire({
+            title: 'สำเร็จ!',
+            text: isAdmin ? t.alertAdmin : t.alertStudent,
+            icon: 'success',
+            confirmButtonColor: '#003366'
+          }).then(() => {
+            setIsAdmin(isAdmin); 
+            navigate('/courses'); 
+          });
+        } else {
+          const errorData = await response.json();
+          Swal.fire({
+            title: 'ข้อผิดพลาด!',
+            text: errorData.message || t.alertFail,
+            icon: 'error',
+            confirmButtonColor: '#FF9F43'
+          });
+        }
+      } catch (error) {
+        console.error("Login Error:", error);
         Swal.fire({
-          title: lang === 'TH' ? 'สำเร็จ!' : 'Success!',
-          text: t.alertStudent,
-          icon: 'success',
-          confirmButtonColor: '#003366'
-        }).then(() => {
-          setIsAdmin(false); 
-          navigate('/courses'); 
-        });
-      } else {
-        Swal.fire({
-          title: lang === 'TH' ? 'ข้อผิดพลาด!' : 'Error!',
-          text: t.alertFail,
+          title: 'ระบบขัดข้อง!',
+          text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบ Backend',
           icon: 'error',
           confirmButtonColor: '#FF9F43'
         });
       }
+
     } else {
+      // ==========================================
+      // 🔵 โหมด REGISTER (เชื่อมกับ Backend ของจริง)
+      // ==========================================
       if (registerData.password !== registerData.confirmPassword) {
         Swal.fire({
-          title: lang === 'TH' ? 'ข้อผิดพลาด!' : 'Error!',
+          title: 'ข้อผิดพลาด!',
           text: t.alertPwdNotMatch,
           icon: 'warning',
           confirmButtonColor: '#FF9F43'
         });
         return;
       }
-      console.log("Registered Data:", registerData);
-      Swal.fire({
-        title: lang === 'TH' ? 'ยอดเยี่ยม!' : 'Awesome!',
-        text: t.alertRegSuccess,
-        icon: 'success',
-        confirmButtonColor: '#003366'
-      }).then(() => {
-        setIsLogin(true); 
-      });
+
+      try {
+        const response = await fetch('http://localhost:3000/users/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            firstName: registerData.firstName,
+            lastName: registerData.lastName,
+            phone: registerData.phone,
+            email: registerData.email,
+            password: registerData.password,
+          }),
+        });
+
+        if (response.ok) {
+          Swal.fire({
+            title: 'ยอดเยี่ยม!',
+            text: t.alertRegSuccess,
+            icon: 'success',
+            confirmButtonColor: '#003366'
+          }).then(() => {
+            // ล้างข้อมูลในฟอร์มและสลับกลับไปหน้า Login อัตโนมัติ
+            setRegisterData({ firstName: '', lastName: '', phone: '', email: '', password: '', confirmPassword: '' });
+            setIsLogin(true); 
+          });
+        } else {
+          const errorData = await response.json();
+          Swal.fire({
+            title: 'ข้อผิดพลาด!',
+            text: errorData.message || 'ไม่สามารถสมัครสมาชิกได้',
+            icon: 'error',
+            confirmButtonColor: '#FF9F43'
+          });
+        }
+      } catch (error) {
+        console.error("Register Error:", error);
+        Swal.fire({
+          title: 'ระบบขัดข้อง!',
+          text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบ Backend',
+          icon: 'error',
+          confirmButtonColor: '#FF9F43'
+        });
+      }
     }
   };
 
   const handleForgotPassword = async (e) => {
     e.preventDefault();
-    // เปลี่ยน Prompt เป็น Pop-up สวยๆ
     const { value: resetEmail } = await Swal.fire({
-      title: lang === 'TH' ? 'รีเซ็ตรหัสผ่าน' : 'Reset Password',
+      title: 'รีเซ็ตรหัสผ่าน',
       input: 'email',
       inputLabel: t.promptReset,
       inputPlaceholder: 'example@gmail.com',
       showCancelButton: true,
       confirmButtonColor: '#003366',
       cancelButtonColor: '#8E94A3',
-      confirmButtonText: lang === 'TH' ? 'ส่งลิงก์' : 'Send Link',
-      cancelButtonText: lang === 'TH' ? 'ยกเลิก' : 'Cancel'
+      confirmButtonText: 'ส่งลิงก์',
+      cancelButtonText: 'ยกเลิก'
     });
 
     if (resetEmail) {
       Swal.fire({
-        title: lang === 'TH' ? 'ส่งแล้ว!' : 'Sent!',
+        title: 'ส่งแล้ว!',
         text: `${t.alertResetSuccess} ${resetEmail}`,
         icon: 'success',
         confirmButtonColor: '#003366'
@@ -172,14 +197,6 @@ function Login({ setIsAdmin }) {
         {/* --- ฝั่งซ้าย: ฟอร์ม --- */}
         <div className={`login-form-section ${!isLogin ? 'signup-mode' : ''}`}>
           
-          <button 
-            className="lang-toggle-btn" 
-            onClick={() => setLang(lang === 'TH' ? 'EN' : 'TH')}
-            title={lang === 'TH' ? 'Switch to English' : 'เปลี่ยนเป็นภาษาไทย'}
-          >
-            {lang === 'TH' ? 'EN' : 'TH'}
-          </button>
-
           <div className="toggle-buttons">
             <button className={`toggle-btn ${isLogin ? 'active' : ''}`} onClick={() => setIsLogin(true)} type="button">{t.tabLogin}</button>
             <button className={`toggle-btn ${!isLogin ? 'active' : ''}`} onClick={() => setIsLogin(false)} type="button">{t.tabRegister}</button>
@@ -283,4 +300,4 @@ function Login({ setIsAdmin }) {
   );
 }
 
-export default Login;
+export default Login; 

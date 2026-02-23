@@ -29,7 +29,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  position: relative; /* <-- เพิ่มบรรทัดนี้เข้ามาครับ */
+  position: relative; 
 }
 
 /* --- ปุ่มสลับ Login / Sign up (ทำเป็นแบบ Tabs ตาม Figma) --- */
@@ -276,28 +276,9 @@
 .eye-btn:hover {
   color: #2D3436; /* เปลี่ยนสีให้เข้มขึ้นตอนเอาเมาส์ชี้ */
 }
-/* ========================================================
-   --- ปุ่มสลับภาษา (TH / EN) ---
-   ======================================================== */
-.lang-toggle-btn {
-  position: absolute;
-  top: 30px;
-  right: 40px;
-  background-color: #F1F5F9;
-  border: 1px solid #E2E8F0;
-  color: #475569;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-family: 'Prompt', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
 
-.lang-toggle-btn:hover {
-  background-color: #003366;
-  color: #FFFFFF;
-  border-color: #003366;
+/* 👇 เพิ่มตรงนี้เลยครับ: ซ่อนไอคอนตาอัตโนมัติของเบราว์เซอร์ (เช่น Microsoft Edge) */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
 }
