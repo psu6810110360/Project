@@ -1,4 +1,5 @@
-import { Controller, Post, Body, HttpException, HttpStatus } from '@nestjs/common';
+// 👇 1. อย่าลืมเพิ่ม Get และ Delete เข้ามาใน import ด้วยนะครับ
+import { Controller, Post, Body, HttpException, HttpStatus, Get, Delete } from '@nestjs/common';
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -7,22 +8,20 @@ export class UsersController {
 
   @Post('login')
   async login(@Body() body: any) {
-    // 1. ปริ้นดูว่าหน้าเว็บส่งอะไรมาให้ Backend บ้าง?
     console.log('\n--- 🛑 มีความพยายามเข้าสู่ระบบ ---');
     console.log('📥 ข้อมูลที่ได้รับจากหน้าเว็บ:', body);
 
     const email = body?.email;
     const password = body?.password;
 
-    // 2. ปริ้นดูว่าหาใน Database เจอไหม?
-    const user = await this.usersService.login(email, password); // 👈 เปลี่ยนตรงนี้เป็น login
-    console.log('🔍 ผลลัพธ์ที่ค้นหาเจอใน Database:', user);
-    console.log('----------------------------------\n');
-
-    if (!user) {
-      throw new HttpException('อีเมลหรือรหัสผ่านไม่ถูกต้อง', HttpStatus.UNAUTHORIZED);
-    }
-    return { message: 'เข้าสู่ระบบสำเร็จ', user };
+    // 1. เรียกใช้ Service เพื่อเช็คและเอา Token
+    const result = await this.usersService.login(email, password); 
+    
+    console.log('🔍 ข้อมูลที่จะส่งกลับไปให้หน้าเว็บ (React):', result);
+    
+    // 2. 🚨 จุดสำคัญ: ส่งค่า result กลับไปตรงๆ เลยครับ!
+    // ห้ามเขียน return { user: result } เด็ดขาด เพราะหน้าเว็บจะหา token ไม่เจอ
+    return result; 
   }
 
   @Post('register')
@@ -46,6 +45,23 @@ export class UsersController {
     } catch (error) {
       throw new HttpException('อีเมลนี้มีในระบบแล้ว หรือข้อมูลไม่ถูกต้อง', HttpStatus.BAD_REQUEST);
     }
-    
+  }
+
+  // ---------------------------------------------------------
+  // 👇 ส่วนที่เพิ่มเข้ามาใหม่สำหรับจัดการข้อมูล User
+  // ---------------------------------------------------------
+
+  // 🔍 1. ดูผู้ใช้ทั้งหมด
+  // วิธีใช้: เปิด Browser แล้วพิมพ์ http://localhost:3000/users
+  @Get()
+  async getAllUsers() {
+    return await this.usersService.findAll();
+  }
+
+  // 🗑️ 2. ลบผู้ใช้ทั้งหมด 
+  // วิธีใช้: ใช้ Postman หรือ Thunder Client ยิง Request แบบ DELETE ไปที่ http://localhost:3000/users/clear
+  @Delete('clear')
+  async clearUsers() {
+    return await this.usersService.clearAllUsers();
   }
 }

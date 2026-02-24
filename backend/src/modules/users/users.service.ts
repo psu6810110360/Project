@@ -45,9 +45,10 @@ export class UsersService implements OnModuleInit {
     }
   }
 
-  // 2. ฟังก์ชันตรวจสอบและ Login (เปลี่ยนชื่อจาก validateUser เป็น login เพื่อให้จำง่าย)
+  // 2. ฟังก์ชันตรวจสอบและ Login
   async login(email: string, pass: string): Promise<any> {
     console.log(`\n--- 🕵️‍♂️ แอบดูการ Login ---`);
+    console.log(`📧 อีเมลที่รับมา: "${email}" | 🔑 รหัสผ่านที่รับมา: "${pass}"`);
     const user = await this.usersRepository.findOneBy({ email });
     
     console.log(`ค้นหาอีเมล ${email} ใน DB:`, user ? '✅ เจอข้อมูล!' : '❌ ไม่เจอข้อมูล!');
@@ -83,8 +84,7 @@ export class UsersService implements OnModuleInit {
     }
 
     // 🔐 เข้ารหัสผ่านก่อนเซฟ
-    // 🔐 เข้ารหัสผ่านก่อนเซฟ (เติม as string ลงไปหลัง userData.password)
-const hashedPassword = await bcrypt.hash(userData.password as string, 10);
+    const hashedPassword = await bcrypt.hash(userData.password as string, 10);
 
     const newUser = this.usersRepository.create({
       ...userData,
@@ -94,5 +94,20 @@ const hashedPassword = await bcrypt.hash(userData.password as string, 10);
     
     await this.usersRepository.save(newUser);
     return { message: 'สมัครสมาชิกสำเร็จ' };
+  }
+
+  // ---------------------------------------------------------
+  // 👇 ส่วนที่เพิ่มเข้ามาใหม่สำหรับจัดการข้อมูล User
+  // ---------------------------------------------------------
+
+  // 🔍 4. ฟังก์ชันสำหรับดึงข้อมูลผู้ใช้ทั้งหมดมาดู
+  async findAll() {
+    return await this.usersRepository.find();
+  }
+
+  // 🗑️ 5. ฟังก์ชันสำหรับลบผู้ใช้ทั้งหมด
+  async clearAllUsers() {
+    await this.usersRepository.clear(); // กวาดเรียบทั้งตาราง
+    return { message: 'ลบข้อมูลผู้ใช้ทั้งหมดออกจากระบบแล้ว!' };
   }
 }
