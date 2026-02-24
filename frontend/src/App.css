@@ -27,16 +27,30 @@
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+/* --- แก้ไข Navbar ให้ไม่ซ้อนกันในมือถือ --- */
+@media (max-width: 768px) {
+  /* ถ้า Navbar ใช้ flex ให้เปลี่ยนเป็นแนวตั้ง */
+  nav, .navbar-container { 
+    flex-direction: column !important;
+    height: auto !important;
+    padding: 15px !important;
+  }
+
+  /* ซ่อนเมนูตัวหนังสือ (นักเรียนของเรา, ติดต่อเรา) ในมือถือไปก่อนเพื่อให้ดูสะอาด */
+  .nav-links, .menu-items { 
+    display: none !important; 
+  }
+
+  /* ปรับขนาดโลโก้ให้เล็กลงหน่อย */
+  .logo img {
+    height: 35px !important;
   }
 }
-
 .card {
   padding: 2em;
 }
 
 .read-the-docs {
   color: #888;
+  
 }

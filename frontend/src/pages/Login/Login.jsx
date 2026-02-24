@@ -4,7 +4,8 @@ import Swal from 'sweetalert2';
 import './Login.css';
 import studentImage from '../../assets/student.png'; 
 
-function Login({ setIsAdmin }) { 
+// 1. เปลี่ยนจาก setIsAdmin เป็น setIsLoggedIn ตรงนี้ 👇
+function Login({ setIsLoggedIn }) { 
   const [isLogin, setIsLogin] = useState(true); 
 
   // State สำหรับหน้า Login
@@ -73,13 +74,21 @@ function Login({ setIsAdmin }) {
           // เช็คบทบาท (Role) ของ User ที่ล็อกอินเข้ามา
           const isAdmin = data.user?.role === 'admin';
 
+          if (isAdmin) {
+            localStorage.setItem('userRole', 'admin');
+          } else {
+            localStorage.setItem('userRole', 'student');
+          }
+          localStorage.setItem('isLoggedIn', 'true');
+
           Swal.fire({
             title: 'สำเร็จ!',
             text: isAdmin ? t.alertAdmin : t.alertStudent,
             icon: 'success',
             confirmButtonColor: '#003366'
           }).then(() => {
-            setIsAdmin(isAdmin); 
+            // 2. เปลี่ยนจาก setIsAdmin(isAdmin) เป็น setIsLoggedIn(true) ตรงนี้ 👇
+            setIsLoggedIn(true); 
             navigate('/courses'); 
           });
         } else {
@@ -300,4 +309,4 @@ function Login({ setIsAdmin }) {
   );
 }
 
-export default Login; 
+export default Login;

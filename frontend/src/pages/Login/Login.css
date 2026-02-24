@@ -281,4 +281,54 @@
 input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear {
   display: none;
+  /* --- สำหรับหน้าจอเล็ก (มือถือ) --- */
+@media (max-width: 768px) {
+  .login-card {
+    flex-direction: column; /* เปลี่ยนจากซ้าย-ขวา เป็นบน-ล่าง */
+    width: 95%;             /* ใช้พื้นที่ให้กว้างขึ้น */
+    margin: 10px;
+    padding: 20px;
+  }
+
+  .login-image-section {
+    display: none;          /* ซ่อนรูปภาพในมือถือ เพื่อให้ฟอร์มเด่นและประหยัดที่ */
+  }
+
+  .login-form-section {
+    width: 100%;            /* ฟอร์มขยายเต็ม 100% ของหน้าจอ */
+    padding: 10px;
+  }
+
+  .form-title {
+    font-size: 24px;        /* ลดขนาดฟอนต์หัวข้อให้พอดีมือถือ */
+  }
+
+  .two-cols {
+    flex-direction: column; /* ช่องกรอกข้อมูลที่เคยเป็น 2 คอลัมน์ ให้เรียงเป็น 1 คอลัมน์ */
+    gap: 0;
+  }
+  /* --- ส่วนที่เพิ่มใหม่สำหรับมือถือ --- */
+@media (max-width: 768px) {
+  .login-card {
+    flex-direction: column; /* ปรับจากซ้าย-ขวา เป็น บน-ล่าง */
+    width: 90% !important;   /* ขยายความกว้างการ์ด */
+    padding: 20px;
+    margin: 20px auto;
+  }
+
+  .login-image-section {
+    display: none;          /* ซ่อนรูปผู้หญิงฝั่งขวาในมือถือ เพื่อไม่ให้เบียดจอ */
+  }
+
+  .login-form-section {
+    width: 100% !important; /* ให้ฟอร์มกางเต็มการ์ด */
+    padding: 10px;
+  }
+
+  .form-title {
+    font-size: 24px;
+    text-align: center;     /* จัดหัวข้อให้อยู่กลางจอ */
+  }
+}
+}
 }
