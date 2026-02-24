@@ -1,11 +1,11 @@
-//app.module.ts
+// app.module.ts
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CoursesModule } from './modules/courses/courses.module';
+import { UsersModule } from './modules/users/users.module'; // 👈 1. นำเข้า UsersModule
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-
 
 @Module({
   imports: [
@@ -13,7 +13,6 @@ import { join } from 'path';
     ConfigModule.forRoot({
       isGlobal: true, 
     }),
-    
     
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -31,14 +30,13 @@ import { join } from 'path';
       inject: [ConfigService],
     }), 
 
-    
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'), 
       serveRoot: '/uploads',
     }),
     
-   
     CoursesModule,
+    UsersModule, // 👈 2. เพิ่มเข้าสู่ระบบหลักตรงนี้
   ],
   controllers: [],
   providers: [],

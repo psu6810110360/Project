@@ -1,5 +1,11 @@
 {
   "dependencies": {
+    "@nestjs/jwt": "^11.0.2",
+    "bcrypt": "^6.0.0",
+    "jwt-decode": "^4.0.0",
     "sweetalert2": "^11.26.19"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0"
   }
 }

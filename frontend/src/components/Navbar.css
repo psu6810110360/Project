@@ -1,0 +1,149 @@
+/* --- Desktop Style (คอมพิวเตอร์) --- */
+.navbar-header {
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #eaeaea;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  position: relative;
+  z-index: 100;
+}
+
+.navbar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo-section {
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-text {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.logo-subtext {
+  color: #888888;
+  font-size: 13px;
+  margin-top: -2px;
+  font-weight: 400;
+}
+
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 30px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #333333;
+}
+
+.nav-links span, .nav-links a {
+  cursor: pointer;
+  color: #333333;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.nav-links span:hover, .nav-links a:hover {
+  color: #F2984A;
+}
+
+.btn-login, .btn-logout {
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 15px;
+  font-family: "Prompt", sans-serif;
+  transition: 0.3s;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+.btn-login { background-color: #003366; color: #FFFFFF; }
+.btn-login:hover { background-color: #002244; }
+
+.btn-logout { background-color: #dc3545; color: #FFFFFF; }
+.btn-logout:hover { background-color: #c82333; }
+
+/* 🍔 ซ่อนปุ่ม Hamburger ไว้ก่อนถ้าเป็นจอคอม */
+.hamburger-icon {
+  display: none;
+  cursor: pointer;
+}
+
+/* ==========================================
+   📱 Mobile Style (ขนาดหน้าจอมือถือ) 
+   ========================================== */
+@media (max-width: 768px) {
+  .navbar-container {
+    padding: 15px 20px; /* ให้พื้นที่ขอบดูโปร่งขึ้น */
+  }
+
+  .logo-text {
+    font-size: 24px; /* ย่อโลโก้ลงนิดนึง */
+  }
+
+  .logo-subtext {
+    display: none; /* ซ่อนซับไตเติ้ลในมือถือ */
+  }
+
+  /* 1. แสดงปุ่ม 3 ขีด */
+  .hamburger-icon {
+    display: block; 
+  }
+
+  /* 2. ซ่อนเมนูแบบปกติไปก่อน แล้วเปลี่ยนให้มันหล่นลงมาด้านล่าง */
+  .nav-menu {
+    position: absolute;
+    top: 100%;       /* ให้ต่อจากขอบล่างของ Navbar */
+    left: 0;
+    width: 100%;
+    background-color: #FFFFFF;
+    flex-direction: column;
+    align-items: stretch; /* ให้กางเต็มความกว้าง */
+    padding: 0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    
+    /* ซ่อนไว้ด้วย CSS */
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: all 0.3s ease-in-out; /* อนิเมชั่นตอนสไลด์เปิด/ปิด */
+  }
+
+  /* 3. ถ้าเมนูถูกคลิกให้เปิด (คลาส open) จะแสดงผลออกมา */
+  .nav-menu.open {
+    max-height: 400px; /* ความสูงพอประมาณให้เมนูแสดงครบ */
+    padding: 20px;
+    opacity: 1;
+  }
+
+  .nav-links {
+    flex-direction: column; /* ให้เมนูเรียงลงมาบนล่าง */
+    align-items: center;    /* จัดให้อยู่ตรงกลาง */
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  /* ขยายปุ่ม Login/Logout ให้เต็มจอเพื่อจิ้มง่ายๆ */
+  .btn-login, .btn-logout {
+    width: 100%;
+    padding: 12px;
+  }
+}

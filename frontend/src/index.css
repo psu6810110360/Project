@@ -32,6 +32,12 @@ body {
   background-color: #FFFFFF !important;
   color: #003366 !important;
 }
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 
 h1 {
   font-size: 3.2em;
