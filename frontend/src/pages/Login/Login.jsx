@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import { jwtDecode } from 'jwt-decode'; // 👈 1. Import jwt-decode เข้ามาใช้งาน
 import './Login.css';
 import studentImage from '../../assets/student.png'; 
 
-// 1. เปลี่ยนจาก setIsAdmin เป็น setIsLoggedIn ตรงนี้ 👇
 function Login({ setIsLoggedIn }) { 
   const [isLogin, setIsLogin] = useState(true); 
 
@@ -58,7 +58,7 @@ function Login({ setIsLoggedIn }) {
 
     if (isLogin) {
       // ==========================================
-      // 🟢 โหมด LOGIN (เชื่อมกับ Backend ของจริง)
+      // 🟢 โหมด LOGIN (อัปเกรดใช้ JWT Token 🛡️)
       // ==========================================
       try {
         const response = await fetch('http://localhost:3000/users/login', {
@@ -71,26 +71,37 @@ function Login({ setIsLoggedIn }) {
 
         if (response.ok) {
           const data = await response.json();
-          // เช็คบทบาท (Role) ของ User ที่ล็อกอินเข้ามา
-          const isAdmin = data.user?.role === 'admin';
+          
+          // 👈 2. ดึง Token จาก Backend (สมมติว่า Backend ส่งมาในชื่อ data.token)
+          const token = data.token; 
 
-          if (isAdmin) {
-            localStorage.setItem('userRole', 'admin');
+          if (token) {
+            // เซฟ Token ลงเครื่องเพื่อเอาไว้ใช้ยืนยันตัวตนรอบหน้า
+            localStorage.setItem('token', token);
+
+            // 👈 3. ถอดรหัส Token เพื่อดูว่าใครล็อกอินเข้ามา (admin หรือ student)
+            const decodedToken = jwtDecode(token);
+            const userRole = decodedToken.role || 'student'; // ป้องกันกรณีไม่มี role ให้เป็น student ไว้ก่อน
+
+            // เซฟสิทธิ์ไว้ใช้กับเมนู (Navbar)
+            localStorage.setItem('userRole', userRole);
+            localStorage.setItem('isLoggedIn', 'true');
+
+            const isAdmin = userRole === 'admin';
+
+            Swal.fire({
+              title: 'สำเร็จ!',
+              text: isAdmin ? t.alertAdmin : t.alertStudent,
+              icon: 'success',
+              confirmButtonColor: '#003366'
+            }).then(() => {
+              setIsLoggedIn(true); 
+              navigate('/courses'); 
+            });
           } else {
-            localStorage.setItem('userRole', 'student');
+             throw new Error("ไม่พบ Token จากระบบ");
           }
-          localStorage.setItem('isLoggedIn', 'true');
 
-          Swal.fire({
-            title: 'สำเร็จ!',
-            text: isAdmin ? t.alertAdmin : t.alertStudent,
-            icon: 'success',
-            confirmButtonColor: '#003366'
-          }).then(() => {
-            // 2. เปลี่ยนจาก setIsAdmin(isAdmin) เป็น setIsLoggedIn(true) ตรงนี้ 👇
-            setIsLoggedIn(true); 
-            navigate('/courses'); 
-          });
         } else {
           const errorData = await response.json();
           Swal.fire({
@@ -104,7 +115,7 @@ function Login({ setIsLoggedIn }) {
         console.error("Login Error:", error);
         Swal.fire({
           title: 'ระบบขัดข้อง!',
-          text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบ Backend',
+          text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ หรือเกิดข้อผิดพลาดกับ Token',
           icon: 'error',
           confirmButtonColor: '#FF9F43'
         });
@@ -112,7 +123,7 @@ function Login({ setIsLoggedIn }) {
 
     } else {
       // ==========================================
-      // 🔵 โหมด REGISTER (เชื่อมกับ Backend ของจริง)
+      // 🔵 โหมด REGISTER 
       // ==========================================
       if (registerData.password !== registerData.confirmPassword) {
         Swal.fire({
@@ -146,7 +157,6 @@ function Login({ setIsLoggedIn }) {
             icon: 'success',
             confirmButtonColor: '#003366'
           }).then(() => {
-            // ล้างข้อมูลในฟอร์มและสลับกลับไปหน้า Login อัตโนมัติ
             setRegisterData({ firstName: '', lastName: '', phone: '', email: '', password: '', confirmPassword: '' });
             setIsLogin(true); 
           });

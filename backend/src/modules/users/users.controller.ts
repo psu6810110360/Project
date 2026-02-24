@@ -15,7 +15,7 @@ export class UsersController {
     const password = body?.password;
 
     // 2. ปริ้นดูว่าหาใน Database เจอไหม?
-    const user = await this.usersService.validateUser(email, password);
+    const user = await this.usersService.login(email, password); // 👈 เปลี่ยนตรงนี้เป็น login
     console.log('🔍 ผลลัพธ์ที่ค้นหาเจอใน Database:', user);
     console.log('----------------------------------\n');
 
@@ -46,5 +46,6 @@ export class UsersController {
     } catch (error) {
       throw new HttpException('อีเมลนี้มีในระบบแล้ว หรือข้อมูลไม่ถูกต้อง', HttpStatus.BAD_REQUEST);
     }
+    
   }
 }
