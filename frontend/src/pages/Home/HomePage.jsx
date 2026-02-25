@@ -29,7 +29,7 @@ const HomePage = () => {
 
           {/* ปุ่ม Action */}
           <div className="cta-container"> 
-            <Link to="/courses" style={{ textDecoration: 'none', width: '100%' }}>
+            <Link to="/my-classroom" style={{ textDecoration: 'none', width: '100%' }}>
               <button className="btn-primary">
                 เข้าสู่ห้องเรียน
               </button>

@@ -1,0 +1,144 @@
+/* src/pages/MyClassroom/MyClassroom.css */
+
+.classroom-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  font-family: 'Prompt', sans-serif;
+}
+
+.classroom-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.classroom-title {
+  display: inline-block;
+  background-color: #FCE7D4;
+  color: #003366;
+  padding: 12px 50px;
+  border-radius: 30px;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.section-title {
+  color: #003366;
+  font-size: 24px;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+/* ตั้งค่า Grid สำหรับคอร์สกำลังเรียน (2 คอลัมน์บนจอคอม) */
+.course-grid-active {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-bottom: 50px;
+}
+
+/* ตั้งค่า Grid สำหรับคอร์สจบแล้ว (3 คอลัมน์บนจอคอม) */
+.course-grid-completed {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 50px;
+}
+
+/* สไตล์ของการ์ดคอร์สเรียน */
+.course-card {
+  border: 1px solid #003366;
+  border-radius: 12px;
+  padding: 20px;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.course-card-title {
+  color: #F49D58;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  padding-right: 30px; /* เว้นที่ให้ติ๊กถูก */
+}
+
+.course-info {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.course-date-box {
+  background-color: #FFF3E6;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #333;
+  margin: 15px 0;
+}
+
+/* ส่วนของ Progress Bar */
+.progress-container {
+  margin-top: auto; /* ดันให้อยู่ล่างสุดของการ์ดเสมอ */
+  padding-top: 15px;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 8px;
+  background-color: #E0E0E0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: #F49D58;
+  border-radius: 4px;
+}
+
+/* ปุ่มเข้าดูวิดีโอ */
+.watch-video-btn {
+  width: 100%;
+  padding: 10px;
+  background-color: #003366;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.watch-video-btn:hover {
+  background-color: #002244;
+}
+
+.completed-icon {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  color: #4CAF50;
+  font-size: 24px;
+}
+
+/* 📱 Responsive สำหรับจอมือถือ */
+@media (max-width: 992px) {
+  .course-grid-active, .course-grid-completed {
+    grid-template-columns: 1fr; /* ให้เรียงเป็นแถวเดียวตอนหน้าจอเล็ก */
+  }
+}

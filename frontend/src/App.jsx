@@ -9,6 +9,7 @@ import CourseForm from './pages/Courses/CourseForm';
 import CourseDetail from './pages/Courses/CourseDetail';
 import HomePage from './pages/Home/HomePage';
 import Login from './pages/Login/Login';
+import MyClassroom from "./pages/MyClassroom/MyClassroom";
 
 // ==========================================
 // 🛡️ สร้าง "ยาม" สำหรับดักการเข้าถึง Route
@@ -59,6 +60,8 @@ function App() {
                 </div>
               </ProtectedRoute>
             } />
+
+            <Route path="/my-classroom" element={<MyClassroom />} />
 
             <Route path="/course/:id" element={
               <ProtectedRoute>
