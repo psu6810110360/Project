@@ -61,7 +61,8 @@ function Login({ setIsLoggedIn }) {
       // 🟢 โหมด LOGIN (อัปเกรดใช้ JWT Token 🛡️)
       // ==========================================
       try {
-        const response = await fetch('http://localhost:3000/users/login', {
+        // ✅ แก้ไข URL ตรงนี้ จาก users/login เป็น auth/login ครับ
+        const response = await fetch('http://localhost:3000/auth/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

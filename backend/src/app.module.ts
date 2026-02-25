@@ -6,6 +6,7 @@ import { CoursesModule } from './modules/courses/courses.module';
 import { UsersModule } from './modules/users/users.module'; // 👈 1. นำเข้า UsersModule
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -36,7 +37,8 @@ import { join } from 'path';
     }),
     
     CoursesModule,
-    UsersModule, // 👈 2. เพิ่มเข้าสู่ระบบหลักตรงนี้
+    UsersModule,
+    AuthModule, // 👈 2. เพิ่มเข้าสู่ระบบหลักตรงนี้
   ],
   controllers: [],
   providers: [],

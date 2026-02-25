@@ -6,24 +6,6 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post('login')
-  async login(@Body() body: any) {
-    console.log('\n--- 🛑 มีความพยายามเข้าสู่ระบบ ---');
-    console.log('📥 ข้อมูลที่ได้รับจากหน้าเว็บ:', body);
-
-    const email = body?.email;
-    const password = body?.password;
-
-    // 1. เรียกใช้ Service เพื่อเช็คและเอา Token
-    const result = await this.usersService.login(email, password); 
-    
-    console.log('🔍 ข้อมูลที่จะส่งกลับไปให้หน้าเว็บ (React):', result);
-    
-    // 2. 🚨 จุดสำคัญ: ส่งค่า result กลับไปตรงๆ เลยครับ!
-    // ห้ามเขียน return { user: result } เด็ดขาด เพราะหน้าเว็บจะหา token ไม่เจอ
-    return result; 
-  }
-
   @Post('register')
   async register(
     // 👇 ระบุชื่อตัวแปรของหน้าสมัครสมาชิกด้วยเช่นกัน
