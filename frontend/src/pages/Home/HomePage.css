@@ -1,0 +1,119 @@
+/* src/pages/Home/HomePage.css */
+
+/* --- Layout หลักสำหรับจอคอมพิวเตอร์ --- */
+.home-wrapper {
+  background-color: #fff;
+  min-height: calc(100vh - 80px);
+  display: flex;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+}
+
+.home-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 40px;
+}
+
+.home-content {
+  flex: 1 1 600px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.home-title {
+  font-size: 3rem;
+  color: #000;
+  font-weight: bold;
+  line-height: 1.2;
+  margin-bottom: 15px;
+  white-space: nowrap; /* จอคอมห้ามตกบรรทัด */
+}
+
+.home-subtitle {
+  font-size: 1.6rem;
+  color: #333;
+  font-weight: normal;
+  margin-bottom: 35px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+  margin-bottom: 40px;
+}
+
+.cta-container {
+  display: flex;
+  justify-content: flex-start;
+  padding-left: 170px; /* ตามดีไซน์เดิมของจอคอม */
+}
+
+/* เอา Hover Effect มาใส่ใน CSS แทน โค้ดจะสะอาดขึ้นเยอะครับ */
+.btn-primary {
+  background-color: #F49D58;
+  color: #003366;
+  border: none;
+  padding: 18px 60px;
+  font-size: 1.3rem;
+  font-weight: bold;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 8px 15px rgba(244, 157, 88, 0.4);
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 20px rgba(244, 157, 88, 0.5);
+}
+
+.home-image-section {
+  flex: 1 1 400px;
+  text-align: center;
+}
+
+/* =========================================
+   📱 โหมด Responsive (มือถือและแท็บเล็ต) 
+   ========================================= */
+@media (max-width: 992px) {
+  .home-container {
+    flex-direction: column-reverse; /* ดันรูปภาพขึ้นไปอยู่ข้างบนข้อความ */
+    text-align: center;
+    padding-top: 20px;
+  }
+
+  .home-title {
+    font-size: 2.2rem; /* ลดขนาดฟอนต์ */
+    white-space: normal; /* ยอมให้ข้อความตกบรรทัดได้ ไม่ล้นจอ */
+  }
+
+  .home-subtitle {
+    font-size: 1.2rem;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr; /* ปรับจุดเด่นให้เรียงลงมาทีละ 1 แถว */
+    text-align: left; /* ให้ข้อความจุดเด่นชิดซ้ายอ่านง่าย */
+    max-width: 300px;
+    margin: 0 auto 40px auto;
+  }
+
+  .cta-container {
+    padding-left: 0; /* ยกเลิกการเว้นขวา 170px บนมือถือ */
+    justify-content: center; /* จัดปุ่มให้อยู่ตรงกลาง */
+  }
+
+  .btn-primary {
+    width: 100%;
+    max-width: 300px;
+  }
+}
