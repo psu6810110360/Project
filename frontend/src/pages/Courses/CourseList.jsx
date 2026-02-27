@@ -31,9 +31,15 @@ export default function CourseList({ isAdmin }) {
     }
   };
 
+  // ดึงรายการคอร์สที่ซื้อไปแล้วมาเช็ค
+  const myCourses = JSON.parse(localStorage.getItem('myCourses')) || [];
+  const ownedCourseIds = myCourses.map(c => c.id);
+
   const displayedCourses = courses.filter((course) => {
-    if (isAdmin) return true; 
-    return course.isActive === true; 
+    if (isAdmin) return true; // แอดมินเห็นทุกคอร์สปกติ
+    if (course.isActive !== true) return false; // ถ้าคอร์สถูกซ่อนอยู่ ก็ไม่แสดง
+    if (ownedCourseIds.includes(course.id)) return false; // ถ้าซื้อไปแล้ว ให้ซ่อนออกไปเลย!
+    return true; 
   });
 
   return (

@@ -1,9 +1,24 @@
 // src/pages/HomePage.jsx
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // เปลี่ยนจาก Link เป็น useNavigate
 import heroImage from '../../assets/home-banner.png'; 
 
 const HomePage = () => {
+  const navigate = useNavigate(); // เรียกใช้งาน useNavigate
+
+  // ฟังก์ชันเช็คว่าเคยซื้อคอร์สหรือยัง ก่อนเปลี่ยนหน้า
+  const handleEnterClassroom = () => {
+    const myCourses = JSON.parse(localStorage.getItem('myCourses')) || [];
+    
+    if (myCourses.length > 0) {
+      // ถ้ามีคอร์สในกระเป๋าแล้ว ให้ไปหน้า My Courses
+      navigate('/my-courses');
+    } else {
+      // ถ้ายังไม่มี ให้ไปหน้าเลือกคอร์ส
+      navigate('/courses');
+    }
+  };
+
   return (
     <div style={{ 
       backgroundColor: '#fff', 
@@ -26,20 +41,19 @@ const HomePage = () => {
         
         {/* ฝั่งข้อความ (ซ้ายมือ) */}
         <div style={{ 
-          flex: '1 1 600px', // เพิ่มพื้นที่ฝั่งซ้ายให้กว้างขึ้นอีกนิด
+          flex: '1 1 600px', 
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
           paddingRight: '20px'
         }}>
-          {/* ปรับ fontSize ลงเล็กน้อยเพื่อให้พอดี*/}
           <h1 style={{ 
             fontSize: '3rem', 
             color: '#000', 
             fontWeight: 'bold', 
             lineHeight: '1.2', 
             marginBottom: '15px',
-            whiteSpace: 'nowrap' // สั่งห้ามขึ้นบรรทัดใหม่
+            whiteSpace: 'nowrap' 
           }}>
             “เรียนให้<span style={{ color: '#F49D58' }}>เข้าใจ</span> ไม่ใช่แค่ท่องจำ”
           </h1>
@@ -58,15 +72,16 @@ const HomePage = () => {
 
           {/* ปุ่ม Action */}
           <div style={{ display: 'flex', justifyContent: 'flex-start', paddingLeft: '170px' }}> 
-            <Link to="/courses" style={{ textDecoration: 'none' }}>
-              <button style={{
+            <button 
+              onClick={handleEnterClassroom} // เรียกใช้ฟังก์ชันตรงนี้
+              style={{
                 backgroundColor: '#F49D58',
                 color: '#003366',
                 border: 'none',
-                padding: '18px 60px', // เพิ่มความกว้างปุ่ม
+                padding: '18px 60px', 
                 fontSize: '1.3rem',
                 fontWeight: 'bold',
-                borderRadius: '50px', // ทำปุ่มให้มนสวยขึ้น
+                borderRadius: '50px', 
                 cursor: 'pointer',
                 boxShadow: '0 8px 15px rgba(244, 157, 88, 0.4)',
                 transition: 'all 0.3s ease'
@@ -79,10 +94,9 @@ const HomePage = () => {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = '0 8px 15px rgba(244, 157, 88, 0.4)';
               }}
-              >
-                เข้าสู่ห้องเรียน
-              </button>
-            </Link>
+            >
+              เข้าสู่ห้องเรียน
+            </button>
           </div>
         </div>
 
