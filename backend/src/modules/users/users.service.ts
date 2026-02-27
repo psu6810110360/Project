@@ -1,49 +1,31 @@
-<<<<<<< HEAD
-import { Injectable, OnModuleInit, BadRequestException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from './entities/user.entity';
-import * as bcrypt from 'bcrypt'; 
-=======
 import { Injectable, OnModuleInit, UnauthorizedException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { Course } from '../courses/entities/course.entity'; 
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';         
->>>>>>> feature/cart
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService implements OnModuleInit {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
-<<<<<<< HEAD
-    // 🗑️ ลบการเรียกใช้ JwtService ออกไปแล้ว เพราะเราให้ AuthModule จัดการแทน
-=======
     @InjectRepository(Course) 
     private coursesRepository: Repository<Course>,
     private jwtService: JwtService,
->>>>>>> feature/cart
   ) {}
 
-  // 1. ฟังก์ชันสร้าง Admin อัตโนมัติ (Seeding)
   // 1. ฟังก์ชันสร้าง Admin อัตโนมัติ (Seeding)
   async onModuleInit() {
     console.log('\n🌱 กำลังตรวจสอบข้อมูลจำลอง (Seeding)...');
     try {
       const adminEmail = 'admin@test.com';
-      let existingAdmin = await this.usersRepository.findOneBy({ email: adminEmail });
-<<<<<<< HEAD
-
-=======
->>>>>>> feature/cart
-      const hashedPassword = await bcrypt.hash('1234', 10);
-
+      const existingAdmin = await this.usersRepository.findOneBy({ email: adminEmail });
+      
       if (!existingAdmin) {
+        const hashedPassword = await bcrypt.hash('1234', 10);
         const admin = this.usersRepository.create({
-<<<<<<< HEAD
           email: adminEmail,
           password: hashedPassword,
           role: 'admin',
@@ -54,39 +36,35 @@ export class UsersService implements OnModuleInit {
         await this.usersRepository.save(admin); 
         console.log('✅ สร้างบัญชี Admin สำเร็จ (admin@test.com / 1234)\n');
       } else {
-        // 👇 แก้ไขตรงนี้: ลบคำสั่ง save ทิ้งไปเลย ให้เหลือแค่ console.log แจ้งเตือนพอครับ
         console.log('⚡ เจอแอดมินเดิมในระบบ: พร้อมใช้งาน!\n');
-=======
-          email: adminEmail, password: hashedPassword, role: 'admin',
-          firstName: 'System', lastName: 'Admin', phone: '0000000000'
-        });
-        await this.usersRepository.save(admin); 
-        console.log('✅ สร้างบัญชี Admin สำเร็จ\n');
->>>>>>> feature/cart
       }
     } catch (error) {
       console.error('❌ Seeding ไม่สำเร็จ:', error.message);
     }
   }
+
   // ---------------------------------------------------------
-  // 🗑️ ลบฟังก์ชัน login() ออกไปแล้ว (ย้ายไปอยู่ auth.service.ts แทน)
+  // 🔐 ส่วนของการ Login (ยอมใช้ของเพื่อนไปก่อน เพื่อให้ Controller ไม่พัง)
   // ---------------------------------------------------------
 
-<<<<<<< HEAD
-  // 2. ฟังก์ชันสร้าง User ใหม่ตอน Register
-=======
   // 2. ฟังก์ชันตรวจสอบและ Login
   async login(email: string, pass: string): Promise<any> {
-    const user = await this.usersRepository.findOneBy({ email });
+    const user = await this.usersRepository.findOne({ where: { email } });
+    
     if (user) {
       const isMatch = await bcrypt.compare(pass, user.password);
       if (isMatch) {
+        // สร้าง Token
         const payload = { sub: user.id, email: user.email, role: user.role };
         return {
           message: 'Login successful',
-          token: this.jwtService.sign(payload),
-          userId: user.id, // ส่งกลับไปเพื่อให้หน้าบ้านเก็บลง localStorage
-          userRole: user.role
+          access_token: this.jwtService.sign(payload), // ส่ง Token กลับไป
+          user: {
+             id: user.id,
+             firstName: user.firstName,
+             lastName: user.lastName,
+             role: user.role
+          }
         };
       }
     }
@@ -94,7 +72,6 @@ export class UsersService implements OnModuleInit {
   }
 
   // 3. ฟังก์ชันสร้าง User ใหม่ตอน Register
->>>>>>> feature/cart
   async create(userData: Partial<User>): Promise<any> {
     const existingUser = await this.usersRepository.findOneBy({ email: userData.email });
     if (existingUser) throw new BadRequestException('อีเมลนี้ถูกใช้งานแล้ว');
@@ -102,33 +79,17 @@ export class UsersService implements OnModuleInit {
     const hashedPassword = await bcrypt.hash(userData.password as string, 10);
     const newUser = this.usersRepository.create({
       ...userData,
-<<<<<<< HEAD
-      password: hashedPassword, 
-=======
       password: hashedPassword,
->>>>>>> feature/cart
       role: 'student', 
     });
     return await this.usersRepository.save(newUser);
   }
 
   // ---------------------------------------------------------
-<<<<<<< HEAD
-  // 👇 ส่วนสำหรับจัดการและค้นหาข้อมูล User
-  // ---------------------------------------------------------
-
-  // 🔍 3. (ฟังก์ชันใหม่) สำหรับให้ AuthService ใช้ค้นหาอีเมลตอนล็อกอิน
-  async findByEmail(email: string) { // 👈 ลบ : Promise<User | undefined> ออกไปเลย
-    return await this.usersRepository.findOneBy({ email });
-  }
-
-  // 🔍 4. ฟังก์ชันสำหรับดึงข้อมูลผู้ใช้ทั้งหมดมาดู
-=======
   // 🛠️ ส่วนจัดการข้อมูลสำหรับ Admin และการแสดงผลคอร์ส
   // ---------------------------------------------------------
 
   // 🔍 4. ดูผู้ใช้ทั้งหมด (สำหรับหน้า Admin)
->>>>>>> feature/cart
   async findAll() {
     return await this.usersRepository.find({
       relations: ['courses'], 
@@ -145,17 +106,29 @@ export class UsersService implements OnModuleInit {
     return user;
   }
 
+  // 🔍 (เพิ่มให้) สำหรับ AuthService ใช้ค้นหาอีเมล (เผื่ออนาคตคุณย้ายกลับไปใช้ AuthModule)
+  async findByEmail(email: string) {
+    return await this.usersRepository.findOneBy({ email });
+  }
+
   // ➕ 6. บันทึกคอร์สลงบัญชีผู้ใช้ (ใช้ตอนจ่ายเงินสำเร็จ)
   async addCourseToUser(userId: number, courseId: string) {
     const user = await this.usersRepository.findOne({
       where: { id: userId },
       relations: ['courses'],
     });
+
+    // ต้องเช็คก่อนว่า courseId เป็น number หรือ string เพื่อแปลงให้ถูกต้อง
+    // สมมติว่าใน DB คอร์สเป็น number แต่ส่งมาเป็น string
     const course = await this.coursesRepository.findOneBy({ id: courseId });
 
-    if (!user || !course) throw new NotFoundException('ข้อมูลไม่ถูกต้อง');
+    if (!user) throw new NotFoundException('ไม่พบผู้ใช้งาน');
+    if (!course) throw new NotFoundException('ไม่พบหลักสูตร');
 
     // เช็คว่ามีคอร์สนี้อยู่แล้วไหม (กันแอดซ้ำ)
+    // ตรวจสอบ relations courses ก่อนเสมอ
+    if (!user.courses) user.courses = [];
+    
     const alreadyHas = user.courses.some(c => c.id === courseId);
     if (!alreadyHas) {
       user.courses.push(course);
@@ -172,7 +145,11 @@ export class UsersService implements OnModuleInit {
     });
     if (!user) throw new NotFoundException('ไม่พบผู้ใช้งาน');
 
-    user.courses = user.courses.filter(c => c.id !== courseId);
+    const cId = Number(courseId);
+    if (user.courses) {
+        user.courses = user.courses.filter(c => c.id !== courseId);
+    }
+    
     return await this.usersRepository.save(user);
   }
 

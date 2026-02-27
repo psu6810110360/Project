@@ -5,19 +5,17 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-<<<<<<< HEAD
-=======
-  // 🔑 1. เข้าสู่ระบบ
+  // 🔑 1. เข้าสู่ระบบ (เอาของเพื่อนมาใส่)
   @Post('login')
   async login(@Body() body: any) {
     const email = body?.email;
     const password = body?.password;
+    // เรียกใช้ service login (เดี๋ยวต้องไปเช็คไฟล์ users.service.ts ต่อว่ามีฟังก์ชันนี้ไหม)
     const result = await this.usersService.login(email, password);
     return result;
   }
 
   // 📝 2. สมัครสมาชิก
->>>>>>> feature/cart
   @Post('register')
   async register(
     @Body('firstName') firstName: string,
@@ -46,7 +44,7 @@ export class UsersController {
     return await this.usersService.findAll();
   }
 
-  // 🎯 4. ดูข้อมูลผู้ใช้รายบุคคล (นักเรียนใช้ในหน้า My Course) 👈 **จุดที่เพิ่มเข้ามา**
+  // 🎯 4. ดูข้อมูลผู้ใช้รายบุคคล (นักเรียนใช้ในหน้า My Course)
   // วิธีใช้: GET http://localhost:3000/users/1
   @Get(':id')
   async getUser(@Param('id') id: number) {
