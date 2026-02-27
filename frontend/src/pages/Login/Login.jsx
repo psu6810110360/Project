@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import { jwtDecode } from 'jwt-decode'; // 👈 1. Import jwt-decode เข้ามาใช้งาน
+import { jwtDecode } from 'jwt-decode'; 
 import './Login.css';
 import studentImage from '../../assets/student.png'; 
 
@@ -22,9 +22,6 @@ function Login({ setIsLoggedIn }) {
 
   const navigate = useNavigate();
 
-  // --------------------------------------------------------
-  // 📚 ข้อความภาษาไทย
-  // --------------------------------------------------------
   const t = {
     tabLogin: 'เข้าสู่ระบบ',
     tabRegister: 'ลงทะเบียน',
@@ -57,36 +54,29 @@ function Login({ setIsLoggedIn }) {
     e.preventDefault();
 
     if (isLogin) {
-      // ==========================================
-      // 🟢 โหมด LOGIN (อัปเกรดใช้ JWT Token 🛡️)
-      // ==========================================
       try {
         // ✅ แก้ไข URL ตรงนี้ จาก users/login เป็น auth/login ครับ
         const response = await fetch('http://localhost:3000/auth/login', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: loginEmail, password: loginPassword }),
         });
 
         if (response.ok) {
           const data = await response.json();
           
-          // 👈 2. ดึง Token จาก Backend (สมมติว่า Backend ส่งมาในชื่อ data.token)
           const token = data.token; 
+          const userId = data.userId; // 👈 1. ดึง userId ที่ Backend ส่งมา
 
           if (token) {
-            // เซฟ Token ลงเครื่องเพื่อเอาไว้ใช้ยืนยันตัวตนรอบหน้า
+            // ✅ 2. เซฟค่าทั้งหมดลงเครื่อง
             localStorage.setItem('token', token);
-
-            // 👈 3. ถอดรหัส Token เพื่อดูว่าใครล็อกอินเข้ามา (admin หรือ student)
-            const decodedToken = jwtDecode(token);
-            const userRole = decodedToken.role || 'student'; // ป้องกันกรณีไม่มี role ให้เป็น student ไว้ก่อน
-
-            // เซฟสิทธิ์ไว้ใช้กับเมนู (Navbar)
-            localStorage.setItem('userRole', userRole);
+            localStorage.setItem('userId', userId); // 👈 หัวใจสำคัญที่ทำให้คอร์สขึ้น!
             localStorage.setItem('isLoggedIn', 'true');
+
+            const decodedToken = jwtDecode(token);
+            const userRole = decodedToken.role || 'student'; 
+            localStorage.setItem('userRole', userRole);
 
             const isAdmin = userRole === 'admin';
 
@@ -113,7 +103,6 @@ function Login({ setIsLoggedIn }) {
           });
         }
       } catch (error) {
-        console.error("Login Error:", error);
         Swal.fire({
           title: 'ระบบขัดข้อง!',
           text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ หรือเกิดข้อผิดพลาดกับ Token',
@@ -123,25 +112,16 @@ function Login({ setIsLoggedIn }) {
       }
 
     } else {
-      // ==========================================
-      // 🔵 โหมด REGISTER 
-      // ==========================================
+      // โหมด REGISTER
       if (registerData.password !== registerData.confirmPassword) {
-        Swal.fire({
-          title: 'ข้อผิดพลาด!',
-          text: t.alertPwdNotMatch,
-          icon: 'warning',
-          confirmButtonColor: '#FF9F43'
-        });
+        Swal.fire({ title: 'ข้อผิดพลาด!', text: t.alertPwdNotMatch, icon: 'warning', confirmButtonColor: '#FF9F43' });
         return;
       }
 
       try {
         const response = await fetch('http://localhost:3000/users/register', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             firstName: registerData.firstName,
             lastName: registerData.lastName,
@@ -163,21 +143,10 @@ function Login({ setIsLoggedIn }) {
           });
         } else {
           const errorData = await response.json();
-          Swal.fire({
-            title: 'ข้อผิดพลาด!',
-            text: errorData.message || 'ไม่สามารถสมัครสมาชิกได้',
-            icon: 'error',
-            confirmButtonColor: '#FF9F43'
-          });
+          Swal.fire({ title: 'ข้อผิดพลาด!', text: errorData.message || 'ไม่สามารถสมัครสมาชิกได้', icon: 'error', confirmButtonColor: '#FF9F43' });
         }
       } catch (error) {
-        console.error("Register Error:", error);
-        Swal.fire({
-          title: 'ระบบขัดข้อง!',
-          text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบ Backend',
-          icon: 'error',
-          confirmButtonColor: '#FF9F43'
-        });
+        Swal.fire({ title: 'ระบบขัดข้อง!', text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบ Backend', icon: 'error', confirmButtonColor: '#FF9F43' });
       }
     }
   };
@@ -197,37 +166,24 @@ function Login({ setIsLoggedIn }) {
     });
 
     if (resetEmail) {
-      Swal.fire({
-        title: 'ส่งแล้ว!',
-        text: `${t.alertResetSuccess} ${resetEmail}`,
-        icon: 'success',
-        confirmButtonColor: '#003366'
-      });
+      Swal.fire({ title: 'ส่งแล้ว!', text: `${t.alertResetSuccess} ${resetEmail}`, icon: 'success', confirmButtonColor: '#003366' });
     }
   }
 
-  // ไอคอนตา
   const EyeOpenIcon = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>);
   const EyeOffIcon = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>);
 
   return (
     <div className="login-container">
       <div className="login-card">
-        
-        {/* --- ฝั่งซ้าย: ฟอร์ม --- */}
         <div className={`login-form-section ${!isLogin ? 'signup-mode' : ''}`}>
-          
           <div className="toggle-buttons">
             <button className={`toggle-btn ${isLogin ? 'active' : ''}`} onClick={() => setIsLogin(true)} type="button">{t.tabLogin}</button>
             <button className={`toggle-btn ${!isLogin ? 'active' : ''}`} onClick={() => setIsLogin(false)} type="button">{t.tabRegister}</button>
           </div>
-
           <h1 className="form-title">{isLogin ? t.tabLogin : t.tabRegister}</h1>
           <p className="form-subtitle">{t.subtitle}</p>
-
           <form onSubmit={handleSubmit} className={!isLogin ? 'signup-form-scroll' : ''}>
-            
-            {/* ================= โหมด REGISTER ================= */}
             {!isLogin && (
               <>
                 <div className="form-row two-cols">
@@ -240,7 +196,6 @@ function Login({ setIsLoggedIn }) {
                     <input type="text" name="lastName" placeholder={t.lastName} value={registerData.lastName} onChange={handleRegisterChange} required />
                   </div>
                 </div>
-
                 <div className="form-row two-cols">
                   <div className="input-group">
                     <label>{t.phone}</label>
@@ -251,7 +206,6 @@ function Login({ setIsLoggedIn }) {
                     <input type="email" name="email" placeholder="example@gmail.com" value={registerData.email} onChange={handleRegisterChange} required />
                   </div>
                 </div>
-
                 <div className="form-row two-cols">
                   <div className="input-group">
                     <label>{t.password}</label>
@@ -274,8 +228,6 @@ function Login({ setIsLoggedIn }) {
                 </div>
               </>
             )}
-
-            {/* ================= โหมด LOGIN ================= */}
             {isLogin && (
               <>
                 <div className="input-group">
@@ -294,12 +246,10 @@ function Login({ setIsLoggedIn }) {
                 </div>
               </>
             )}
-
             <button type="submit" className="login-submit-btn">
               {isLogin ? t.btnSubmitLogin : t.btnSubmitReg}
             </button>
           </form>
-
           <p className="signup-link">
             {isLogin ? t.noAccount : t.hasAccount}
             <a href="#" onClick={(e) => { e.preventDefault(); setIsLogin(!isLogin); }}>
@@ -307,14 +257,11 @@ function Login({ setIsLoggedIn }) {
             </a>
           </p>
         </div>
-
-        {/* --- ฝั่งขวา: รูปภาพ --- */}
         {isLogin && (
           <div className="login-image-section">
             <img src={studentImage} alt="Student" className="student-img" />
           </div>
         )}
-
       </div>
     </div>
   );

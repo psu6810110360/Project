@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable } from 'typeorm';
+import { Course } from '../../courses/entities/course.entity';
 
 @Entity('users')
 export class User {
@@ -20,7 +21,11 @@ export class User {
   @Column({ nullable: true })
   lastName: string;
 
-  // 👇 เพิ่มบรรทัดนี้เข้ามาครับ
   @Column({ nullable: true })
   phone: string;
+
+  // 🔗 ตารางกลางสำหรับเก็บว่าใครซื้อคอร์สไหน
+  @ManyToMany(() => Course)
+  @JoinTable({ name: 'user_courses' }) 
+  courses: Course[];
 }

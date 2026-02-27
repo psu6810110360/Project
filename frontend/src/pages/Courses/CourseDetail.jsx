@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FaClock, FaUserGraduate, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaClock, FaUserGraduate, FaChevronLeft, FaChevronRight, FaShoppingCart } from 'react-icons/fa';
 
 export default function CourseDetail({ isAdmin }) {
   const { id } = useParams();
@@ -34,6 +34,32 @@ export default function CourseDetail({ isAdmin }) {
   
  
   const hasVideo = Boolean(course.sampleVideoUrl);
+
+  // เช็คว่าคอร์สนี้อยู่ใน "คอร์สของฉัน" หรือยัง
+  const myCourses = JSON.parse(localStorage.getItem('myCourses')) || [];
+  const isOwned = myCourses.some(c => c.id === course.id);
+  
+  const addToCart = () => {
+    // 1. ดึงข้อมูลตะกร้าเดิมจากระบบ (ถ้ามี)
+    const existingCart = JSON.parse(localStorage.getItem('cart')) || [];
+    
+    // 2. เช็คว่าเคยหยิบคอร์สนี้ใส่ตะกร้าไปแล้วหรือยัง
+    const isAlreadyInCart = existingCart.find(item => item.id === course.id);
+    if (isAlreadyInCart) {
+      alert('คอร์สนี้อยู่ในตะกร้าของคุณแล้วครับ!');
+      return;
+    }
+
+    // 3. ถ้ายังไม่มี ให้เอาข้อมูลคอร์สนี้ยัดใส่ตะกร้า
+    const newCart = [...existingCart, course];
+    localStorage.setItem('cart', JSON.stringify(newCart));
+    
+    // -> เติมบรรทัดนี้เข้าไป เพื่อตะโกนบอก Navbar ให้อัปเดตเลข! <-
+    window.dispatchEvent(new Event('cartUpdated'));
+
+    // 4. แจ้งเตือนผู้ใช้ (โดยไม่เปลี่ยนหน้า)
+    alert('🛒 เพิ่มคอร์สลงตะกร้าเรียบร้อยแล้ว!');
+  };
 
   const toggleMedia = () => {
     if (hasVideo) {
@@ -102,9 +128,19 @@ export default function CourseDetail({ isAdmin }) {
           </h2>
 
           
-          <button style={{ width: '100%', padding: '15px', backgroundColor: '#003366', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' }}>
-            สั่งซื้อ
-          </button>
+          {isOwned ? (
+            <button 
+              onClick={() => navigate('/my-courses')} 
+              style={{ width: '100%', padding: '15px', backgroundColor: '#28a745', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
+              <FaUserGraduate /> คุณมีคอร์สนี้แล้ว (ไปหน้าเข้าเรียน)
+            </button>
+          ) : (
+            <button 
+              onClick={addToCart} 
+              style={{ width: '100%', padding: '15px', backgroundColor: '#003366', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
+              <FaShoppingCart /> เพิ่มลงตะกร้า
+            </button>
+          )}
         </div>
       </div>
 

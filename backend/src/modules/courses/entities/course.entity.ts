@@ -1,5 +1,5 @@
-//course.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany } from 'typeorm';
+import { User } from '../../users/entities/user.entity';
 
 @Entity('courses')
 export class Course {
@@ -48,4 +48,7 @@ export class Course {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @ManyToMany(() => User, (user) => user.courses)
+  users: User[];
 }

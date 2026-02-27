@@ -9,7 +9,13 @@ import CourseForm from './pages/Courses/CourseForm';
 import CourseDetail from './pages/Courses/CourseDetail';
 import HomePage from './pages/Home/HomePage';
 import Login from './pages/Login/Login';
+
 import MyClassroom from "./pages/MyClassroom/MyClassroom";
+import Cart from './pages/Cart/Cart';
+import Payment from './pages/Payment/Payment';
+import MyCourses from './pages/MyCourses/MyCourses';
+import PaymentSuccess from './pages/Payment/PaymentSuccess';
+import UserManagement from './pages/Admin/UserManagement';
 
 // ==========================================
 // 🛡️ สร้าง "ยาม" สำหรับดักการเข้าถึง Route
@@ -71,6 +77,42 @@ function App() {
               </ProtectedRoute>
             } />
 
+            {/* 🛒 หน้าตะกร้าสินค้า */}
+            <Route path="/cart" element={
+              <ProtectedRoute>
+                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
+                  <Cart />
+                </div>
+              </ProtectedRoute>
+            } />
+
+            {/* 💳 หน้าชำระเงิน */}
+            <Route path="/payment" element={
+              <ProtectedRoute>
+                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
+                  <Payment />
+                </div>
+              </ProtectedRoute>
+            } />
+
+            {/* ✅ หน้าชำระเงินสำเร็จ */}
+            <Route path="/payment-success" element={
+              <ProtectedRoute>
+                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
+                  <PaymentSuccess />
+                </div>
+              </ProtectedRoute>
+            } />
+
+            {/* 📚 หน้าคอร์สของฉัน */}
+            <Route path="/my-courses" element={
+              <ProtectedRoute>
+                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
+                  <MyCourses />
+                </div>
+              </ProtectedRoute>
+            } />
+
             {/* 🔴 หน้าหวงห้าม! ต้องเป็น "Admin" เท่านั้น (ดักคนแอบพิมพ์ /add หรือ /edit) */}
             <Route path="/add" element={
               <ProtectedRoute requireAdmin={true}>
@@ -84,6 +126,15 @@ function App() {
               <ProtectedRoute requireAdmin={true}>
                 <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
                   <CourseForm />
+                </div>
+              </ProtectedRoute>
+            } />
+
+            {/* 👑 หน้าจัดการ User สำหรับ Admin เท่านั้น */}
+            <Route path="/manage-users" element={
+              <ProtectedRoute requireAdmin={true}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
+                  <UserManagement />
                 </div>
               </ProtectedRoute>
             } />
