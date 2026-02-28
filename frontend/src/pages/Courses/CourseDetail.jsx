@@ -2,8 +2,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Swal from 'sweetalert2'; // ✅ 1. นำเข้า SweetAlert2
-import { FaClock, FaUserGraduate, FaChevronLeft, FaChevronRight, FaShoppingCart } from 'react-icons/fa';
+import Swal from 'sweetalert2';
+// ✅ เพิ่ม FaArrowLeft เข้ามา
+import { FaClock, FaUserGraduate, FaChevronLeft, FaChevronRight, FaShoppingCart, FaArrowLeft } from 'react-icons/fa';
 
 export default function CourseDetail({ isAdmin }) {
   const { id } = useParams();
@@ -33,21 +34,14 @@ export default function CourseDetail({ isAdmin }) {
   const lineStyle = { borderBottom: '1px solid #ddd', marginBottom: '8px', width: '100%', height: '1px' };
   
   const hasVideo = Boolean(course.sampleVideoUrl);
-
-  // เช็คว่าคอร์สนี้อยู่ใน "คอร์สของฉัน" หรือยัง
   const myCourses = JSON.parse(localStorage.getItem('myCourses')) || [];
   const isOwned = myCourses.some(c => c.id === course.id);
   
-  // 🔥 2. แก้ฟังก์ชัน addToCart ให้ใช้ SweetAlert2
   const addToCart = () => {
-    // 1. ดึงข้อมูลตะกร้าเดิมจากระบบ (ถ้ามี)
     const existingCart = JSON.parse(localStorage.getItem('cart')) || [];
-    
-    // 2. เช็คว่าเคยหยิบคอร์สนี้ใส่ตะกร้าไปแล้วหรือยัง
     const isAlreadyInCart = existingCart.find(item => item.id === course.id);
     
     if (isAlreadyInCart) {
-      // ❌ ถ้ามีซ้ำ แจ้งเตือนสวยๆ
       Swal.fire({
         icon: 'warning',
         title: 'มีคอร์สนี้ในตะกร้าแล้ว',
@@ -58,14 +52,10 @@ export default function CourseDetail({ isAdmin }) {
       return;
     }
 
-    // 3. ถ้ายังไม่มี ให้เอาข้อมูลคอร์สนี้ยัดใส่ตะกร้า
     const newCart = [...existingCart, course];
     localStorage.setItem('cart', JSON.stringify(newCart));
-    
-    // -> เติมบรรทัดนี้เข้าไป เพื่อตะโกนบอก Navbar ให้อัปเดตเลข! <-
     window.dispatchEvent(new Event('cartUpdated'));
 
-    // 4. แจ้งเตือนผู้ใช้สำเร็จสวยๆ
     Swal.fire({
       icon: 'success',
       title: 'เพิ่มลงตะกร้าสำเร็จ!',
@@ -83,6 +73,28 @@ export default function CourseDetail({ isAdmin }) {
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 20px', backgroundColor: '#fff', color: '#333' }}>
       
+      {/* 🔙 ปุ่มย้อนกลับ (เพิ่มใหม่ตรงนี้) */}
+      <button 
+        onClick={() => navigate(-1)} 
+        style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '8px', 
+          border: 'none', 
+          background: 'none', 
+          color: '#666', 
+          fontSize: '16px', 
+          cursor: 'pointer', 
+          marginBottom: '20px',
+          padding: 0,
+          fontWeight: '500'
+        }}
+        onMouseOver={(e) => e.target.style.color = '#003366'}
+        onMouseOut={(e) => e.target.style.color = '#666'}
+      >
+        <FaArrowLeft /> ย้อนกลับ
+      </button>
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '50px', marginBottom: '60px' }}>
         
         {/* ส่วนรูป/วิดีโอ */}
