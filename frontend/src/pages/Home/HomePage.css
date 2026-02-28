@@ -26,6 +26,9 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  /* จัดการให้เนื้อหาทั้งหมดในฝั่งซ้ายอยู่กึ่งกลางกันเอง */
+  align-items: center; 
+  text-align: center;
 }
 
 .home-title {
@@ -34,7 +37,7 @@
   font-weight: bold;
   line-height: 1.2;
   margin-bottom: 15px;
-  white-space: nowrap; /* จอคอมห้ามตกบรรทัด */
+  white-space: nowrap;
 }
 
 .home-subtitle {
@@ -49,20 +52,23 @@
   grid-template-columns: 1fr 1fr;
   gap: 25px;
   margin-bottom: 40px;
+  text-align: left; /* ให้ Icon กับข้อความข้างในยังชิดซ้ายดูสวย */
 }
 
+/* ✅ แก้ไขตรงนี้ (ย้ายออกมาข้างนอก @media) */
 .cta-container {
   display: flex;
-  justify-content: flex-start;
-  padding-left: 170px; /* ตามดีไซน์เดิมของจอคอม */
+  justify-content: center; /* จัดปุ่มไว้กึ่งกลาง */
+  padding-left: 0;         /* ลบ 170px ออก */
+  width: 100%;
+  margin-top: 10px;
 }
 
-/* เอา Hover Effect มาใส่ใน CSS แทน โค้ดจะสะอาดขึ้นเยอะครับ */
 .btn-primary {
   background-color: #F49D58;
   color: #003366;
   border: none;
-  padding: 18px 60px;
+  padding: 18px 80px;
   font-size: 1.3rem;
   font-weight: bold;
   border-radius: 50px;
@@ -86,14 +92,14 @@
    ========================================= */
 @media (max-width: 992px) {
   .home-container {
-    flex-direction: column-reverse; /* ดันรูปภาพขึ้นไปอยู่ข้างบนข้อความ */
+    flex-direction: column-reverse;
     text-align: center;
     padding-top: 20px;
   }
 
   .home-title {
-    font-size: 2.2rem; /* ลดขนาดฟอนต์ */
-    white-space: normal; /* ยอมให้ข้อความตกบรรทัดได้ ไม่ล้นจอ */
+    font-size: 2.2rem;
+    white-space: normal;
   }
 
   .home-subtitle {
@@ -101,19 +107,10 @@
   }
 
   .features-grid {
-    grid-template-columns: 1fr; /* ปรับจุดเด่นให้เรียงลงมาทีละ 1 แถว */
-    text-align: left; /* ให้ข้อความจุดเด่นชิดซ้ายอ่านง่าย */
+    grid-template-columns: 1fr;
     max-width: 300px;
     margin: 0 auto 40px auto;
   }
 
-  .cta-container {
-    padding-left: 0; /* ยกเลิกการเว้นขวา 170px บนมือถือ */
-    justify-content: center; /* จัดปุ่มให้อยู่ตรงกลาง */
-  }
-
-  .btn-primary {
-    width: 100%;
-    max-width: 300px;
-  }
+  /* ในนี้ไม่ต้องแก้อะไรแล้ว เพราะมันจะใช้ค่า center จากด้านบน */
 }
