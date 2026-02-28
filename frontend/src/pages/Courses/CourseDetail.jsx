@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Swal from 'sweetalert2'; // ✅ 1. นำเข้า SweetAlert2
 import { FaClock, FaUserGraduate, FaChevronLeft, FaChevronRight, FaShoppingCart } from 'react-icons/fa';
 
 export default function CourseDetail({ isAdmin }) {
@@ -9,7 +10,6 @@ export default function CourseDetail({ isAdmin }) {
   const navigate = useNavigate();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
-  
   
   const [activeMedia, setActiveMedia] = useState(0);
 
@@ -32,21 +32,29 @@ export default function CourseDetail({ isAdmin }) {
 
   const lineStyle = { borderBottom: '1px solid #ddd', marginBottom: '8px', width: '100%', height: '1px' };
   
- 
   const hasVideo = Boolean(course.sampleVideoUrl);
 
   // เช็คว่าคอร์สนี้อยู่ใน "คอร์สของฉัน" หรือยัง
   const myCourses = JSON.parse(localStorage.getItem('myCourses')) || [];
   const isOwned = myCourses.some(c => c.id === course.id);
   
+  // 🔥 2. แก้ฟังก์ชัน addToCart ให้ใช้ SweetAlert2
   const addToCart = () => {
     // 1. ดึงข้อมูลตะกร้าเดิมจากระบบ (ถ้ามี)
     const existingCart = JSON.parse(localStorage.getItem('cart')) || [];
     
     // 2. เช็คว่าเคยหยิบคอร์สนี้ใส่ตะกร้าไปแล้วหรือยัง
     const isAlreadyInCart = existingCart.find(item => item.id === course.id);
+    
     if (isAlreadyInCart) {
-      alert('คอร์สนี้อยู่ในตะกร้าของคุณแล้วครับ!');
+      // ❌ ถ้ามีซ้ำ แจ้งเตือนสวยๆ
+      Swal.fire({
+        icon: 'warning',
+        title: 'มีคอร์สนี้ในตะกร้าแล้ว',
+        text: 'คุณได้เลือกคอร์สนี้ไปแล้วครับ',
+        confirmButtonText: 'ตกลง',
+        confirmButtonColor: '#F2984A',
+      });
       return;
     }
 
@@ -57,8 +65,13 @@ export default function CourseDetail({ isAdmin }) {
     // -> เติมบรรทัดนี้เข้าไป เพื่อตะโกนบอก Navbar ให้อัปเดตเลข! <-
     window.dispatchEvent(new Event('cartUpdated'));
 
-    // 4. แจ้งเตือนผู้ใช้ (โดยไม่เปลี่ยนหน้า)
-    alert('🛒 เพิ่มคอร์สลงตะกร้าเรียบร้อยแล้ว!');
+    // 4. แจ้งเตือนผู้ใช้สำเร็จสวยๆ
+    Swal.fire({
+      icon: 'success',
+      title: 'เพิ่มลงตะกร้าสำเร็จ!',
+      showConfirmButton: false,
+      timer: 1500
+    });
   };
 
   const toggleMedia = () => {
@@ -70,14 +83,12 @@ export default function CourseDetail({ isAdmin }) {
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 20px', backgroundColor: '#fff', color: '#333' }}>
       
-      
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '50px', marginBottom: '60px' }}>
         
-       
+        {/* ส่วนรูป/วิดีโอ */}
         <div>
           <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', borderRadius: '15px', overflow: 'hidden', backgroundColor: '#000', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
             
-           
             {activeMedia === 0 ? (
               <img 
                 src={course.coverImageUrl ? `http://localhost:3000${course.coverImageUrl}` : '/default-cover.jpg'} 
@@ -93,7 +104,6 @@ export default function CourseDetail({ isAdmin }) {
               />
             )}
 
-           
             {hasVideo && (
               <>
                 <button onClick={toggleMedia} style={{ position: 'absolute', top: '50%', left: '10px', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', color: '#333' }}>
@@ -102,7 +112,6 @@ export default function CourseDetail({ isAdmin }) {
                 <button onClick={toggleMedia} style={{ position: 'absolute', top: '50%', right: '10px', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', color: '#333' }}>
                   <FaChevronRight />
                 </button>
-                
                 
                 <div style={{ position: 'absolute', bottom: '15px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px' }}>
                   <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: activeMedia === 0 ? '#F2984A' : 'rgba(255,255,255,0.5)', cursor: 'pointer' }} onClick={() => setActiveMedia(0)}></div>
@@ -114,11 +123,10 @@ export default function CourseDetail({ isAdmin }) {
 
           <div style={{ marginTop: '20px', color: '#666', fontSize: '15px' }}>
             <p><FaClock style={{ marginRight: '8px' }} /> <strong>เวลาเรียน:</strong> {course.classTime || '-'}</p>
-    
           </div>
         </div>
 
-        
+        {/* ส่วนข้อมูลด้านขวา */}
         <div>
           <h1 style={{ color: '#003366', fontSize: '32px', marginBottom: '10px' }}>{course.title}</h1>
           <p style={{ color: '#888', marginBottom: '20px' }}>เหมาะสำหรับ : {course.suitableFor || '-'}</p>
@@ -127,7 +135,6 @@ export default function CourseDetail({ isAdmin }) {
             {course.salePrice?.toLocaleString()} <span style={{ fontSize: '18px' }}>บาท</span>
           </h2>
 
-          
           {isOwned ? (
             <button 
               onClick={() => navigate('/my-courses')} 
@@ -137,7 +144,10 @@ export default function CourseDetail({ isAdmin }) {
           ) : (
             <button 
               onClick={addToCart} 
-              style={{ width: '100%', padding: '15px', backgroundColor: '#003366', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
+              style={{ width: '100%', padding: '15px', backgroundColor: '#003366', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', transition: 'background 0.3s' }}
+              onMouseOver={(e) => e.target.style.backgroundColor = '#002244'}
+              onMouseOut={(e) => e.target.style.backgroundColor = '#003366'}
+            >
               <FaShoppingCart /> เพิ่มลงตะกร้า
             </button>
           )}
@@ -147,7 +157,7 @@ export default function CourseDetail({ isAdmin }) {
       
       <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '60px' }}>
         
-        
+        {/* รายละเอียดคอร์ส */}
         <div>
           <h2 style={{ color: '#003366', fontSize: '24px', borderBottom: '2px solid #003366', paddingBottom: '10px', marginBottom: '25px' }}>
             รายละเอียดคอร์สเรียน
@@ -176,6 +186,7 @@ export default function CourseDetail({ isAdmin }) {
           )}
         </div>
 
+        {/* ผู้สอน */}
         <div>
           <h2 style={{ color: '#003366', fontSize: '24px', marginBottom: '25px' }}>ทีมผู้สอน</h2>
           

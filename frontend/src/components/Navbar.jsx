@@ -1,3 +1,4 @@
+//Navbar.jsx
 import React, { useState, useEffect } from 'react'; 
 import { Link, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -43,7 +44,17 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
       cancelButtonText: 'ยกเลิก'
     }).then((result) => {
       if (result.isConfirmed) {
-        // 1. ล้างข้อมูลทุกอย่างให้เกลี้ยง!
+        
+        // 👇 1. Backup ตะกร้าเก็บไว้ให้ User คนนี้ก่อนลบทิ้ง
+        const currentUserId = localStorage.getItem('userId');
+        const currentCart = localStorage.getItem('cart');
+        
+        if (currentUserId && currentCart) {
+            // เซฟแยกไว้ในชื่อ "cart_user_ไอดีคนนั้น"
+            localStorage.setItem(`cart_user_${currentUserId}`, currentCart);
+        }
+
+        // 2. ล้างข้อมูล Session
         localStorage.removeItem('userRole');
         localStorage.removeItem('isLoggedIn');
         localStorage.removeItem('userId'); 
@@ -51,10 +62,10 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
         localStorage.removeItem('myCourses'); 
         localStorage.removeItem('cart'); 
 
-        // ✅ 2. [จุดสำคัญ] สั่งรีเซ็ตตัวเลขบนหน้าจอให้เป็น 0 ทันที
+        // ✅ 3. สั่งรีเซ็ตตัวเลขบนหน้าจอให้เป็น 0 ทันที
         setCartCount(0);
         
-        // ✅ 3. ส่งสัญญาณบอกส่วนอื่นๆ ว่าตะกร้าว่างแล้วนะ
+        // ✅ 4. ส่งสัญญาณบอกส่วนอื่นๆ ว่าตะกร้าว่างแล้ว
         window.dispatchEvent(new Event('cartUpdated'));
 
         setIsLoggedIn(false);

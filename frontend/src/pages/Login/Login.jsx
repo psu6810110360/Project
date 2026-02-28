@@ -56,7 +56,6 @@ function Login({ setIsLoggedIn }) {
 
     if (isLogin) {
       try {
-        // ✅ แก้ไข URL ตรงนี้ จาก users/login เป็น auth/login ครับ
         const response = await fetch('http://localhost:3000/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -67,13 +66,39 @@ function Login({ setIsLoggedIn }) {
           const data = await response.json();
           
           const token = data.token; 
-          const userId = data.userId; // 👈 1. ดึง userId ที่ Backend ส่งมา
+          const userId = data.userId; 
 
           if (token) {
-            // ✅ 2. เซฟค่าทั้งหมดลงเครื่อง
+            // เซฟค่าพื้นฐานลงเครื่อง
             localStorage.setItem('token', token);
-            localStorage.setItem('userId', userId); // 👈 หัวใจสำคัญที่ทำให้คอร์สขึ้น!
+            localStorage.setItem('userId', userId);
             localStorage.setItem('isLoggedIn', 'true');
+
+            // --- ส่วนกู้คืนตะกร้าสินค้า ---
+            const savedCart = localStorage.getItem(`cart_user_${userId}`);
+            if (savedCart) {
+                // ดึงของในตะกร้าปัจจุบัน (เผื่อเขากดเพิ่มตอนยังไม่ล็อกอิน)
+                const currentCart = JSON.parse(localStorage.getItem('cart')) || [];
+                const savedCartParsed = JSON.parse(savedCart);
+                
+                // รวมของเก่า + ของใหม่ (และกรองของซ้ำออก โดยเช็คจาก id)
+                const mergedCart = [...currentCart, ...savedCartParsed].reduce((acc, current) => {
+                    const x = acc.find(item => item.id === current.id);
+                    if (!x) {
+                        return acc.concat([current]);
+                    } else {
+                        return acc;
+                    }
+                }, []);
+                
+                // บันทึกกลับลงไปใน 'cart' หลัก
+                localStorage.setItem('cart', JSON.stringify(mergedCart));
+            }
+            // ---------------------------
+            
+            // 🔥🔥 [เพิ่มบรรทัดนี้] สั่งให้ Navbar อัปเดตตัวเลขทันที! 🔥🔥
+            window.dispatchEvent(new Event('cartUpdated'));
+
 
             const decodedToken = jwtDecode(token);
             const userRole = decodedToken.role || 'student'; 
@@ -135,20 +160,15 @@ function Login({ setIsLoggedIn }) {
         if (response.ok) {
           const data = await response.json();
           
-          // 👇 [แก้ไข] แกะค่าให้ตรงกับที่ Backend ส่งมา
-          const token = data.access_token;      // เปลี่ยนจาก data.token เป็น data.access_token
-          const userObj = data.user;            // ดึง Object user ออกมาก่อน
-          const userId = userObj ? userObj.id : null; // แล้วค่อยดึง id
-
-          console.log("📦 Debug Login Data:", data); // ดูว่าได้อะไรมาบ้าง
+          const token = data.access_token; 
+          const userObj = data.user; 
+          const userId = userObj ? userObj.id : null; 
 
           if (token && userId) {
-            // ✅ 2. เซฟค่าทั้งหมดลงเครื่อง
             localStorage.setItem('token', token);
-            localStorage.setItem('userId', userId); // ต้องได้เลข ID แล้วคราวนี้!
+            localStorage.setItem('userId', userId);
             localStorage.setItem('isLoggedIn', 'true');
 
-            // ส่วนดึง Role (ใช้โค้ดเดิมได้ แต่เช็คความปลอดภัยนิดนึง)
             try {
                 const decodedToken = jwtDecode(token);
                 const userRole = decodedToken.role || 'student'; 
@@ -169,7 +189,6 @@ function Login({ setIsLoggedIn }) {
             }
 
           } else {
-             // ถ้าได้ข้อมูลไม่ครบ ให้แจ้งเตือน
              console.error("Missing Data:", { token, userId });
              throw new Error("ข้อมูลตอบกลับจากระบบไม่ครบถ้วน (Token หรือ ID หาย)");
           }

@@ -1,3 +1,4 @@
+//Cart.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaShoppingCart, FaTimes, FaBookOpen } from 'react-icons/fa';
