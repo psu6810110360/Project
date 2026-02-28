@@ -9,16 +9,9 @@ const HomePage = () => {
 
   // 1. เก็บ Logic ของเพื่อนไว้ (แต่ปรับปรุง Path ให้ตรงกับปัจจุบัน)
   const handleEnterClassroom = () => {
-    // ดึงข้อมูลคอร์สจาก LocalStorage (เผื่อเพื่อนทำระบบตะกร้าไว้แล้ว)
-    const myCourses = JSON.parse(localStorage.getItem('myCourses')) || [];
-    
-    if (myCourses.length > 0) {
-      // ถ้ามีคอร์สแล้ว ให้ไปหน้า "ห้องเรียนของฉัน" (ที่คุณเพิ่งทำเสร็จ)
-      navigate('/my-classroom');
-    } else {
-      // ถ้ายังไม่มีคอร์ส ให้ไปหน้า "เลือกซื้อคอร์ส"
-      navigate('/courses');
-    }
+    // ตรงนี้เปลี่ยนเป็นไปหน้า `my-classroom` เสมอ
+    // เพราะหน้า `MyClassroom` จะจัดการแสดง Empty State ให้เอง
+    navigate('/my-classroom');
   };
 
   return (

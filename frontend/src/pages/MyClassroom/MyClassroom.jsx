@@ -3,6 +3,7 @@ import { FaUser, FaRegClock, FaCheckCircle, FaPlayCircle } from 'react-icons/fa'
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import './MyClassroom.css';
+import EmptyCourseState from './EmptyCourseState';
 
 const MyClassroom = () => {
   const [myCourses, setMyCourses] = useState([]);
@@ -177,14 +178,7 @@ const MyClassroom = () => {
       </div>
 
       {myCourses.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '50px', backgroundColor: '#f9f9f9', borderRadius: '12px', border: '1px solid #eee' }}>
-          <p style={{ color: '#666', marginBottom: '15px', fontSize: '18px' }}>คุณยังไม่มีคอร์สในห้องเรียน</p>
-          <button 
-            onClick={() => window.location.href = '/courses'} 
-            style={{ padding: '12px 25px', backgroundColor: '#F2984A', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}>
-            ไปเลือกซื้อคอร์สเรียนเลย!
-          </button>
-        </div>
+        <EmptyCourseState />
       ) : (
         <>
           {/* Section 1: คอร์สที่กำลังเรียน */}
