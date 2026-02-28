@@ -13,7 +13,6 @@ import Login from './pages/Login/Login';
 import MyClassroom from "./pages/MyClassroom/MyClassroom";
 import Cart from './pages/Cart/Cart';
 import Payment from './pages/Payment/Payment';
-import MyCourses from './pages/MyCourses/MyCourses';
 import PaymentSuccess from './pages/Payment/PaymentSuccess';
 import UserManagement from './pages/Admin/UserManagement';
 
@@ -67,7 +66,13 @@ function App() {
               </ProtectedRoute>
             } />
 
-            <Route path="/my-classroom" element={<MyClassroom />} />
+            <Route path="/my-classroom" element={
+              <ProtectedRoute>
+                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
+                  <MyClassroom />
+                </div>
+              </ProtectedRoute>
+            } />
 
             <Route path="/course/:id" element={
               <ProtectedRoute>
@@ -100,15 +105,6 @@ function App() {
               <ProtectedRoute>
                 <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
                   <PaymentSuccess />
-                </div>
-              </ProtectedRoute>
-            } />
-
-            {/* 📚 หน้าคอร์สของฉัน */}
-            <Route path="/my-courses" element={
-              <ProtectedRoute>
-                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
-                  <MyCourses />
                 </div>
               </ProtectedRoute>
             } />

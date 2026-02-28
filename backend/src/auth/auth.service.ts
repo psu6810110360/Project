@@ -1,6 +1,7 @@
+// auth.service.ts
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from '../modules/users/users.service'; // ดึง UsersService มาใช้ค้นหาคน
+import { UsersService } from '../modules/users/users.service'; 
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -37,6 +38,7 @@ export class AuthService {
     return {
       message: 'Login successful',
       token: this.jwtService.sign(payload),
+      userId: user.id, // 👈 จุดสำคัญที่เพิ่มเข้ามา! (ส่งไอดีกลับไปให้หน้าเว็บ)
     };
   }
 }

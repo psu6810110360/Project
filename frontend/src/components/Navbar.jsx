@@ -41,8 +41,14 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
       cancelButtonText: 'ยกเลิก'
     }).then((result) => {
       if (result.isConfirmed) {
+        // 👉 ล้างข้อมูลทุกอย่างให้เกลี้ยง!
         localStorage.removeItem('userRole');
         localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('userId'); 
+        localStorage.removeItem('token');  
+        localStorage.removeItem('myCourses'); 
+        localStorage.removeItem('cart'); 
+
         setIsLoggedIn(false);
         Swal.fire({
           title: 'ออกจากระบบสำเร็จ',

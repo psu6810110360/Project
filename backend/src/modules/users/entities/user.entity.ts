@@ -24,8 +24,8 @@ export class User {
   @Column({ nullable: true })
   phone: string;
 
-  // 🔗 ตารางกลางสำหรับเก็บว่าใครซื้อคอร์สไหน
-  @ManyToMany(() => Course)
+  // 🔗 เพิ่ม { onDelete: 'CASCADE' } ตรงนี้ครับ
+  @ManyToMany(() => Course, (course) => course.users, { onDelete: 'CASCADE' })
   @JoinTable({ name: 'user_courses' }) 
-  courses: Course[];
+  courses: Course[];;
 }

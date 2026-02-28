@@ -49,6 +49,6 @@ export class Course {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToMany(() => User, (user) => user.courses)
+  @ManyToMany(() => User, (user) => user.courses, { onDelete: 'CASCADE' })
   users: User[];
-}
+  }

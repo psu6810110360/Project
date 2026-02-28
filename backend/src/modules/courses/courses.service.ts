@@ -43,7 +43,13 @@ export class CoursesService {
 
   // 5. ลบคอร์ส
   async remove(id: string) {
-    const course = await this.findOne(id); // เช็คก่อนว่ามีให้ลบไหม
+    const course = await this.courseRepository.findOne({ where: { id } });
+    
+    if (!course) {
+      throw new NotFoundException(`ไม่พบคอร์สที่มี ID: ${id}`);
+    }
+
+    // สั่งลบได้เลยเดี๋ยว TypeORM จัดการลบข้อมูลในตารางกลางให้เอง (เพราะเราใส่ CASCADE ไว้แล้ว)
     return this.courseRepository.remove(course);
   }
 }

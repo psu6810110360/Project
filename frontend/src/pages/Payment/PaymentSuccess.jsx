@@ -64,8 +64,9 @@ export default function PaymentSuccess() {
           ดาวน์โหลดใบเสร็จ
         </button>
         
+        {/* ✅ แก้ไขจุดนี้ให้ navigate ไปที่ /my-classroom */}
         <button 
-          onClick={() => navigate('/my-courses')}
+          onClick={() => navigate('/my-classroom')}
           style={{ width: '100%', padding: '15px', backgroundColor: '#fff', color: '#003366', border: '1px solid #003366', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
           เข้าสู่ห้องเรียน
         </button>

@@ -5,40 +5,53 @@ import axios from 'axios';
 
 export default function CourseList({ isAdmin }) {
   const [courses, setCourses] = useState([]);
+  const [ownedCourseIds, setOwnedCourseIds] = useState([]); // 👈 เพิ่ม State เก็บ ID คอร์สที่ซื้อแล้ว
   const navigate = useNavigate(); 
 
-  const fetchCourses = async () => {
+  const fetchData = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/courses');
-      setCourses(response.data);
+      // 1. ดึงคอร์สทั้งหมดจากระบบ
+      const coursesRes = await axios.get('http://localhost:3000/courses');
+      setCourses(coursesRes.data);
+
+      // 2. ตรวจสอบว่า User ล็อกอินอยู่ไหม (ถ้าเป็น Admin ไม่ต้องกรองคอร์สออก)
+      const userId = localStorage.getItem('userId');
+      if (userId && !isAdmin) {
+        const userRes = await axios.get(`http://localhost:3000/users/${userId}`);
+        if (userRes.data && userRes.data.courses) {
+          // ดึงเฉพาะ ID ของคอร์สที่ซื้อแล้วมาเก็บไว้ใน State
+          const ownedIds = userRes.data.courses.map(c => c.id);
+          setOwnedCourseIds(ownedIds);
+          
+          // อัปเดตลง LocalStorage ไปด้วยเลย เพื่อให้ระบบตะกร้าหรือหน้าอื่นทำงานได้อัปเดตสุด
+          localStorage.setItem('myCourses', JSON.stringify(userRes.data.courses));
+        }
+      }
     } catch (error) {
       console.error('ดึงข้อมูลไม่สำเร็จ', error);
     }
   };
 
   useEffect(() => {
-    fetchCourses();
-  }, []);
+    fetchData();
+  }, [isAdmin]);
 
   const handleDelete = async (id) => {
     if (window.confirm('แน่ใจหรือไม่ว่าต้องการลบคอร์สนี้?')) {
       try {
         await axios.delete(`http://localhost:3000/courses/${id}`);
-        fetchCourses(); 
+        fetchData(); // โหลดข้อมูลใหม่หลังจากลบ
       } catch (error) {
         console.error('ลบข้อมูลไม่สำเร็จ', error);
       }
     }
   };
 
-  // ดึงรายการคอร์สที่ซื้อไปแล้วมาเช็ค
-  const myCourses = JSON.parse(localStorage.getItem('myCourses')) || [];
-  const ownedCourseIds = myCourses.map(c => c.id);
-
+  // กรองคอร์สที่จะแสดง
   const displayedCourses = courses.filter((course) => {
     if (isAdmin) return true; // แอดมินเห็นทุกคอร์สปกติ
     if (course.isActive !== true) return false; // ถ้าคอร์สถูกซ่อนอยู่ ก็ไม่แสดง
-    if (ownedCourseIds.includes(course.id)) return false; // ถ้าซื้อไปแล้ว ให้ซ่อนออกไปเลย!
+    if (ownedCourseIds.includes(course.id)) return false; // 👈 ถ้าซื้อไปแล้ว ให้ซ่อนออกไปเลย!
     return true; 
   });
 
@@ -91,11 +104,9 @@ export default function CourseList({ isAdmin }) {
               <span style={{ color: '#F2984A', fontWeight: 'bold', fontSize: '24px' }}>฿{course.salePrice}</span>
             </div>
             
-           
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: 'auto' }}>
               {isAdmin ? (
                 <>
-                  
                   <Link to={`/course/${course.id}`} style={{ textDecoration: 'none' }}>
                     <button style={{ width: '100%', padding: '10px', background: '#e6f7ff', color: '#003366', border: '1px solid #91d5ff', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
                       🔍 ดูรายละเอียด (Preview)
@@ -113,7 +124,6 @@ export default function CourseList({ isAdmin }) {
                   </div>
                 </>
               ) : (
-                
                 <Link to={`/course/${course.id}`} style={{ textDecoration: 'none' }}>
                   <button style={{ 
                     width: '100%', padding: '12px', background: '#F2984A', 
