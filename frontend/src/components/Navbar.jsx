@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'; 
 import { Link, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import { FaShoppingCart } from 'react-icons/fa'; // <--- 1. นำเข้าไอคอนตะกร้า
+import { FaShoppingCart } from 'react-icons/fa'; 
 import './Navbar.css'; 
 
 function Navbar({ isLoggedIn, setIsLoggedIn }) {
@@ -9,14 +9,14 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
   const userRole = localStorage.getItem('userRole'); 
   
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0); // <--- 2. State สำหรับเก็บจำนวนของในตะกร้า
+  const [cartCount, setCartCount] = useState(0); 
 
   // ฟังก์ชันสลับการเปิด/ปิดเมนู
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  // 3. ฟังก์ชันอัปเดตตัวเลขตะกร้า
+  // ฟังก์ชันอัปเดตตัวเลขตะกร้า
   const updateCartCount = () => {
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
     setCartCount(cart.length);
@@ -24,8 +24,10 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
 
   useEffect(() => {
     updateCartCount(); // อัปเดตตอนโหลดแถบเมนูครั้งแรก
-    // ดักฟัง Event พิเศษ (เอาไว้ทำให้อัปเดตตัวเลขแบบเรียลไทม์)
+    
+    // ดักฟัง Event พิเศษ (เพื่อให้ตัวเลขเปลี่ยนทันทีเมื่อมีการกดเพิ่มของ หรือ Logout)
     window.addEventListener('cartUpdated', updateCartCount);
+    
     return () => window.removeEventListener('cartUpdated', updateCartCount);
   }, []);
 
@@ -41,7 +43,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
       cancelButtonText: 'ยกเลิก'
     }).then((result) => {
       if (result.isConfirmed) {
-        // 👉 ล้างข้อมูลทุกอย่างให้เกลี้ยง!
+        // 1. ล้างข้อมูลทุกอย่างให้เกลี้ยง!
         localStorage.removeItem('userRole');
         localStorage.removeItem('isLoggedIn');
         localStorage.removeItem('userId'); 
@@ -49,7 +51,14 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
         localStorage.removeItem('myCourses'); 
         localStorage.removeItem('cart'); 
 
+        // ✅ 2. [จุดสำคัญ] สั่งรีเซ็ตตัวเลขบนหน้าจอให้เป็น 0 ทันที
+        setCartCount(0);
+        
+        // ✅ 3. ส่งสัญญาณบอกส่วนอื่นๆ ว่าตะกร้าว่างแล้วนะ
+        window.dispatchEvent(new Event('cartUpdated'));
+
         setIsLoggedIn(false);
+        
         Swal.fire({
           title: 'ออกจากระบบสำเร็จ',
           icon: 'success',
@@ -99,9 +108,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
               <span onClick={() => setIsMobileMenuOpen(false)}>บัญชีของฉัน</span>
             )}
 
-            
-            
-            {/* 🛒 4. เพิ่มไอคอนตะกร้าสินค้าตรงนี้ */}
+            {/* 🛒 ไอคอนตะกร้าสินค้า */}
             <Link to="/cart" onClick={() => setIsMobileMenuOpen(false)} style={{ position: 'relative', display: 'flex', alignItems: 'center', marginLeft: '10px' }}>
               <FaShoppingCart size={24} color="#003366" />
               {cartCount > 0 && (

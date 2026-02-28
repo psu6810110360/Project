@@ -1,3 +1,4 @@
+// Login.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -132,15 +133,46 @@ function Login({ setIsLoggedIn }) {
         });
 
         if (response.ok) {
-          Swal.fire({
-            title: 'ยอดเยี่ยม!',
-            text: t.alertRegSuccess,
-            icon: 'success',
-            confirmButtonColor: '#003366'
-          }).then(() => {
-            setRegisterData({ firstName: '', lastName: '', phone: '', email: '', password: '', confirmPassword: '' });
-            setIsLogin(true); 
-          });
+          const data = await response.json();
+          
+          // 👇 [แก้ไข] แกะค่าให้ตรงกับที่ Backend ส่งมา
+          const token = data.access_token;      // เปลี่ยนจาก data.token เป็น data.access_token
+          const userObj = data.user;            // ดึง Object user ออกมาก่อน
+          const userId = userObj ? userObj.id : null; // แล้วค่อยดึง id
+
+          console.log("📦 Debug Login Data:", data); // ดูว่าได้อะไรมาบ้าง
+
+          if (token && userId) {
+            // ✅ 2. เซฟค่าทั้งหมดลงเครื่อง
+            localStorage.setItem('token', token);
+            localStorage.setItem('userId', userId); // ต้องได้เลข ID แล้วคราวนี้!
+            localStorage.setItem('isLoggedIn', 'true');
+
+            // ส่วนดึง Role (ใช้โค้ดเดิมได้ แต่เช็คความปลอดภัยนิดนึง)
+            try {
+                const decodedToken = jwtDecode(token);
+                const userRole = decodedToken.role || 'student'; 
+                localStorage.setItem('userRole', userRole);
+                const isAdmin = userRole === 'admin';
+                
+                 Swal.fire({
+                  title: 'สำเร็จ!',
+                  text: isAdmin ? t.alertAdmin : t.alertStudent,
+                  icon: 'success',
+                  confirmButtonColor: '#003366'
+                }).then(() => {
+                  setIsLoggedIn(true); 
+                  navigate('/courses'); 
+                });
+            } catch (e) {
+                console.error("Token Decode Error:", e);
+            }
+
+          } else {
+             // ถ้าได้ข้อมูลไม่ครบ ให้แจ้งเตือน
+             console.error("Missing Data:", { token, userId });
+             throw new Error("ข้อมูลตอบกลับจากระบบไม่ครบถ้วน (Token หรือ ID หาย)");
+          }
         } else {
           const errorData = await response.json();
           Swal.fire({ title: 'ข้อผิดพลาด!', text: errorData.message || 'ไม่สามารถสมัครสมาชิกได้', icon: 'error', confirmButtonColor: '#FF9F43' });
