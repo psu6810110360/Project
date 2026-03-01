@@ -99,9 +99,16 @@ export default function AdminOrders() {
                     {/* User entity doesn't have a `username` field; show name or email */}
                     {order.user ? (
                       <>
-                        {order.user.firstName || order.user.lastName
-                          ? `${order.user.firstName || ''} ${order.user.lastName || ''}`.trim()
-                          : order.user.email}
+                        {/* แสดงชื่อ-สกุล หากมี, ตามด้วยอีเมลเสมอเพื่อความชัดเจน */}
+                        {order.user.firstName || order.user.lastName ? (
+                          <>
+                            {`${order.user.firstName || ''} ${order.user.lastName || ''}`.trim()}
+                            <br />
+                          </>
+                        ) : null}
+                        <span style={{ fontSize: order.user.firstName || order.user.lastName ? '12px' : undefined, color: '#555' }}>
+                          {order.user.email}
+                        </span>
                       </>
                     ) : (
                       'Unknown User'
