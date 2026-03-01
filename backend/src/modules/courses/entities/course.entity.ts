@@ -1,5 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany } from 'typeorm';
+// src/modules/courses/entities/course.entity.ts
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany, OneToMany } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { Order } from '../../orders/entities/order.entity'; // ✅ 1. เพิ่ม Import Order
 
 @Entity('courses')
 export class Course {
@@ -14,7 +16,6 @@ export class Course {
 
   @Column({ default: true })
   isActive: boolean;
-
   
   @Column('decimal', { precision: 10, scale: 2 })
   originalPrice: number;
@@ -30,8 +31,6 @@ export class Course {
   
   @Column({ type: 'json', nullable: true })
   instructors: any[];
-
-
   
   @Column({ nullable: true })
   suitableFor: string; 
@@ -39,7 +38,6 @@ export class Course {
   @Column({ nullable: true })
   classTime: string;   
 
-  
   @Column({ type: 'json', nullable: true })
   courseContents: any[];
 
@@ -49,6 +47,11 @@ export class Course {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  // ความสัมพันธ์เดิม (User ที่เรียนคอร์สนี้ได้แล้ว)
   @ManyToMany(() => User, (user) => user.courses, { onDelete: 'CASCADE' })
   users: User[];
-  }
+
+  // ✅ 2. เพิ่มความสัมพันธ์ใหม่ (ประวัติการสั่งซื้อคอร์สนี้)
+  @OneToMany(() => Order, (order) => order.course)
+  orders: Order[];
+}
