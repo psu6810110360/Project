@@ -25,7 +25,7 @@ export class CoursesController {
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'coverImage', maxCount: 1 },
     { name: 'sampleVideo', maxCount: 1 },
-    { name: 'instructorImage', maxCount: 10 },
+    { name: 'instructorImages', maxCount: 10 },
   ], multerOptions))
   create(
     @Body() createCourseDto: any, 
@@ -39,7 +39,7 @@ export class CoursesController {
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'coverImage', maxCount: 1 },
     { name: 'sampleVideo', maxCount: 1 },
-    { name: 'instructorImage', maxCount: 10 },
+    { name: 'instructorImages', maxCount: 10 },
   ], multerOptions))
   update(
     @Param('id') id: string, 
