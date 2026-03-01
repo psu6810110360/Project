@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaTrash, FaPlus, FaArrowLeft, FaUserCog } from 'react-icons/fa';
+import { FaTrash, FaPlus, FaArrowLeft, FaUserCog, FaChalkboardTeacher } from 'react-icons/fa'; 
 import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom'; 
 
 export default function UserManagement() {
   const [users, setUsers] = useState([]); 
@@ -9,6 +10,8 @@ export default function UserManagement() {
   const [selectedUser, setSelectedUser] = useState(null); 
   const [selectedCourseToAdd, setSelectedCourseToAdd] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     fetchInitialData();
@@ -94,7 +97,6 @@ export default function UserManagement() {
 
   if (isLoading) return <div style={{ textAlign: 'center', padding: '50px' }}>กำลังโหลดข้อมูล...</div>;
 
-  // 1. หน้าจัดการคอร์สรายบุคคล
   if (selectedUser) {
     return (
       <div style={{ maxWidth: '900px', margin: '0 auto', backgroundColor: '#fff', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
@@ -132,12 +134,30 @@ export default function UserManagement() {
     );
   }
 
-  // 2. หน้ารวมรายชื่อผู้ใช้งาน (ตัวหลัก)
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto', backgroundColor: '#fff', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-      <h2 style={{ color: '#003366', borderBottom: '2px solid #eee', paddingBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <FaUserCog /> ระบบจัดการผู้ใช้งาน (Real-time Database)
-      </h2>
+      
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #eee', paddingBottom: '15px' }}>
+        <h2 style={{ color: '#003366', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <FaUserCog /> ระบบจัดการผู้ใช้งาน (Real-time Database)
+        </h2>
+        
+        
+        <button 
+          onClick={() => navigate('/manage-instructors')} 
+          style={{ 
+            padding: '10px 20px', backgroundColor: '#F2984A', color: '#fff', 
+            border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', 
+            display: 'flex', alignItems: 'center', gap: '8px', transition: '0.2s',
+            boxShadow: '0 4px 6px rgba(242, 152, 74, 0.3)'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+          onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          <FaChalkboardTeacher size={18} /> จัดการรายชื่อครูผู้สอน
+        </button>
+      </div>
+
       <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
         <thead>
           <tr style={{ backgroundColor: '#003366', color: '#fff', textAlign: 'left' }}>

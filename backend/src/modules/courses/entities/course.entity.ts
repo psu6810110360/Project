@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany,JoinTable } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { Instructor } from '../../instructors/entities/instructor.entity';
 
 @Entity('courses')
 export class Course {
@@ -28,8 +29,7 @@ export class Course {
   @Column({ nullable: true })
   sampleVideoUrl: string;
   
-  @Column({ type: 'json', nullable: true })
-  instructors: any[];
+ 
 
 
   
@@ -40,6 +40,13 @@ export class Course {
   classTime: string;   
 
   
+  @ManyToMany(() => Instructor, (instructor) => instructor.courses, {
+    cascade: true, 
+  })
+
+  @JoinTable({ name: 'course_instructors' }) 
+  instructors: Instructor[];
+
   @Column({ type: 'json', nullable: true })
   courseContents: any[];
 

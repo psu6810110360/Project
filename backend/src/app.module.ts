@@ -3,10 +3,12 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CoursesModule } from './modules/courses/courses.module';
-import { UsersModule } from './modules/users/users.module'; // 👈 1. นำเข้า UsersModule
+import { UsersModule } from './modules/users/users.module'; 
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AuthModule } from './auth/auth.module';
+import { Instructor } from './modules/instructors/entities/instructor.entity';
+import { InstructorsModule } from './modules/instructors/instructors.module';
 
 @Module({
   imports: [
@@ -38,7 +40,8 @@ import { AuthModule } from './auth/auth.module';
     
     CoursesModule,
     UsersModule,
-    AuthModule, // 👈 2. เพิ่มเข้าสู่ระบบหลักตรงนี้
+    AuthModule,
+    InstructorsModule,
   ],
   controllers: [],
   providers: [],

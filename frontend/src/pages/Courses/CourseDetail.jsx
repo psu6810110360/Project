@@ -1,11 +1,10 @@
-//CourseDetail.jsx
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { 
   FaClock, FaUserGraduate, FaChevronLeft, FaChevronRight, 
-  FaShoppingCart, FaArrowLeft, FaPlayCircle, FaCheckCircle 
+  FaShoppingCart, FaArrowLeft, FaPlayCircle, FaCheckCircle, FaVideo, FaBroadcastTower
 } from 'react-icons/fa';
 
 export default function CourseDetail() {
@@ -40,6 +39,9 @@ export default function CourseDetail() {
   const hasVideo = Boolean(course.sampleVideoUrl);
   const myCourses = JSON.parse(localStorage.getItem('myCourses')) || [];
   const isOwned = myCourses.some(c => c.id === course.id);
+
+  // 🌟 เช็ครูปแบบคอร์สว่าเป็น VOD หรือ LIVE
+  const isVOD = course.classTime && (course.classTime.includes('คลิป') || course.classTime.includes('24 ชม.'));
 
   const addToCart = () => {
     const existingCart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -136,6 +138,17 @@ export default function CourseDetail() {
             <h1 style={{ fontSize: '28px', color: '#003366', marginTop: '15px', lineHeight: '1.3' }}>{course.title}</h1>
             <p style={{ color: '#888', fontSize: '15px' }}>{course.suitableFor || 'เหมาะสำหรับผู้เริ่มต้นถึงระดับกลาง'}</p>
             
+            {/* 🌟 ป้ายกำกับรูปแบบการเรียน (VOD / LIVE) */}
+            <div style={{ 
+              display: 'inline-flex', alignItems: 'center', gap: '8px', marginTop: '10px', 
+              padding: '8px 16px', borderRadius: '20px', fontWeight: 'bold', fontSize: '14px',
+              backgroundColor: isVOD ? '#e3f2fd' : '#ffebee', // ฟ้า สำหรับ VOD, แดง สำหรับ LIVE
+              color: isVOD ? '#1565c0' : '#c62828'
+            }}>
+              {isVOD ? <FaVideo /> : <FaBroadcastTower />}
+              {isVOD ? 'คอร์สเรียนด้วยคลิปวิดีโอ (VOD)' : 'คอร์สเรียนสด Online (LIVE)'}
+            </div>
+            
             <div style={{ margin: '25px 0', padding: '20px 0', borderTop: '1px solid #eee', borderBottom: '1px solid #eee' }}>
               <div style={{ fontSize: '14px', color: '#888' }}>ราคาพิเศษเพียง</div>
               <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#F2984A' }}>
@@ -153,7 +166,7 @@ export default function CourseDetail() {
                 <FaClock style={{ color: '#F2984A' }} /> <span>เวลาเรียนทั้งหมด: {course.classTime || 'ไม่จำกัด'}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#555', fontSize: '14px' }}>
-                <FaCheckCircle style={{ color: '#28a745' }} /> <span>เข้าเรียนได้ตลอดชีพ</span>
+                <FaCheckCircle style={{ color: '#28a745' }} /> <span>{isVOD ? 'เข้าเรียนได้ตลอดชีพ' : 'เรียนตามตารางเวลาที่กำหนด'}</span>
               </div>
             </div>
 
@@ -179,7 +192,6 @@ export default function CourseDetail() {
           <div style={{ marginTop: '30px', background: '#003366', padding: '25px', borderRadius: '25px', color: '#fff' }}>
             <h4 style={{ margin: '0 0 20px 0', fontSize: '18px', borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '10px' }}>ทีมผู้สอน</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {/* ตรวจสอบข้อมูลผู้สอน */}
               {(course.instructors || [
                 { name: course.instructorName, imageUrl: course.instructorImageUrl }
               ]).map((inst, idx) => (

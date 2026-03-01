@@ -15,7 +15,8 @@ import Cart from './pages/Cart/Cart';
 import Payment from './pages/Payment/Payment';
 import PaymentSuccess from './pages/Payment/PaymentSuccess';
 import UserManagement from './pages/Admin/UserManagement';
-
+import InstructorForm from './pages/Admin/InstructorForm';
+import InstructorManagement from './pages/Admin/InstructorManagement';
 // ==========================================
 // 🛡️ สร้าง "ยาม" สำหรับดักการเข้าถึง Route
 // ==========================================
@@ -134,7 +135,36 @@ function App() {
                 </div>
               </ProtectedRoute>
             } />
+            {/* 👑 หน้าจัดการ User สำหรับ Admin เท่านั้น */}
+            <Route path="/manage-users" element={
+              <ProtectedRoute requireAdmin={true}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
+                  <UserManagement />
+                </div>
+              </ProtectedRoute>
+            } />
 
+            <Route path="/add-instructor" element={
+              <ProtectedRoute requireAdmin={true}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
+                  <InstructorForm />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/manage-instructors" element={
+              <ProtectedRoute requireAdmin={true}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
+                  <InstructorManagement />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/edit-instructor/:id" element={
+              <ProtectedRoute requireAdmin={true}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
+                  <InstructorForm />
+                </div>
+              </ProtectedRoute>
+            } />
           </Routes>
         </main>
 

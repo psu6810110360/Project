@@ -1,4 +1,3 @@
-//CourseForm.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
@@ -8,23 +7,83 @@ export default function CourseForm() {
   const { id } = useParams();
   const isEditMode = Boolean(id);
 
+  const [courseType, setCourseType] = useState('VOD'); 
+
+  
+  const [selectedDays, setSelectedDays] = useState([]);
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const daysList = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อาทิตย์'];
+
+  const [vodDuration, setVodDuration] = useState('');
+
   const [formData, setFormData] = useState({
-    title: '', shortDescription: '', isActive: true, originalPrice: '', salePrice: '',
-    
-    suitableFor: '', classTime: '',
+    title: '', shortDescription: '', isActive: true, originalPrice: '', salePrice: '', suitableFor: ''
   });
 
   const [courseContents, setCourseContents] = useState([{ title: '', lessons: '', problems: '' }]);
   const [coverImage, setCoverImage] = useState(null);
   const [sampleVideo, setSampleVideo] = useState(null);
-
   
-  const [instructors, setInstructors] = useState([{ name: '', image: null, previewUrl: '' }]);
+ 
+  const [availableInstructors, setAvailableInstructors] = useState([]);
+  const [selectedInstructorIds, setSelectedInstructorIds] = useState([]);
+  
+  
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const formatDateThai = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+    return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+  };
 
   useEffect(() => {
+    axios.get('http://localhost:3000/instructors')
+      .then(res => setAvailableInstructors(res.data))
+      .catch(err => console.error("ดึงข้อมูลครูไม่สำเร็จ", err));
+
     if (isEditMode) {
       axios.get(`http://localhost:3000/courses/${id}`).then((res) => {
         const course = res.data;
+        
+        let loadedCourseType = 'VOD';
+        let loadedClassTime = course.classTime || '';
+        
+        if (loadedClassTime && !loadedClassTime.includes('คลิป') && !loadedClassTime.includes('24 ชม.')) {
+           loadedCourseType = 'LIVE';
+          
+           try {
+             let timePart = loadedClassTime;
+             if (loadedClassTime.includes(' | ')) {
+               const mainParts = loadedClassTime.split(' | ');
+               timePart = mainParts[1]; 
+             }
+
+             if (timePart.includes('(')) {
+               const parts = timePart.split(' (');
+               const days = parts[0].split(', ');
+               const times = parts[1].replace(')', '').split(' - ');
+               setSelectedDays(days);
+               setStartTime(times[0]);
+               setEndTime(times[1]);
+             }
+           } catch(e) { console.log('แกะข้อมูลเวลาไม่ได้', e); }
+        } else {
+           loadedCourseType = 'VOD';
+          
+           if (loadedClassTime && loadedClassTime.includes('รวม')) {
+             const match = loadedClassTime.match(/รวม (.*?) ชั่วโมง/);
+             if (match && match[1]) {
+               setVodDuration(match[1]);
+             }
+           }
+        }
+        setCourseType(loadedCourseType);
+
         setFormData({
           title: course.title || '',
           shortDescription: course.shortDescription || '',
@@ -32,7 +91,6 @@ export default function CourseForm() {
           originalPrice: course.originalPrice || '',
           salePrice: course.salePrice || '',
           suitableFor: course.suitableFor || '',
-          classTime: course.classTime || '',
         });
 
         if (course.courseContents) {
@@ -40,20 +98,8 @@ export default function CourseForm() {
           setCourseContents(contents);
         }
 
-       
         if (course.instructors && Array.isArray(course.instructors)) {
-          setInstructors(course.instructors.map(inst => ({
-            name: inst.name || '',
-            image: null,
-            previewUrl: inst.imageUrl ? `http://localhost:3000${inst.imageUrl}` : ''
-          })));
-        } else if (course.instructorName) {
-          
-          setInstructors([{ 
-            name: course.instructorName, 
-            image: null, 
-            previewUrl: course.instructorImageUrl ? `http://localhost:3000${course.instructorImageUrl}` : '' 
-          }]);
+          setSelectedInstructorIds(course.instructors.map(inst => inst.id));
         }
       });
     }
@@ -64,10 +110,34 @@ export default function CourseForm() {
     setFormData((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
+  const handleDayClick = (day) => {
+    setSelectedDays(prev => 
+      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+    );
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const data = new FormData();
     
+    let finalClassTime = '';
+    
+    if (courseType === 'VOD') {
+      finalClassTime = `เรียนออนไลน์ด้วยคลิป (ดูได้ตลอด 24 ชม.)${vodDuration ? ` รวม ${vodDuration} ชั่วโมง` : ''}`;
+    } else {
+      if (selectedDays.length === 0) {
+        alert('กรุณาเลือกวันที่เรียนอย่างน้อย 1 วันครับ');
+        return; 
+      }
+      
+      let dateRangeText = '';
+      if (startDate && endDate) {
+        dateRangeText = `${formatDateThai(startDate)} - ${formatDateThai(endDate)} | `;
+      }
+      
+      finalClassTime = `${dateRangeText}${selectedDays.join(', ')} (${startTime} - ${endTime})`;
+    }
+
     Object.keys(formData).forEach(key => {
       if (key === 'isActive') {
         data.append('isActive', formData.isActive ? 'true' : 'false');
@@ -76,18 +146,13 @@ export default function CourseForm() {
       }
     });
 
+    data.append('classTime', finalClassTime);
     data.append('courseContents', JSON.stringify(courseContents));
 
     if (coverImage) data.append('coverImage', coverImage);
     if (sampleVideo) data.append('sampleVideo', sampleVideo);
 
-   
-    instructors.forEach((inst) => {
-      data.append('instructorNames', inst.name); 
-      if (inst.image) {
-        data.append('instructorImages', inst.image); 
-      }
-    });
+    data.append('instructorIds', JSON.stringify(selectedInstructorIds));
 
     try {
       if (isEditMode) {
@@ -102,8 +167,13 @@ export default function CourseForm() {
     }
   };
 
+  
+  const filteredInstructors = availableInstructors.filter(inst => 
+    inst.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const inputStyle = { padding: '10px', borderRadius: '6px', border: '1px solid #ccc', outlineColor: '#003366', fontSize: '14px', width: '100%', boxSizing: 'border-box' };
-  const labelStyle = { fontWeight: 'bold', marginBottom: '8px', color: '#003366' };
+  const labelStyle = { fontWeight: 'bold', marginBottom: '8px', color: '#003366', display: 'block' };
 
   return (
     <div style={{ maxWidth: '650px', background: '#FFFFFF', border: 'none', padding: '40px', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', margin: '0 auto' }}>
@@ -113,7 +183,18 @@ export default function CourseForm() {
       
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         
-      
+        <div style={{ background: '#f4f7f6', padding: '20px', borderRadius: '8px', border: '2px solid #003366' }}>
+          <label style={{ ...labelStyle, fontSize: '16px' }}>รูปแบบคอร์สเรียนหลัก:</label>
+          <select 
+            value={courseType} 
+            onChange={(e) => setCourseType(e.target.value)} 
+            style={{ ...inputStyle, fontSize: '15px', fontWeight: 'bold', cursor: 'pointer' }}
+          >
+            <option value="VOD">เรียนด้วยคลิปวิดีโอ (ดูได้ตลอด 24 ชม.)</option>
+            <option value="LIVE">เรียนสด Online / เรียนรอบสด (กำหนดเวลา)</option>
+          </select>
+        </div>
+
         <div><label style={labelStyle}>ชื่อคอร์ส:</label><input type="text" name="title" value={formData.title} onChange={handleChange} required style={inputStyle} /></div>
         <div><label style={labelStyle}>รายละเอียดสั้น:</label><textarea name="shortDescription" value={formData.shortDescription} onChange={handleChange} style={{ ...inputStyle, height: '80px', resize: 'vertical' }} /></div>
         
@@ -122,7 +203,6 @@ export default function CourseForm() {
           <div style={{ flex: 1 }}><label style={{ ...labelStyle, color: '#F2984A' }}>ราคาขาย:</label><input type="number" name="salePrice" value={formData.salePrice} onChange={handleChange} required style={{ ...inputStyle, border: '1px solid #F2984A' }} /></div>
         </div>
 
-       
         <div style={{ display: 'flex', gap: '20px' }}>
           <div style={{ flex: 1 }}>
             <label style={labelStyle}>รูปภาพปก:</label>
@@ -138,58 +218,131 @@ export default function CourseForm() {
         
        
         <div>
-          <label style={labelStyle}>รายชื่อครูผู้สอน:</label>
-          {instructors.map((inst, index) => (
-            <div key={index} style={{ display: 'flex', gap: '15px', background: '#fcfcfc', padding: '15px', borderRadius: '8px', marginBottom: '10px', border: '1px solid #eee', alignItems: 'center' }}>
-              <div style={{ flex: 1 }}>
-                <input 
-                  type="text" placeholder={`ชื่อครูคนที่ ${index + 1}`}
-                  value={inst.name} 
-                  onChange={(e) => {
-                    const newItems = [...instructors];
-                    newItems[index].name = e.target.value;
-                    setInstructors(newItems);
+          <label style={labelStyle}>เลือกครูผู้สอนประจำคอร์สนี้ (เลือกได้หลายคน):</label>
+          
+          <div style={{ padding: '15px', background: '#fcfcfc', border: '1px solid #eee', borderRadius: '12px' }}>
+           
+            <input 
+              type="text" 
+              placeholder="🔍 ค้นหาชื่อครู..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ ...inputStyle, marginBottom: '15px', borderRadius: '20px', padding: '10px 15px' }}
+            />
+
+            <div style={{ 
+              display: 'flex', gap: '15px', flexWrap: 'wrap',
+              maxHeight: '220px', 
+              overflowY: 'auto',  
+              paddingBottom: '10px'
+            }}>
+            
+              {filteredInstructors.map(inst => (
+                <div 
+                  key={inst.id} 
+                  onClick={() => {
+                    setSelectedInstructorIds(prev => 
+                      prev.includes(inst.id) ? prev.filter(id => id !== inst.id) : [...prev, inst.id]
+                    )
                   }}
-                  required
-                  style={{ ...inputStyle, marginBottom: '10px' }} 
-                />
-                <input 
-                  type="file" accept="image/*"
-                  onChange={(e) => {
-                    const newItems = [...instructors];
-                    newItems[index].image = e.target.files[0];
-                    setInstructors(newItems);
+                  style={{ 
+                    display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 15px', 
+                    borderRadius: '30px', cursor: 'pointer', transition: '0.2s',
+                    border: selectedInstructorIds.includes(inst.id) ? '2px solid #F2984A' : '1px solid #ccc',
+                    background: selectedInstructorIds.includes(inst.id) ? '#fff8f0' : '#fff',
+                    height: 'fit-content'
                   }}
-                />
-              </div>
+                >
+                  <img 
+                    src={inst.imageUrl ? `http://localhost:3000${inst.imageUrl}` : 'https://via.placeholder.com/40'} 
+                    alt={inst.name} 
+                    style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} 
+                  />
+                  <span style={{ fontWeight: selectedInstructorIds.includes(inst.id) ? 'bold' : 'normal', color: '#003366' }}>
+                    {inst.name}
+                  </span>
+                  {selectedInstructorIds.includes(inst.id) && <span style={{ color: '#F2984A' }}>✔</span>}
+                </div>
+              ))}
 
               
-              {inst.previewUrl && !inst.image && (
-                <img src={inst.previewUrl} alt="preview" style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover' }} />
+              {availableInstructors.length > 0 && filteredInstructors.length === 0 && (
+                <span style={{ color: '#888', fontSize: '14px', width: '100%', textAlign: 'center', marginTop: '10px' }}>
+                  ไม่พบชื่อครูที่คุณค้นหา
+                </span>
               )}
 
-             
-              {instructors.length > 1 && (
-                <button type="button" onClick={() => setInstructors(instructors.filter((_, i) => i !== index))} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer', padding: '10px' }}>
-                  ลบ
-                </button>
+            
+              {availableInstructors.length === 0 && (
+                <span style={{ color: 'red', fontSize: '14px', fontStyle: 'italic', width: '100%', textAlign: 'center' }}>
+                  ยังไม่มีข้อมูลครูในระบบ กรุณาเพิ่มประวัติครูก่อน
+                </span>
               )}
             </div>
-          ))}
-          <button type="button" onClick={() => setInstructors([...instructors, { name: '', image: null, previewUrl: '' }])} style={{ padding: '8px 12px', cursor: 'pointer', background: '#f0f0f0', border: '1px solid #ccc', borderRadius: '4px' }}>
-            + เพิ่มครูผู้สอน
-          </button>
+          </div>
         </div>
 
         <hr style={{ border: '0', borderTop: '1px solid #eee', margin: '10px 0' }} />
 
-       
-        
-       
         <div style={{ display: 'flex', gap: '20px' }}>
-          <div style={{ flex: 1 }}><label style={labelStyle}>เหมาะสำหรับ:</label><input type="text" name="suitableFor" value={formData.suitableFor} onChange={handleChange} placeholder="เช่น นักเรียน ม.4-6" style={inputStyle} /></div>
-          <div style={{ flex: 1 }}><label style={labelStyle}> เวลาเรียน:</label><input type="text" name="classTime" value={formData.classTime} onChange={handleChange} placeholder="เช่น เสาร์-อาทิตย์ 09:00-12:00" style={inputStyle} /></div>
+          <div style={{ flex: 1 }}>
+            <label style={labelStyle}>เหมาะสำหรับ (เช่น นักเรียน ม.4-6):</label>
+            <input type="text" name="suitableFor" value={formData.suitableFor} onChange={handleChange} style={inputStyle} />
+          </div>
+          
+          {courseType === 'VOD' && (
+            <div style={{ flex: 1 }}>
+               <label style={labelStyle}>เวลาเรียนทั้งหมด (ชั่วโมง):</label>
+               <input 
+                 type="number" 
+                 value={vodDuration} 
+                 onChange={(e) => setVodDuration(e.target.value)} 
+                 placeholder="เช่น 15 (ใส่แค่ตัวเลข)" 
+                 style={inputStyle} 
+                 min="1"
+               />
+            </div>
+          )}
         </div>
+          
+        {courseType === 'LIVE' && (
+          <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '8px', border: '1px solid #ddd' }}>
+            
+            <label style={labelStyle}> ระยะเวลาของคอร์สเรียน (เริ่ม - สิ้นสุด):</label>
+            <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginBottom: '20px' }}>
+              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required style={inputStyle} />
+              <span style={{ fontWeight: 'bold', color: '#555' }}>ถึง</span>
+              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required style={inputStyle} />
+            </div>
+
+            <label style={labelStyle}> เลือกวันที่เรียน (ในแต่ละสัปดาห์):</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '15px' }}>
+              {daysList.map(day => (
+                <button
+                  key={day}
+                  type="button"
+                  onClick={() => handleDayClick(day)}
+                  style={{
+                    padding: '8px 15px', border: '1px solid #003366', borderRadius: '20px', cursor: 'pointer',
+                    background: selectedDays.includes(day) ? '#003366' : '#fff',
+                    color: selectedDays.includes(day) ? '#fff' : '#003366',
+                    fontWeight: selectedDays.includes(day) ? 'bold' : 'normal',
+                    transition: '0.2s'
+                  }}
+                >
+                  {day}
+                </button>
+              ))}
+            </div>
+
+            <label style={labelStyle}> เลือกเวลาเรียน:</label>
+            <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+              <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} required style={inputStyle} />
+              <span style={{ fontWeight: 'bold', color: '#555' }}>ถึง</span>
+              <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} required style={inputStyle} />
+            </div>
+          </div>
+        )}
 
         <div>
           <label style={labelStyle}> รายละเอียดคอร์สย่อย:</label>

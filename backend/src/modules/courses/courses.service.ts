@@ -1,43 +1,92 @@
-//courses.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm'; 
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { Course } from './entities/course.entity';
+import { Instructor } from '../instructors/entities/instructor.entity';
 
 @Injectable()
 export class CoursesService {
   constructor(
-    
     @InjectRepository(Course)
     private readonly courseRepository: Repository<Course>,
+    
+    
+    @InjectRepository(Instructor)
+    private readonly instructorRepository: Repository<Instructor>,
   ) {}
 
   // 1. เพิ่มคอร์สใหม่
-  create(createCourseDto: CreateCourseDto) {
-    const newCourse = this.courseRepository.create(createCourseDto);
+  async create(createCourseDto: any) {
+    let instructors: Instructor[] = [];
+
+  
+    if (createCourseDto.instructorIds) {
+      try {
+        const parsedIds = JSON.parse(createCourseDto.instructorIds); 
+        if (Array.isArray(parsedIds) && parsedIds.length > 0) {
+        
+          instructors = await this.instructorRepository.findBy({
+            id: In(parsedIds),
+          });
+        }
+      } catch (error) {
+        console.error('แกะข้อมูล instructorIds ไม่สำเร็จ:', error);
+      }
+    }
+
+  
+    const newCourse = this.courseRepository.create({
+      ...createCourseDto,
+      instructors: instructors,
+    });
+    
     return this.courseRepository.save(newCourse);
   }
 
   // 2. ดึงคอร์สทั้งหมด
   findAll() {
-    return this.courseRepository.find();
+    return this.courseRepository.find({
+      relations: ['instructors'], // 🌟 สั่งให้ดึงข้อมูลครูแนบติดไปด้วย
+    });
   }
 
   // 3. ดึงคอร์สเดียวตาม ID
   async findOne(id: string) {
-    const course = await this.courseRepository.findOne({ where: { id } });
+    const course = await this.courseRepository.findOne({ 
+      where: { id },
+      relations: ['instructors'], // 🌟 สั่งให้ดึงข้อมูลครูแนบติดไปด้วย
+    });
+    
     if (!course) {
-      throw new NotFoundException(`ไม่พบคอร์สที่มี ID: ${id}`); // โยน Error 404 ถ้าหาไม่เจอ
+      throw new NotFoundException(`ไม่พบคอร์สที่มี ID: ${id}`); 
     }
     return course;
   }
 
   // 4. แก้ไขข้อมูลคอร์ส
-  async update(id: string, updateCourseDto: UpdateCourseDto) {
-    const course = await this.findOne(id); // เช็คก่อนว่ามีคอร์สนี้ไหม
-    Object.assign(course, updateCourseDto); // เอาข้อมูลใหม่ไปทับข้อมูลเดิม
+  async update(id: string, updateCourseDto: any) {
+    const course = await this.findOne(id); 
+
+    // 🌟 ถ้ามีการอัปเดตรายชื่อครู
+    if (updateCourseDto.instructorIds) {
+      try {
+        const parsedIds = JSON.parse(updateCourseDto.instructorIds);
+        if (Array.isArray(parsedIds)) {
+          course.instructors = await this.instructorRepository.findBy({
+            id: In(parsedIds),
+          });
+        }
+      } catch (error) {
+        console.error('แกะข้อมูล instructorIds ไม่สำเร็จ:', error);
+      }
+    }
+
+    // ลบ instructorIds ออกจาก DTO ก่อนเอาไปอัปเดตทับข้อมูลเดิม
+    delete updateCourseDto.instructorIds;
+    Object.assign(course, updateCourseDto); 
+    
     return this.courseRepository.save(course);
   }
 
@@ -49,7 +98,6 @@ export class CoursesService {
       throw new NotFoundException(`ไม่พบคอร์สที่มี ID: ${id}`);
     }
 
-    // สั่งลบได้เลยเดี๋ยว TypeORM จัดการลบข้อมูลในตารางกลางให้เอง (เพราะเราใส่ CASCADE ไว้แล้ว)
     return this.courseRepository.remove(course);
   }
 }
