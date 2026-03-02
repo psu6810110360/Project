@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -7,6 +7,34 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService implements OnModuleInit {
+  // อย่าลืม import ConflictException เพิ่มที่ด้านบนของไฟล์ด้วยนะครับ
+  // import { Injectable, NotFoundException, ConflictException, OnModuleInit } from '@nestjs/common';
+
+  async create(userData: any) {
+    // 1. เช็กว่าอีเมลนี้มีคนสมัครไปหรือยัง
+    const existingUser = await this.usersRepository.findOne({ where: { email: userData.email } });
+    if (existingUser) {
+      throw new ConflictException('อีเมลนี้ถูกใช้งานแล้วครับ'); 
+    }
+
+    // 2. เข้ารหัสผ่าน (Hashing) ก่อนบันทึกลง Database เพื่อความปลอดภัย
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
+
+    // 3. สร้างออบเจกต์ User ใหม่
+    const newUser = this.usersRepository.create({
+      ...userData,          // ดึงข้อมูลที่ส่งมา (firstName, lastName, phone ฯลฯ)
+      password: hashedPassword, // เสียบพาสเวิร์ดที่เข้ารหัสแล้วทับลงไป
+      role: userData.role || 'user' // กำหนดสิทธิ์เริ่มต้นเป็น user (ถ้าไม่ได้ส่งมา)
+    });
+
+    // 4. บันทึกลงฐานข้อมูลและส่งผลลัพธ์กลับไป
+    const savedUser = await this.usersRepository.save(newUser);
+    
+    // ลบ password ออกก่อนส่งข้อมูลกลับไปให้ Frontend เพื่อความปลอดภัย
+    const { password, ...result } = savedUser as any;
+    return result;
+  }
+  
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
