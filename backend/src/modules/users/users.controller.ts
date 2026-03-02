@@ -10,6 +10,13 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @Post('register')
+  register(@Body() userData: any) { 
+    // แนะนำให้เปลี่ยน any เป็น DTO (Data Transfer Object) เช่น CreateUserDto ในภายหลังนะครับ
+    // และเรียกใช้ฟังก์ชันใน Service (สมมติว่าใน Service น้องต้นกล้าตั้งชื่อฟังก์ชันว่า create หรือ register)
+    return this.usersService.create(userData); 
+  }
+
   // 🔍 ดึงข้อมูลผู้ใช้ 1 คน (พร้อมคอร์สที่ซื้อไว้) - เปลี่ยนมาใช้ .findOne() ให้ตรงกับ Service
   @Get(':id')
   findOne(@Param('id') id: string) {
