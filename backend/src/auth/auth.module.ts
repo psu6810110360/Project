@@ -1,8 +1,10 @@
+// src/auth/auth.module.ts
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from '../modules/users/users.module'; // 👈 นำเข้า UsersModule
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
@@ -14,6 +16,6 @@ import { UsersModule } from '../modules/users/users.module'; // 👈 นำเ�
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, JwtStrategy],
 })
 export class AuthModule {}

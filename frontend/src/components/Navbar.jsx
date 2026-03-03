@@ -114,7 +114,23 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
             
             {/* ซ่อนปุ่มบัญชีของฉัน หรือเปลี่ยนเป็นจัดการระบบถ้าเป็นแอดมิน */}
             {userRole === 'admin' ? (
-              <Link to="/manage-users" style={{ color: '#F2984A', fontWeight: 'bold' }} onClick={() => setIsMobileMenuOpen(false)}>จัดการผู้ใช้</Link>
+              <>
+                <Link
+                  to="/manage-users"
+                  className="admin-link"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  จัดการผู้ใช้
+                </Link>
+
+                <Link
+                  to="/admin/payments"
+                  className="admin-link"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  จัดการการชำระเงิน
+                </Link>
+              </>
             ) : (
               <span onClick={() => setIsMobileMenuOpen(false)}>บัญชีของฉัน</span>
             )}

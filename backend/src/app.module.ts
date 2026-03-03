@@ -2,45 +2,45 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CoursesModule } from './modules/courses/courses.module';
-import { UsersModule } from './modules/users/users.module'; // 👈 1. นำเข้า UsersModule
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+
+import { CoursesModule } from './modules/courses/courses.module';
+import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 
 @Module({
   imports: [
-    
-    ConfigModule.forRoot({
-      isGlobal: true, 
-    }),
-    
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('DB_HOST'),
-        port: configService.get<number>('DB_PORT'),
-        username: configService.get<string>('DB_USERNAME'),
-        password: configService.get<string>('DB_PASSWORD'),
-        database: configService.get<string>('DB_NAME'),
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true, 
-        autoLoadEntities: true,
-      }),
-      inject: [ConfigService],
-    }), 
-
+    // ✅ Serve static files (slips)
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'), 
+      rootPath: join(process.cwd(), 'uploads'),
       serveRoot: '/uploads',
     }),
-    
-    CoursesModule,
+
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('DB_HOST'),
+        port: configService.get('DB_PORT'),
+        username: configService.get('DB_USERNAME'),
+        password: configService.get('DB_PASSWORD'),
+        database: configService.get('DB_NAME'),
+        autoLoadEntities: true,
+        synchronize: true,
+      }),
+    }),
+
+    AuthModule,
     UsersModule,
-    AuthModule, // 👈 2. เพิ่มเข้าสู่ระบบหลักตรงนี้
+    CoursesModule,
+    PaymentsModule,
   ],
-  controllers: [],
-  providers: [],
 })
 export class AppModule {}

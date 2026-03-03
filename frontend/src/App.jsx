@@ -15,6 +15,7 @@ import Cart from './pages/Cart/Cart';
 import Payment from './pages/Payment/Payment';
 import PaymentSuccess from './pages/Payment/PaymentSuccess';
 import UserManagement from './pages/Admin/UserManagement';
+import AdminPayments from './pages/Admin/AdminPayments';
 
 // ==========================================
 // 🛡️ สร้าง "ยาม" สำหรับดักการเข้าถึง Route
@@ -118,6 +119,8 @@ function App() {
               </ProtectedRoute>
             } />
 
+            <Route path="/admin/payments" element={<AdminPayments />} />
+
             <Route path="/edit/:id" element={
               <ProtectedRoute requireAdmin={true}>
                 <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
@@ -136,6 +139,7 @@ function App() {
             } />
 
           </Routes>
+
         </main>
 
         <Footer />
