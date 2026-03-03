@@ -9,6 +9,7 @@ import CourseForm from './pages/Courses/CourseForm';
 import CourseDetail from './pages/Courses/CourseDetail';
 import HomePage from './pages/Home/HomePage';
 import Login from './pages/Login/Login';
+import OurStudents from './pages/OurStudents/OurStudents'; // นำเข้าหน้า OurStudents
 
 import MyClassroom from "./pages/MyClassroom/MyClassroom";
 import Cart from './pages/Cart/Cart';
@@ -56,6 +57,9 @@ function App() {
             {/* 🟢 หน้าทั่วไป ใครๆ ก็เข้าได้ (ไม่ต้องมียาม) */}
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} /> 
+            
+            {/* 🔥 หน้า "นักเรียนของเรา" เพิ่มตรงนี้ครับ 🔥 */}
+            <Route path="/our-students" element={<OurStudents />} /> 
             
             {/* 🟡 หน้าที่ต้อง "ล็อกอิน" ก่อนถึงจะเข้าได้ (ทั้ง Student และ Admin) */}
             <Route path="/courses" element={

@@ -1,0 +1,74 @@
+/* OurStudents.css */
+.students-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 20px;
+  font-family: 'Kanit', sans-serif;
+}
+
+.students-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.students-header h1 {
+  color: #003366;
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.students-header p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.students-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+.student-card {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+  border: 1px solid #eee;
+}
+
+.student-card:hover {
+  transform: translateY(-10px);
+}
+
+.student-image img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 20px;
+  border: 3px solid #FF9F43; /* สีส้มตามปุ่มลงทะเบียน */
+}
+
+.student-info h3 {
+  color: #003366;
+  margin-bottom: 5px;
+}
+
+.course-tag {
+  display: inline-block;
+  background: #f0f4f8;
+  color: #003366;
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+
+.review-text {
+  color: #555;
+  line-height: 1.6;
+  font-style: italic;
+}

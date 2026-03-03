@@ -1,4 +1,4 @@
-//Navbar.jsx
+// Navbar.jsx
 import React, { useState, useEffect } from 'react'; 
 import { Link, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -108,15 +108,20 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
         {/* ส่วนเมนู */}
         <div className={`nav-menu ${isMobileMenuOpen ? 'open' : ''}`}>
           <div className="nav-links">
-            <span onClick={() => setIsMobileMenuOpen(false)}>นักเรียนของเรา</span>
+            {/* 🔥 แก้ไข: เชื่อมโยงไปหน้า นักเรียนของเรา */}
+            <Link to="/our-students" onClick={() => setIsMobileMenuOpen(false)}>นักเรียนของเรา</Link>
+            
+            {/* หมายเหตุ: หน้าติดต่อเรา ถ้ายังไม่มี Route สามารถเปลี่ยนเป็น Link ภายหลังได้ */}
             <span onClick={() => setIsMobileMenuOpen(false)}>ติดต่อเรา</span>
+            
             <Link to="/courses" onClick={() => setIsMobileMenuOpen(false)}>คอร์สเรียน</Link>
             
             {/* ซ่อนปุ่มบัญชีของฉัน หรือเปลี่ยนเป็นจัดการระบบถ้าเป็นแอดมิน */}
             {userRole === 'admin' ? (
               <Link to="/manage-users" style={{ color: '#F2984A', fontWeight: 'bold' }} onClick={() => setIsMobileMenuOpen(false)}>จัดการผู้ใช้</Link>
             ) : (
-              <span onClick={() => setIsMobileMenuOpen(false)}>บัญชีของฉัน</span>
+              /* 🔥 แก้ไข: เชื่อมโยงไปหน้า My Classroom เมื่อเป็นนักเรียน */
+              <Link to="/my-classroom" onClick={() => setIsMobileMenuOpen(false)}>บัญชีของฉัน</Link>
             )}
 
             {/* 🛒 ไอคอนตะกร้าสินค้า */}
