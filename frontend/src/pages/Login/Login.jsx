@@ -1,4 +1,4 @@
-// Login.jsx
+// src/pages/Login/Login.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -42,7 +42,7 @@ function Login({ setIsLoggedIn }) {
     alertStudent: 'เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับน้องนักเรียน',
     alertFail: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาลองใหม่',
     alertPwdNotMatch: 'รหัสผ่านไม่ตรงกัน กรุณาตรวจสอบอีกครั้ง',
-    alertRegSuccess: 'ลงทะเบียนสำเร็จ! สามารถเข้าสู่ระบบได้เลย',
+    alertRegSuccess: 'ลงทะเบียนสำเร็จ! กรุณาเข้าสู่ระบบ', // ปรับข้อความใหม่
     promptReset: 'กรุณากรอกอีเมลของคุณเพื่อรับลิงก์รีเซ็ตรหัสผ่าน:',
     alertResetSuccess: 'ลิงก์รีเซ็ตรหัสผ่านได้ถูกส่งไปยัง'
   };
@@ -54,6 +54,9 @@ function Login({ setIsLoggedIn }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // ==========================================
+    // 🟢 ส่วนของ LOGIN (เข้าสู่ระบบ)
+    // ==========================================
     if (isLogin) {
       try {
         const response = await fetch('http://localhost:3000/auth/login', {
@@ -77,11 +80,9 @@ function Login({ setIsLoggedIn }) {
             // --- ส่วนกู้คืนตะกร้าสินค้า ---
             const savedCart = localStorage.getItem(`cart_user_${userId}`);
             if (savedCart) {
-                // ดึงของในตะกร้าปัจจุบัน (เผื่อเขากดเพิ่มตอนยังไม่ล็อกอิน)
                 const currentCart = JSON.parse(localStorage.getItem('cart')) || [];
                 const savedCartParsed = JSON.parse(savedCart);
                 
-                // รวมของเก่า + ของใหม่ (และกรองของซ้ำออก โดยเช็คจาก id)
                 const mergedCart = [...currentCart, ...savedCartParsed].reduce((acc, current) => {
                     const x = acc.find(item => item.id === current.id);
                     if (!x) {
@@ -91,14 +92,12 @@ function Login({ setIsLoggedIn }) {
                     }
                 }, []);
                 
-                // บันทึกกลับลงไปใน 'cart' หลัก
                 localStorage.setItem('cart', JSON.stringify(mergedCart));
             }
             // ---------------------------
             
-            // 🔥🔥 [เพิ่มบรรทัดนี้] สั่งให้ Navbar อัปเดตตัวเลขทันที! 🔥🔥
+            // แจ้งเตือน Navbar ให้อัปเดต
             window.dispatchEvent(new Event('cartUpdated'));
-
 
             const decodedToken = jwtDecode(token);
             const userRole = decodedToken.role || 'student'; 
@@ -138,7 +137,9 @@ function Login({ setIsLoggedIn }) {
       }
 
     } else {
-      // โหมด REGISTER
+      // ==========================================
+      // 🔵 ส่วนของ REGISTER (ลงทะเบียน) - แก้ไขใหม่
+      // ==========================================
       if (registerData.password !== registerData.confirmPassword) {
         Swal.fire({ title: 'ข้อผิดพลาด!', text: t.alertPwdNotMatch, icon: 'warning', confirmButtonColor: '#FF9F43' });
         return;
@@ -158,46 +159,27 @@ function Login({ setIsLoggedIn }) {
         });
 
         if (response.ok) {
-          const data = await response.json();
-          
-          const token = data.access_token; 
-          const userObj = data.user; 
-          const userId = userObj ? userObj.id : null; 
+          // ✅ แก้ไข: ไม่ต้องพยายามดึง token ที่นี่ เพราะ Backend Register มักไม่ส่งมา
+          Swal.fire({
+            title: 'ลงทะเบียนสำเร็จ!',
+            text: 'บัญชีของคุณถูกสร้างเรียบร้อยแล้ว กรุณาเข้าสู่ระบบ',
+            icon: 'success',
+            confirmButtonColor: '#003366'
+          }).then(() => {
+            // สลับกลับไปหน้า Login อัตโนมัติ และเคลียร์รหัสผ่าน
+            setIsLogin(true);
+            setLoginEmail(registerData.email); // อำนวยความสะดวก กรอกอีเมลให้เลย
+            setLoginPassword('');
+            setRegisterData({ firstName: '', lastName: '', phone: '', email: '', password: '', confirmPassword: '' });
+          });
 
-          if (token && userId) {
-            localStorage.setItem('token', token);
-            localStorage.setItem('userId', userId);
-            localStorage.setItem('isLoggedIn', 'true');
-
-            try {
-                const decodedToken = jwtDecode(token);
-                const userRole = decodedToken.role || 'student'; 
-                localStorage.setItem('userRole', userRole);
-                const isAdmin = userRole === 'admin';
-                
-                 Swal.fire({
-                  title: 'สำเร็จ!',
-                  text: isAdmin ? t.alertAdmin : t.alertStudent,
-                  icon: 'success',
-                  confirmButtonColor: '#003366'
-                }).then(() => {
-                  setIsLoggedIn(true); 
-                  navigate('/courses'); 
-                });
-            } catch (e) {
-                console.error("Token Decode Error:", e);
-            }
-
-          } else {
-             console.error("Missing Data:", { token, userId });
-             throw new Error("ข้อมูลตอบกลับจากระบบไม่ครบถ้วน (Token หรือ ID หาย)");
-          }
         } else {
           const errorData = await response.json();
           Swal.fire({ title: 'ข้อผิดพลาด!', text: errorData.message || 'ไม่สามารถสมัครสมาชิกได้', icon: 'error', confirmButtonColor: '#FF9F43' });
         }
       } catch (error) {
-        Swal.fire({ title: 'ระบบขัดข้อง!', text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบ Backend', icon: 'error', confirmButtonColor: '#FF9F43' });
+        console.error(error);
+        Swal.fire({ title: 'ระบบขัดข้อง!', text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้', icon: 'error', confirmButtonColor: '#FF9F43' });
       }
     }
   };
