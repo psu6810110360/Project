@@ -1,0 +1,124 @@
+/* พื้นหลังของหน้า */
+body {
+  background-color: #f8f9fa;
+  font-family: 'Kanit', sans-serif; /* แนะนำให้ใช้ font ภาษาไทยที่ดูทันสมัย */
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: #fff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* หัวข้อ */
+.title {
+  color: #003366;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 30px;
+  border-left: 5px solid #ff8c00; /* ขีดสีส้มข้างหน้าตามรูป */
+  padding-left: 15px;
+}
+
+/* การจัดวาง Form */
+.form-card {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background: #fdfdfd;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: border 0.3s ease;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: #003366;
+}
+
+textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* ปุ่มเพิ่มนักเรียน */
+.add-btn {
+  background-color: #003366;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.add-btn:hover {
+  background-color: #002244;
+}
+
+hr {
+  margin: 40px 0;
+  border: 0;
+  border-top: 1px solid #eee;
+}
+
+/* ตาราง */
+.student-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.student-table th {
+  background-color: #f1f4f8;
+  color: #333;
+  text-align: left;
+  padding: 12px 15px;
+  font-size: 15px;
+}
+
+.student-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+
+/* ปุ่มในตาราง */
+.edit-btn {
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  padding: 5px 10px;
+  border-radius: 4px;
+  margin-right: 5px;
+  cursor: pointer;
+}
+
+.delete-btn {
+  background: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background: #e60000;
+}
