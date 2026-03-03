@@ -1,7 +1,6 @@
-// src/modules/courses/entities/course.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { Payment } from '../../payments/entities/payment.entity';
+
 
 @Entity('courses')
 export class Course {
@@ -32,27 +31,29 @@ export class Course {
   
   @Column({ type: 'json', nullable: true })
   instructors: any[];
+
+
   
   @Column({ nullable: true })
   suitableFor: string; 
 
   @Column({ nullable: true })
-  classTime: string;   
+  classTime: string;
+  
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
+  price: number;
 
   
   @Column({ type: 'json', nullable: true })
   courseContents: any[];
 
   @CreateDateColumn()
-  created_at: Date;
+  createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToMany(() => User, (user) => user.courses, { onDelete: 'CASCADE' })
+  @ManyToMany(() => User, (user) => user.courses)
   users: User[];
-
-  @OneToMany(() => Payment, (payment) => payment.course)
-  payments: Payment[]
-
+  
   }

@@ -1,0 +1,54 @@
+.admin-payment-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px;
+}
+
+.admin-title {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #003366;
+}
+
+.payment-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.payment-table th,
+.payment-table td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: center;
+}
+
+.payment-table th {
+  background-color: #f5f5f5;
+}
+
+.btn-approve {
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  margin-right: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-reject {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-approve:hover {
+  opacity: 0.85;
+}
+
+.btn-reject:hover {
+  opacity: 0.85;
+}

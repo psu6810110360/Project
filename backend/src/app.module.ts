@@ -2,45 +2,47 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CoursesModule } from './modules/courses/courses.module';
+import { UsersModule } from './modules/users/users.module'; // 👈 1. นำเข้า UsersModule
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-
-import { CoursesModule } from './modules/courses/courses.module';
-import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 
 @Module({
   imports: [
-    // ✅ Serve static files (slips)
-    ServeStaticModule.forRoot({
-      rootPath: join(process.cwd(), 'uploads'),
-      serveRoot: '/uploads',
-    }),
-
+    
     ConfigModule.forRoot({
-      isGlobal: true,
+      isGlobal: true, 
     }),
-
+    
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        host: configService.get('DB_HOST'),
-        port: configService.get('DB_PORT'),
-        username: configService.get('DB_USERNAME'),
-        password: configService.get('DB_PASSWORD'),
-        database: configService.get('DB_NAME'),
+        host: configService.get<string>('DB_HOST'),
+        port: configService.get<number>('DB_PORT'),
+        username: configService.get<string>('DB_USERNAME'),
+        password: configService.get<string>('DB_PASSWORD'),
+        database: configService.get<string>('DB_NAME'),
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        synchronize: true, 
         autoLoadEntities: true,
-        synchronize: true,
       }),
-    }),
+      inject: [ConfigService],
+    }), 
 
-    AuthModule,
-    UsersModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'), 
+      serveRoot: '/uploads',
+    }),
+    
     CoursesModule,
+    UsersModule,
+    AuthModule, // 👈 2. เพิ่มเข้าสู่ระบบหลักตรงนี้
     PaymentsModule,
   ],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

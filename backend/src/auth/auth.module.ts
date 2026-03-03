@@ -1,14 +1,18 @@
 // src/auth/auth.module.ts
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { JwtModule } from '@nestjs/jwt';
-import { UsersModule } from '../modules/users/users.module'; // 👈 นำเข้า UsersModule
 import { JwtStrategy } from './jwt.strategy';
+
+import { UsersModule } from '../modules/users/users.module';
 
 @Module({
   imports: [
-    UsersModule, // 👈 ใส่ตรงนี้ด้วย
+    UsersModule,
+    PassportModule,
     JwtModule.register({
       global: true,
       secret: 'MY_SUPER_SECRET_KEY',
@@ -16,6 +20,10 @@ import { JwtStrategy } from './jwt.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [
+    AuthService,
+    JwtStrategy, // ✅ สำคัญมาก
+  ],
+  exports: [JwtModule],
 })
 export class AuthModule {}

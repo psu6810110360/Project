@@ -1,5 +1,5 @@
+// src/App.jsx
 import { useState } from 'react';
-// 1. นำเข้า Navigate เพื่อใช้สั่งเด้งเปลี่ยนหน้า
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'; 
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -15,26 +15,23 @@ import Cart from './pages/Cart/Cart';
 import Payment from './pages/Payment/Payment';
 import PaymentSuccess from './pages/Payment/PaymentSuccess';
 import UserManagement from './pages/Admin/UserManagement';
-import AdminPayments from './pages/Admin/AdminPayments';
+import PaymentReview from './pages/Admin/PaymentReview';
 
 // ==========================================
-// 🛡️ สร้าง "ยาม" สำหรับดักการเข้าถึง Route
+// 🛡️ ProtectedRoute (เหมือนเดิม ไม่แตะ)
 // ==========================================
 function ProtectedRoute({ children, requireAdmin }) {
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
   const userRole = localStorage.getItem('userRole');
 
-  // ด่านที่ 1: ถ้ายังไม่ได้ล็อกอิน ให้เด้งไล่ไปหน้า Login
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />;
   }
 
-  // ด่านที่ 2: ถ้าหน้านี้บังคับว่าต้องเป็น Admin แต่คนเข้าเป็นคนธรรมดา ให้เด้งกลับหน้าแรก
   if (requireAdmin && userRole !== 'admin') {
     return <Navigate to="/" replace />;
   }
 
-  // ถ้าผ่านทุกด่าน อนุญาตให้แสดงผลหน้าเว็บนั้นๆ ได้
   return children;
 }
 // ==========================================
@@ -54,11 +51,11 @@ function App() {
 
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <Routes>
-            {/* 🟢 หน้าทั่วไป ใครๆ ก็เข้าได้ (ไม่ต้องมียาม) */}
+            {/* หน้าทั่วไป */}
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} /> 
             
-            {/* 🟡 หน้าที่ต้อง "ล็อกอิน" ก่อนถึงจะเข้าได้ (ทั้ง Student และ Admin) */}
+            {/* ต้องล็อกอิน */}
             <Route path="/courses" element={
               <ProtectedRoute>
                 <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
@@ -83,7 +80,6 @@ function App() {
               </ProtectedRoute>
             } />
 
-            {/* 🛒 หน้าตะกร้าสินค้า */}
             <Route path="/cart" element={
               <ProtectedRoute>
                 <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
@@ -92,7 +88,6 @@ function App() {
               </ProtectedRoute>
             } />
 
-            {/* 💳 หน้าชำระเงิน */}
             <Route path="/payment" element={
               <ProtectedRoute>
                 <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
@@ -101,7 +96,6 @@ function App() {
               </ProtectedRoute>
             } />
 
-            {/* ✅ หน้าชำระเงินสำเร็จ */}
             <Route path="/payment-success" element={
               <ProtectedRoute>
                 <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
@@ -110,7 +104,7 @@ function App() {
               </ProtectedRoute>
             } />
 
-            {/* 🔴 หน้าหวงห้าม! ต้องเป็น "Admin" เท่านั้น (ดักคนแอบพิมพ์ /add หรือ /edit) */}
+            {/* ===== ADMIN ONLY ===== */}
             <Route path="/add" element={
               <ProtectedRoute requireAdmin={true}>
                 <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
@@ -118,8 +112,6 @@ function App() {
                 </div>
               </ProtectedRoute>
             } />
-
-            <Route path="/admin/payments" element={<AdminPayments />} />
 
             <Route path="/edit/:id" element={
               <ProtectedRoute requireAdmin={true}>
@@ -129,7 +121,6 @@ function App() {
               </ProtectedRoute>
             } />
 
-            {/* 👑 หน้าจัดการ User สำหรับ Admin เท่านั้น */}
             <Route path="/manage-users" element={
               <ProtectedRoute requireAdmin={true}>
                 <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
@@ -138,8 +129,16 @@ function App() {
               </ProtectedRoute>
             } />
 
-          </Routes>
+            {/* 🧾 ADMIN: ตรวจสอบการชำระเงิน */}
+            <Route path="/admin/payments" element={
+              <ProtectedRoute requireAdmin={true}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
+                  <PaymentReview />
+                </div>
+              </ProtectedRoute>
+            } />
 
+          </Routes>
         </main>
 
         <Footer />

@@ -1,10 +1,14 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+// src/modules/payments/dto/create-payment.dto.ts
+import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreatePaymentDto {
-  @IsNumber()
-  courseId: number;
+  @IsArray()
+  courseIds: number[];
 
   @IsString()
   @IsNotEmpty()
   slipUrl: string;
+
+  @IsNumber()
+  totalPrice: number;
 }

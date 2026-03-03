@@ -6,7 +6,6 @@
     "sweetalert2": "^11.26.19"
   },
   "devDependencies": {
-    "@types/bcrypt": "^6.0.0",
-    "ts-node": "^10.9.2"
+    "@types/bcrypt": "^6.0.0"
   }
 }

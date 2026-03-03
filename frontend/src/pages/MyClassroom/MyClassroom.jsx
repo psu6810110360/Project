@@ -1,3 +1,4 @@
+// src/pages/MyClassroom/MyClassroom.jsx
 import React, { useState, useEffect } from 'react';
 import { FaUser, FaRegClock, FaCheckCircle, FaPlayCircle } from 'react-icons/fa';
 import axios from 'axios';
@@ -13,140 +14,200 @@ const MyClassroom = () => {
     fetchMyCoursesFromBackend();
   }, []);
 
+  // ===============================
+  // 🔄 โหลดคอร์สจาก PAYMENT API
+  // ===============================
   const fetchMyCoursesFromBackend = async () => {
     try {
-      const userId = localStorage.getItem('userId');
-      if (!userId) {
+      const token = localStorage.getItem('token');
+
+      if (!token) {
         setMyCourses([]);
+        setLoading(false);
         return;
       }
 
-      // 1️⃣ ดึง user + courses
-      const userRes = await axios.get(`http://localhost:3000/users/${userId}`);
-      const courses = userRes.data?.courses || [];
-
-      // 2️⃣ ดึง payment ของ user คนนี้เท่านั้น ✅
-      const paymentRes = await axios.get(
-        `http://localhost:3000/payments/user/${userId}`
+      // ดึงข้อมูลทั้งหมด (Backend จะส่งมาทั้ง Pending และ Approved)
+      const response = await axios.get(
+        'http://localhost:3000/payments/my-courses',
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
-      const myPayments = paymentRes.data || [];
 
-      // 3️⃣ map status ใส่ course
-      const coursesWithStatus = courses.map(course => {
-        const payment = myPayments.find(
-          p => String(p.course.id) === String(course.id)
-        );
-
-        return {
-          ...course,
-          paymentStatus: payment?.status || 'PENDING',
-        };
-      });
+      /**
+       * แปลงข้อมูลให้มี status ที่แน่นอน (ตัวเล็กเสมอ)
+       */
+      const coursesWithStatus = response.data.map((payment) => ({
+        ...payment.course,
+        // ✅ เพิ่ม toLowerCase() เพื่อป้องกันปัญหาตัวพิมพ์เล็กใหญ่
+        paymentStatus: payment.status ? payment.status.toLowerCase() : 'pending',
+      }));
 
       setMyCourses(coursesWithStatus);
       localStorage.setItem('myCourses', JSON.stringify(coursesWithStatus));
     } catch (error) {
-      console.error('โหลดข้อมูลห้องเรียนล้มเหลว:', error);
+      console.error('❌ โหลดข้อมูลห้องเรียนล้มเหลว:', error);
       setMyCourses([]);
     } finally {
       setLoading(false);
     }
   };
 
+  // ===============================
+  // ❌ ฟังก์ชันลบคอร์ส (คงเดิม)
+  // ===============================
   const handleRemoveCourse = (courseId, courseTitle) => {
     Swal.fire({
       title: 'ต้องการลบคอร์สนี้?',
-      text: `คุณแน่ใจหรือไม่ว่าต้องการลบ "${courseTitle}"`,
+      text: `คุณแน่ใจหรือไม่ว่าต้องการลบ "${courseTitle}" ออกจากห้องเรียนของคุณ?`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'ลบ',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#888',
+      confirmButtonText: 'ใช่, ลบเลย!',
       cancelButtonText: 'ยกเลิก'
     }).then(async (result) => {
-      if (!result.isConfirmed) return;
-
-      try {
-        const userId = localStorage.getItem('userId');
-        await axios.delete(
-          `http://localhost:3000/users/${userId}/remove-course/${courseId}`
-        );
-
-        const updated = myCourses.filter(c => c.id !== courseId);
-        setMyCourses(updated);
-        localStorage.setItem('myCourses', JSON.stringify(updated));
-
-        Swal.fire('ลบสำเร็จ', '', 'success');
-      } catch {
-        Swal.fire('ผิดพลาด', 'ไม่สามารถลบคอร์สได้', 'error');
+      if (result.isConfirmed) {
+        try {
+          // Logic ลบอาจจะต้องเชื่อม API เพิ่มในอนาคต
+          const updatedCourses = myCourses.filter(c => c.id !== courseId);
+          setMyCourses(updatedCourses);
+          localStorage.setItem('myCourses', JSON.stringify(updatedCourses));
+          Swal.fire('ลบสำเร็จ!', 'คอร์สถูกลบออกจากห้องเรียนแล้ว', 'success');
+        } catch (error) {
+          Swal.fire('ผิดพลาด', 'ไม่สามารถลบคอร์สได้', 'error');
+        }
       }
     });
   };
 
+  // ===============================
+  // 🔎 แยกคอร์สตามสถานะ
+  // ===============================
+  // ระบบจะแยกกล่องให้อัตโนมัติเพราะเราแก้ Backend ให้ส่งมาหมดแล้ว
+  const pendingCourses = myCourses.filter(c => c.paymentStatus === 'pending');
+  const approvedCourses = myCourses.filter(c => c.paymentStatus === 'approved');
+  const rejectedCourses = myCourses.filter(c => c.paymentStatus === 'rejected');
+
+  // ===============================
+  // 🎴 Course Card Component
+  // ===============================
   const CourseCard = ({ course, onRemove }) => {
-    const isCompleted = (course.progress || 0) === 100;
-    const status = course.paymentStatus;
-
-    const renderActionButton = () => {
-      if (status === 'PENDING') {
-        return <div className="pending-badge">⏳ รอการอนุมัติ</div>;
-      }
-
-      if (status === 'REJECTED') {
-        return <div className="rejected-badge">❌ ชำระเงินไม่ผ่าน</div>;
-      }
-
-      return (
-        <button
-          className="watch-video-btn"
-          onClick={() => alert(`เข้าเรียน: ${course.title}`)}
-        >
-          <FaPlayCircle />
-          {isCompleted ? 'ทบทวนบทเรียน' : 'เข้าเรียน'}
-        </button>
-      );
-    };
+    const isApproved = course.paymentStatus === 'approved';
+    const isPending = course.paymentStatus === 'pending';
+    const isRejected = course.paymentStatus === 'rejected';
 
     return (
-      <div className="course-card">
-        <button
-          onClick={() => onRemove(course.id, course.title)}
-          className="remove-btn"
-        >
-          ✕
-        </button>
+      <div className="course-card" style={{ position: 'relative' }}>
+        {/* ปุ่มลบ (เฉพาะ Approved) */}
+        {isApproved && (
+          <button
+            onClick={() => onRemove(course.id, course.title)}
+            style={{
+              position: 'absolute', top: '10px', right: '10px',
+              background: '#ff4d4d', color: 'white', border: 'none',
+              borderRadius: '50%', width: '30px', height: '30px',
+              cursor: 'pointer', zIndex: 10,
+            }}
+          >
+            ✕
+          </button>
+        )}
 
-        {isCompleted && <FaCheckCircle className="completed-icon" />}
+        {isApproved && <FaCheckCircle className="completed-icon" />}
 
         <div style={{ padding: '15px' }}>
-          <h3>{course.title}</h3>
-          <div><FaUser /> {course.instructorName || 'ไม่ระบุผู้สอน'}</div>
-          <div><FaRegClock /> {course.classTime || 'ไม่ระบุเวลา'}</div>
+          <h3 className="course-card-title">{course.title}</h3>
 
-          <div style={{ marginTop: '15px' }}>
-            {renderActionButton()}
+          <div className="course-info">
+            <FaUser /> {course.instructorName || 'ไม่ระบุผู้สอน'}
           </div>
+          <div className="course-info">
+            <FaRegClock /> {course.classTime || 'ไม่ระบุเวลา'}
+          </div>
+
+          {/* 🔔 แสดงสถานะและปุ่ม */}
+          {isPending && (
+            <div className="course-date-box" style={{ background: '#f1c40f', color: '#fff' }}>
+              ⏳ รอการอนุมัติ (เข้าเรียนไม่ได้)
+            </div>
+          )}
+          
+          {isRejected && (
+            <div className="course-date-box" style={{ background: '#ffe6e6', color: '#c0392b' }}>
+              ❌ การชำระเงินถูกปฏิเสธ
+            </div>
+          )}
+
+          {/* ✅ ปุ่มเข้าเรียนจะขึ้นเฉพาะตอนสถานะเป็น approved เท่านั้น */}
+          {isApproved && (
+            <button
+              className="watch-video-btn"
+              onClick={() => alert(`เข้าเรียนคอร์ส: ${course.title}`)}
+            >
+              <FaPlayCircle /> เข้าเรียน
+            </button>
+          )}
         </div>
       </div>
     );
   };
 
-  if (loading) return <div>กำลังโหลดห้องเรียน...</div>;
+  if (loading) {
+    return <div style={{ textAlign: 'center', padding: '50px' }}>กำลังโหลดห้องเรียน...</div>;
+  }
 
   return (
     <div className="classroom-container">
-      <h1>ห้องเรียนของฉัน</h1>
+      <h1 className="classroom-title">ห้องเรียนของฉัน</h1>
 
       {myCourses.length === 0 ? (
         <EmptyCourseState />
       ) : (
-        <div className="course-grid-active">
-          {myCourses.map(course => (
-            <CourseCard
-              key={course.id}
-              course={course}
-              onRemove={handleRemoveCourse}
-            />
-          ))}
-        </div>
+        <>
+          {/* กล่องรออนุมัติ */}
+          {pendingCourses.length > 0 && (
+            <>
+              <h2 className="section-title">รอการอนุมัติ</h2>
+              <div className="course-grid-active">
+                {pendingCourses.map(course => (
+                  <CourseCard key={course.id} course={course} />
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* กล่องคอร์สที่เรียนได้ */}
+          {approvedCourses.length > 0 && (
+            <>
+              <h2 className="section-title">คอร์สของฉัน</h2>
+              <div className="course-grid-active">
+                {approvedCourses.map(course => (
+                  <CourseCard
+                    key={course.id}
+                    course={course}
+                    onRemove={handleRemoveCourse}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* กล่องถูกปฏิเสธ */}
+          {rejectedCourses.length > 0 && (
+            <>
+              <h2 className="section-title">ถูกปฏิเสธ</h2>
+              <div className="course-grid-active">
+                {rejectedCourses.map(course => (
+                  <CourseCard key={course.id} course={course} />
+                ))}
+              </div>
+            </>
+          )}
+        </>
       )}
     </div>
   );

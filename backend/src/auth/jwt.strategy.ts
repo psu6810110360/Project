@@ -1,3 +1,4 @@
+// src/modules/auth/jwt.strategy.ts
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -7,16 +8,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: 'MY_SUPER_SECRET_KEY', // ⚠️ ต้องตรงกับ AuthModule
+      ignoreExpiration: false,
+      secretOrKey: 'MY_SUPER_SECRET_KEY',
     });
   }
 
   async validate(payload: any) {
-    // payload จะถูกส่งไปอยู่ใน req.user
+    // สิ่งที่ return จะไปอยู่ที่ req.user
     return {
-        id: payload.sub,
-        email: payload.email,
-        role: payload.role,
-    }
+      id: payload.sub,
+      email: payload.email,
+      role: payload.role,
+    };
   }
 }

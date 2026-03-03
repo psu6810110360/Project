@@ -1,5 +1,12 @@
-// src/modules/users/entities/user.entity.ts
-import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToMany,
+  JoinTable,
+  OneToMany,
+} from 'typeorm';
+
 import { Course } from '../../courses/entities/course.entity';
 import { Payment } from '../../payments/entities/payment.entity';
 
@@ -26,10 +33,9 @@ export class User {
   @Column({ nullable: true })
   phone: string;
 
-  // 🔗 เพิ่ม { onDelete: 'CASCADE' } ตรงนี้ครับ
-  @ManyToMany(() => Course, (course) => course.users, { onDelete: 'CASCADE' })
-  @JoinTable({ name: 'user_courses' }) 
-  courses: Course[];;
+  @ManyToMany(() => Course, (course) => course.users)
+  @JoinTable({ name: 'user_courses' })
+  courses: Course[];
 
   @OneToMany(() => Payment, (payment) => payment.user)
   payments: Payment[];
