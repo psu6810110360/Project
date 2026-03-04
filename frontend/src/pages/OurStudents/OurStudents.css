@@ -1,139 +1,178 @@
-/* พื้นหลังของหน้านี้ (ให้เป็นสีเทาอ่อนๆ เพื่อให้การ์ดสีขาวดูโดดเด่นขึ้น) */
 .students-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 4rem 2rem;
-  background-color: #fcfcfc; 
+  background-color: #f9f9f9; 
 }
 
-/* จัดส่วนหัวข้อให้อยู่ตรงกลาง */
 .students-header {
   text-align: center;
   margin-bottom: 3rem;
 }
 
 .students-header h2 {
-  color: #0c356a; /* สีน้ำเงินเข้ม เข้ากับแบรนด์ */
+  color: #003366; /* สีน้ำเงินโลโก้ */
   font-size: 2.2rem;
   margin-bottom: 0.5rem;
 }
 
-/* เส้นตกแต่งใต้หัวข้อ */
 .header-line {
   width: 80px;
   height: 4px;
-  background-color: #ff9800; /* สีส้ม */
+  background-color: #ffcc00; /* สีเหลือง */
   margin: 0 auto 1rem auto;
   border-radius: 2px;
 }
 
-.students-header p {
-  color: #666;
-  font-size: 1.1rem;
-}
-
-/* การจัดตารางแบบ Responsive */
-.students-grid {
+/* --- ปรับ Grid ให้เป็นแถวละ 2 รูป --- */
+.students-grid-v2 {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(2, 1fr); /* บังคับ 2 คอลัมน์บนจอคอม */
+  gap: 2.5rem;
 }
 
-/* สไตล์ของการ์ดแต่ละใบ */
-.student-card {
+/* ถ้าจอมือถือ/แท็บเล็ต ให้เหลือ 1 คอลัมน์ */
+@media (max-width: 900px) {
+  .students-grid-v2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.split-card {
+  display: flex;
   background-color: #ffffff;
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 5px 20px rgba(0, 51, 102, 0.08); /* เงาสีน้ำเงินอ่อนๆ */
+  border-radius: 12px; 
+  overflow: hidden;
+  height: 380px; 
+  transition: transform 0.3s ease;
+}
+
+.split-card:hover {
+  transform: translateY(-5px); /* ให้การ์ดลอยขึ้นนิดนึงตอนเมาส์ชี้ */
+}
+
+/* ---------------- ซีกซ้าย (รูป) ---------------- */
+.card-left {
+  flex: 1; 
+  position: relative;
+  background-color: #e0e0e0; 
+}
+
+.card-left img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+}
+
+/* ---------------- ปรับแก้ส่วนชื่อที่ล้น ---------------- */
+.image-overlay {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px; /* เผื่อที่ว่างฝั่งขวาไว้ 20px จะได้ไม่ชิดขอบเกินไป */
   display: flex;
   flex-direction: column;
-  border: 1px solid #eee;
+  align-items: flex-start; /* บังคับให้ข้อความชิดซ้ายเสมอ */
 }
 
-/* เอฟเฟกต์ตอนเอาเมาส์ไปชี้ที่การ์ด */
-.student-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+.overlay-name {
+  color: white;
+  font-size: 1.35rem; /* ลดขนาดลงมาจาก 1.6rem นิดนึงเพื่อให้ใส่ชื่อยาวๆ ได้ */
+  margin: 0 0 10px 0;
+  font-weight: 800;
+  line-height: 1.3; /* ระยะห่างบรรทัดเวลามี 2 บรรทัดจะได้ไม่อึดอัด */
+  text-shadow: 2px 2px 5px rgba(0,0,0,0.8); /* เพิ่มเงาให้เข้มขึ้นนิดนึงจะได้ตัดกับฉากหลัง */
+  
+  /* พระเอกของงานนี้: ถ้าชื่อยาวเกิน 2 บรรทัด ให้ตัดจบด้วย ... */
+  display: -webkit-box;
+  -webkit-line-clamp: 2; 
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* ส่วนหัวของการ์ด (จัดรูปและชื่อให้อยู่แนวนอน) */
-.card-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 1.2rem;
-  padding-bottom: 1.2rem;
-  border-bottom: 1px dashed #e0e0e0;
-}
-
-/* รูปโปรไฟล์นักเรียน (ทำเป็นวงกลม) */
-.student-avatar {
-  width: 65px;
-  height: 65px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid #ff9800; /* ขอบสีส้ม */
-  margin-right: 1.2rem;
-}
-
-/* ข้อมูลชื่อและคอร์ส */
-.student-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.student-info h3 {
-  margin: 0 0 0.3rem 0;
-  color: #333;
-  font-size: 1.2rem;
-}
-
-/* ป้าย Tag บอกชื่อคอร์ส */
-.course-badge {
-  display: inline-block;
-  background-color: #e3f2fd;
-  color: #0d47a1;
-  padding: 0.25rem 0.8rem;
+.overlay-course {
+  color: #003366;
+  background-color: #ffcc00;
+  padding: 4px 12px;
   border-radius: 20px;
   font-size: 0.85rem;
-  font-weight: 600;
-  align-self: flex-start;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  white-space: nowrap; /* บังคับให้ป้ายชื่อคอร์สห้ามถูกตัดขึ้นบรรทัดใหม่ */
 }
 
-.card-body {
-  flex-grow: 1;
+/* ---------------- ซีกขวา (เนื้อหา) ---------------- */
+.card-right {
+  flex: 1.2; /* ให้ฝั่งขวากว้างกว่ารูปนิดนึงเพื่อให้อ่านง่าย */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  border-left: 3px solid #f0f0f0; 
 }
 
-/* ตัวอักษรคำรีวิว */
-.review-text {
-  color: #555;
-  font-style: italic;
-  line-height: 1.6;
-  margin: 0;
-  font-size: 1rem;
-  /* กล่องโชว์ผลงานสอบติด */
-  
-.achievement-box {
-  background-color: #fef0f0; /* สีแดง/ส้มอ่อนๆ */
-  border-left: 4px solid #d32f2f; /* เส้นขอบซ้ายสีแดงเข้ม */
-  padding: 0.8rem;
-  margin-bottom: 1rem;
-  border-radius: 0 8px 8px 0;
+/* วงกลมโลโก้ */
+.uni-logo-ring {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  border: 4px solid #f4f4f4;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: #c62828;
-  font-size: 0.95rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  overflow: hidden; /* เผื่อรูปใหญ่ไป จะได้ไม่ทะลุวงกลม */
 }
 
-.achievement-icon {
-  font-size: 1.5rem;
+.uni-logo-image {
+  width: 70%; /* ให้รูปอยู่พอดีๆ ไม่ชิดขอบวงกลมเกินไป */
+  height: 70%;
+  object-fit: contain;
 }
 
-.achievement-box strong {
-  display: block;
-  font-size: 0.85rem;
-  color: #7f0000;
-  margin-bottom: 2px;
+.uni-logo-inner {
+  font-size: 2.5rem; 
 }
+
+/* --- กล่องสีเหลืองใส่ชื่อคณะ (แก้ให้ไม่เบี้ยวแล้ว) --- */
+.admission-info {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.faculty-highlight {
+  background-color: #ffcc00; /* สีเหลืองทอง */
+  color: #003366; /* สีน้ำเงินเข้ม */
+  padding: 8px 15px;
+  font-size: 1.2rem;
+  font-weight: 900;
+  width: 85%; /* กำหนดให้กว้างแค่ 85% จะได้ไม่ชนขอบ */
+  border-radius: 6px; /* มุมมนสวยๆ */
+  margin-bottom: 0.8rem;
+  box-shadow: 0 3px 6px rgba(255, 204, 0, 0.3);
+}
+
+.university-name {
+  color: #003366;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+/* คำรีวิว */
+.quote-text {
+  color: #555555; /* สีเทาเข้มให้อ่านง่าย */
+  font-weight: 500;
+  font-size: 1rem;
+  font-style: italic;
+  margin: 0;
+  line-height: 1.5;
 }

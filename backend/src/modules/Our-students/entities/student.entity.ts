@@ -13,7 +13,7 @@ export class Student {
 
   @Column({ nullable: true })
   course: string;
-  
+
   @Column({ nullable: true })
   university: string;
 
@@ -25,6 +25,9 @@ export class Student {
 
   @Column({ nullable: true })
   imageUrl: string;
+  
+  @Column({ nullable: true })
+  logoUrl: string;
 
   @CreateDateColumn()
   createdAt: Date;

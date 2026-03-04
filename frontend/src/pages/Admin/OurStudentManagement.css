@@ -120,5 +120,112 @@ hr {
 }
 
 .delete-btn:hover {
-  background: #e60000;
+  background: #e60000;/* แจ้งเตือนแบบ Toast สวยๆ */
+/* โครงสร้างพื้นฐานของกล่องแจ้งเตือน */
+.toast-message {
+  padding: 12px 20px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  animation: fadeInOut 3s ease-in-out forwards;
+}
+
+/* สีเขียว สำหรับทำสำเร็จ */
+.toast-success {
+  background-color: #e6f4ea;
+  color: #1e8e3e;
+  border: 1px solid #ceead6;
+}
+
+/* สีแดง/ส้ม สำหรับแจ้งเตือน Error หรือลืมกรอกข้อมูล */
+.toast-error {
+  background-color: #fce8e6;
+  color: #d93025;
+  border: 1px solid #fad2cf;
+
+}
+}
+
+/* อนิเมชันเด้งเข้าแล้วค่อยๆ จางหายไป */
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(-10px); }
+  10% { opacity: 1; transform: translateY(0); }
+  85% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10px); }
+}
+/* --- Custom Modal สำหรับยืนยันการลบ --- */
+.custom-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5); /* พื้นหลังสีดำโปร่งแสง */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.custom-modal {
+  background-color: white;
+  padding: 25px;
+  border-radius: 12px;
+  width: 320px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  animation: modalPopIn 0.3s ease-out;
+}
+
+.custom-modal h3 {
+  margin-top: 0;
+  color: #d93025; /* สีแดงเตือนภัย */
+  margin-bottom: 10px;
+}
+
+.custom-modal p {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.modal-btn-group {
+  display: flex;
+  gap: 10px;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.modal-btn.confirm {
+  background-color: #d93025;
+  color: white;
+}
+
+.modal-btn.confirm:hover {
+  background-color: #b02019;
+}
+
+.modal-btn.cancel {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.modal-btn.cancel:hover {
+  background-color: #cccccc;
+}
+
+@keyframes modalPopIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
 }
