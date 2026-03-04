@@ -1,4 +1,4 @@
-//Navbar.jsx
+// Navbar.jsx
 import React, { useState, useEffect } from 'react'; 
 import { Link, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -12,23 +12,18 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0); 
 
-  // ฟังก์ชันสลับการเปิด/ปิดเมนู
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  // ฟังก์ชันอัปเดตตัวเลขตะกร้า
   const updateCartCount = () => {
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
     setCartCount(cart.length);
   };
 
   useEffect(() => {
-    updateCartCount(); // อัปเดตตอนโหลดแถบเมนูครั้งแรก
-    
-    // ดักฟัง Event พิเศษ (เพื่อให้ตัวเลขเปลี่ยนทันทีเมื่อมีการกดเพิ่มของ หรือ Logout)
+    updateCartCount();
     window.addEventListener('cartUpdated', updateCartCount);
-    
     return () => window.removeEventListener('cartUpdated', updateCartCount);
   }, []);
 
@@ -44,17 +39,14 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
       cancelButtonText: 'ยกเลิก'
     }).then((result) => {
       if (result.isConfirmed) {
-        
-        // 👇 1. Backup ตะกร้าเก็บไว้ให้ User คนนี้ก่อนลบทิ้ง
+
         const currentUserId = localStorage.getItem('userId');
         const currentCart = localStorage.getItem('cart');
         
         if (currentUserId && currentCart) {
-            // เซฟแยกไว้ในชื่อ "cart_user_ไอดีคนนั้น"
             localStorage.setItem(`cart_user_${currentUserId}`, currentCart);
         }
 
-        // 2. ล้างข้อมูล Session
         localStorage.removeItem('userRole');
         localStorage.removeItem('isLoggedIn');
         localStorage.removeItem('userId'); 
@@ -62,12 +54,8 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
         localStorage.removeItem('myCourses'); 
         localStorage.removeItem('cart'); 
 
-        // ✅ 3. สั่งรีเซ็ตตัวเลขบนหน้าจอให้เป็น 0 ทันที
         setCartCount(0);
-        
-        // ✅ 4. ส่งสัญญาณบอกส่วนอื่นๆ ว่าตะกร้าว่างแล้ว
         window.dispatchEvent(new Event('cartUpdated'));
-
         setIsLoggedIn(false);
         
         Swal.fire({
@@ -86,7 +74,6 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
     <header className="navbar-header">
       <div className="navbar-container">
         
-        {/* ส่วนโลโก้ */}
         <Link to="/" className="logo-section" onClick={() => setIsMobileMenuOpen(false)}>
           <h1 className="logo-text">
             <span style={{ color: '#003366' }}>Smart</span>
@@ -96,7 +83,6 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
           <span className="logo-subtext">เรียนวิทย์ในแบบที่เข้าใจง่ายที่สุด</span>
         </Link>
 
-        {/* 🍔 ปุ่ม Hamburger Menu (โชว์เฉพาะตอนจอเล็ก) */}
         <div className="hamburger-icon" onClick={toggleMobileMenu}>
           {isMobileMenuOpen ? (
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#003366" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -105,22 +91,41 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
           )}
         </div>
 
-        {/* ส่วนเมนู */}
         <div className={`nav-menu ${isMobileMenuOpen ? 'open' : ''}`}>
           <div className="nav-links">
-            <span onClick={() => setIsMobileMenuOpen(false)}>นักเรียนของเรา</span>
+
+            <Link to="/our-students" onClick={() => setIsMobileMenuOpen(false)}>นักเรียนของเรา</Link>
             <span onClick={() => setIsMobileMenuOpen(false)}>ติดต่อเรา</span>
             <Link to="/courses" onClick={() => setIsMobileMenuOpen(false)}>คอร์สเรียน</Link>
-            
-            {/* ซ่อนปุ่มบัญชีของฉัน หรือเปลี่ยนเป็นจัดการระบบถ้าเป็นแอดมิน */}
+
+            {/* 🔥 ADMIN MENU */}
             {userRole === 'admin' ? (
-              <Link to="/manage-users" style={{ color: '#F2984A', fontWeight: 'bold' }} onClick={() => setIsMobileMenuOpen(false)}>จัดการผู้ใช้</Link>
+              <>
+                <Link 
+                  to="/manage-users" 
+                  style={{ color: '#F2984A', fontWeight: 'bold' }} 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  จัดการผู้ใช้
+                </Link>
+
+                <Link 
+                  to="/manage-students" 
+                  style={{ color: '#F2984A', fontWeight: 'bold' }} 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  จัดการนักเรียน
+                </Link>
+              </>
             ) : (
-              <span onClick={() => setIsMobileMenuOpen(false)}>บัญชีของฉัน</span>
+              <Link to="/my-classroom" onClick={() => setIsMobileMenuOpen(false)}>บัญชีของฉัน</Link>
             )}
 
-            {/* 🛒 ไอคอนตะกร้าสินค้า */}
-            <Link to="/cart" onClick={() => setIsMobileMenuOpen(false)} style={{ position: 'relative', display: 'flex', alignItems: 'center', marginLeft: '10px' }}>
+            <Link 
+              to="/cart" 
+              onClick={() => setIsMobileMenuOpen(false)} 
+              style={{ position: 'relative', display: 'flex', alignItems: 'center', marginLeft: '10px' }}
+            >
               <FaShoppingCart size={24} color="#003366" />
               {cartCount > 0 && (
                 <span style={{ 

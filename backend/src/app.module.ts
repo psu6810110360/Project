@@ -7,6 +7,7 @@ import { UsersModule } from './modules/users/users.module'; // 👈 1. นำเ
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AuthModule } from './auth/auth.module';
+import { StudentsModule } from './modules/Our-students/students.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { AuthModule } from './auth/auth.module';
     CoursesModule,
     UsersModule,
     AuthModule, // 👈 2. เพิ่มเข้าสู่ระบบหลักตรงนี้
+    StudentsModule,
   ],
   controllers: [],
   providers: [],
