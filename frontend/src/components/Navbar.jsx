@@ -1,4 +1,4 @@
-// Navbar.jsx
+// src/components/Navbar.jsx
 import React, { useState, useEffect } from 'react'; 
 import { Link, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -12,10 +12,12 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0); 
 
+  // สลับเมนูมือถือ
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  // อัปเดตจำนวนตะกร้า
   const updateCartCount = () => {
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
     setCartCount(cart.length);
@@ -40,32 +42,30 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
     }).then((result) => {
       if (result.isConfirmed) {
 
+        // backup cart
         const currentUserId = localStorage.getItem('userId');
         const currentCart = localStorage.getItem('cart');
-        
         if (currentUserId && currentCart) {
-            localStorage.setItem(`cart_user_${currentUserId}`, currentCart);
+          localStorage.setItem(`cart_user_${currentUserId}`, currentCart);
         }
 
         localStorage.removeItem('userRole');
         localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('userId'); 
-        localStorage.removeItem('token');  
-        localStorage.removeItem('myCourses'); 
-        localStorage.removeItem('cart'); 
+        localStorage.removeItem('userId');
+        localStorage.removeItem('token');
+        localStorage.removeItem('myCourses');
+        localStorage.removeItem('cart');
 
         setCartCount(0);
         window.dispatchEvent(new Event('cartUpdated'));
         setIsLoggedIn(false);
-        
+
         Swal.fire({
           title: 'ออกจากระบบสำเร็จ',
           icon: 'success',
           showConfirmButton: false,
           timer: 1500
-        }).then(() => {
-          navigate('/'); 
-        });
+        }).then(() => navigate('/'));
       }
     });
   };
@@ -73,7 +73,8 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
   return (
     <header className="navbar-header">
       <div className="navbar-container">
-        
+
+        {/* โลโก้ */}
         <Link to="/" className="logo-section" onClick={() => setIsMobileMenuOpen(false)}>
           <h1 className="logo-text">
             <span style={{ color: '#003366' }}>Smart</span>
@@ -83,22 +84,22 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
           <span className="logo-subtext">เรียนวิทย์ในแบบที่เข้าใจง่ายที่สุด</span>
         </Link>
 
+        {/* Hamburger */}
         <div className="hamburger-icon" onClick={toggleMobileMenu}>
-          {isMobileMenuOpen ? (
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#003366" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          ) : (
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#003366" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-          )}
+          {isMobileMenuOpen ? '✖' : '☰'}
         </div>
 
+        {/* เมนู */}
         <div className={`nav-menu ${isMobileMenuOpen ? 'open' : ''}`}>
           <div className="nav-links">
 
             <Link to="/our-students" onClick={() => setIsMobileMenuOpen(false)}>นักเรียนของเรา</Link>
             <span onClick={() => setIsMobileMenuOpen(false)}>ติดต่อเรา</span>
-            <Link to="/courses" onClick={() => setIsMobileMenuOpen(false)}>คอร์สเรียน</Link>
+            <Link to="/courses" onClick={() => setIsMobileMenuOpen(false)}>
+              คอร์สเรียน
+            </Link>
 
-            {/* 🔥 ADMIN MENU */}
+            {/* 🔥 ADMIN MENU (รวมทุกฟังก์ชัน) */}
             {userRole === 'admin' ? (
               <>
                 <Link 
@@ -116,11 +117,23 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
                 >
                   จัดการนักเรียน
                 </Link>
+
+                <Link
+                  to="/admin/payments"
+                  style={{ color: '#F2984A', fontWeight: 'bold' }}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  ตรวจสอบสลิป
+                </Link>
               </>
             ) : (
-              <Link to="/my-classroom" onClick={() => setIsMobileMenuOpen(false)}>บัญชีของฉัน</Link>
+              // User ทั่วไป ให้ไปหน้า MyClassroom
+              <Link to="/my-classroom" onClick={() => setIsMobileMenuOpen(false)}>
+                ห้องเรียนของฉัน
+              </Link>
             )}
 
+            {/* ตะกร้าสินค้า */}
             <Link 
               to="/cart" 
               onClick={() => setIsMobileMenuOpen(false)} 
@@ -128,30 +141,42 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
             >
               <FaShoppingCart size={24} color="#003366" />
               {cartCount > 0 && (
-                <span style={{ 
-                  position: 'absolute', top: '-8px', right: '-12px', 
-                  backgroundColor: '#F2984A', color: 'white', 
-                  borderRadius: '50%', padding: '2px 6px', 
-                  fontSize: '12px', fontWeight: 'bold' 
-                }}>
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: '-8px',
+                    right: '-12px',
+                    backgroundColor: '#F2984A',
+                    color: 'white',
+                    borderRadius: '50%',
+                    padding: '2px 6px',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                  }}
+                >
                   {cartCount}
                 </span>
               )}
             </Link>
           </div>
-          
+
           {isLoggedIn ? (
-            <button 
-              onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }} 
+            <button
+              onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}
               className="btn-logout"
             >
               ออกจากระบบ {userRole === 'admin' ? '(Admin)' : ''}
             </button>
           ) : (
-            <Link to="/login" className="btn-login" onClick={() => setIsMobileMenuOpen(false)}>เข้าสู่ระบบ</Link>
+            <Link
+              to="/login"
+              className="btn-login"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              เข้าสู่ระบบ
+            </Link>
           )}
         </div>
-
       </div>
     </header>
   );

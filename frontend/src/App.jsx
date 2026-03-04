@@ -1,3 +1,4 @@
+// src/App.jsx
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'; 
 import Navbar from './components/Navbar';
@@ -15,7 +16,10 @@ import Cart from './pages/Cart/Cart';
 import Payment from './pages/Payment/Payment';
 import PaymentSuccess from './pages/Payment/PaymentSuccess';
 import UserManagement from './pages/Admin/UserManagement';
+
+// ✅ รวม Import จากทั้ง 2 ฝั่ง
 import OurStudentManagement from "./pages/Admin/OurStudentManagement";
+import PaymentReview from './pages/Admin/PaymentReview';
 
 // ==========================================
 // 🛡️ Protected Route
@@ -52,7 +56,7 @@ function App() {
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <Routes>
 
-            {/* 🟢 Public Pages */}
+            {/* 🟢 Public Pages (รวมหน้า OurStudents ไว้ด้วย) */}
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} /> 
             <Route path="/our-students" element={<OurStudents />} /> 
@@ -131,11 +135,20 @@ function App() {
               </ProtectedRoute>
             } />
 
-            {/* 👑 เพิ่มตรงนี้: จัดการนักเรียน */}
+            {/* 👑 Admin: จัดการนักเรียน (จาก Code เก่า) */}
             <Route path="/manage-students" element={
               <ProtectedRoute requireAdmin={true}>
                 <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
                   <OurStudentManagement />
+                </div>
+              </ProtectedRoute>
+            } />
+
+            {/* 🧾 Admin: ตรวจสอบการชำระเงิน (จาก Code ใหม่) */}
+            <Route path="/admin/payments" element={
+              <ProtectedRoute requireAdmin={true}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
+                  <PaymentReview />
                 </div>
               </ProtectedRoute>
             } />

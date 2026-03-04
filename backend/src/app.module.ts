@@ -2,12 +2,16 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CoursesModule } from './modules/courses/courses.module';
-import { UsersModule } from './modules/users/users.module'; // 👈 1. นำเข้า UsersModule
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+
+import { CoursesModule } from './modules/courses/courses.module';
+import { UsersModule } from './modules/users/users.module'; 
 import { AuthModule } from './auth/auth.module';
+
+// ✅ รวม Import ทั้ง 2 อันเข้าด้วยกัน
 import { StudentsModule } from './modules/Our-students/students.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 
 @Module({
   imports: [
@@ -39,8 +43,11 @@ import { StudentsModule } from './modules/Our-students/students.module';
     
     CoursesModule,
     UsersModule,
-    AuthModule, // 👈 2. เพิ่มเข้าสู่ระบบหลักตรงนี้
-    StudentsModule,
+    AuthModule,
+    
+    // ✅ ใส่ Module ทั้งคู่ลงไปใน imports array
+    StudentsModule, 
+    PaymentsModule,
   ],
   controllers: [],
   providers: [],

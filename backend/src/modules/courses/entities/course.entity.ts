@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 
+
 @Entity('courses')
 export class Course {
   @PrimaryGeneratedColumn('uuid')
@@ -37,7 +38,10 @@ export class Course {
   suitableFor: string; 
 
   @Column({ nullable: true })
-  classTime: string;   
+  classTime: string;
+  
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
+  price: number;
 
   
   @Column({ type: 'json', nullable: true })
@@ -49,6 +53,7 @@ export class Course {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToMany(() => User, (user) => user.courses, { onDelete: 'CASCADE' })
+  @ManyToMany(() => User, (user) => user.courses)
   users: User[];
+  
   }

@@ -1,3 +1,4 @@
+// src/pages/MyClassroom/MyClassroom.jsx
 import React, { useState, useEffect } from 'react';
 import { FaUser, FaRegClock, FaCheckCircle, FaPlayCircle } from 'react-icons/fa';
 import axios from 'axios';
@@ -10,47 +11,54 @@ const MyClassroom = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 💡 โหลดข้อมูลจากฐานข้อมูลของแต่ละคนตอนเปิดหน้า
     fetchMyCoursesFromBackend();
   }, []);
 
+  // ===============================
+  // 🔄 โหลดคอร์สจาก PAYMENT API
+  // ===============================
   const fetchMyCoursesFromBackend = async () => {
     try {
-      // 1. ดึง userId ของคนที่กำลังล็อกอินอยู่
-      const userId = localStorage.getItem('userId'); 
-      
-      // ถ้าไม่มีไอดี (ยังไม่ได้ล็อกอิน) ให้คอร์สว่างเปล่าไปเลย
-      if (!userId) {
-        console.warn("ยังไม่ได้ล็อกอิน ไม่มี userId");
+      const token = localStorage.getItem('token');
+
+      if (!token) {
         setMyCourses([]);
         setLoading(false);
         return;
       }
 
-      // 2. ยิง API ไปถาม Backend ว่า User คนนี้มีคอร์สอะไรบ้าง
-      const response = await axios.get(`http://localhost:3000/users/${userId}`);
-      const userData = response.data;
+      // ดึงข้อมูลทั้งหมด (Backend จะส่งมาทั้ง Pending และ Approved)
+      const response = await axios.get(
+        'http://localhost:3000/payments/my-courses',
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      console.log("ข้อมูล User และคอร์สที่ได้จาก Backend:", userData);
+      /**
+       * แปลงข้อมูลให้มี status ที่แน่นอน (ตัวเล็กเสมอ)
+       */
+      const coursesWithStatus = response.data.map((payment) => ({
+        ...payment.course,
+        // ✅ เพิ่ม toLowerCase() เพื่อป้องกันปัญหาตัวพิมพ์เล็กใหญ่
+        paymentStatus: payment.status ? payment.status.toLowerCase() : 'pending',
+      }));
 
-      // 3. เอาข้อมูลคอร์สที่ดึงมาไปอัปเดตหน้าจอ
-      if (userData && userData.courses) {
-        setMyCourses(userData.courses);
-        // อัปเดตกลับลง LocalStorage ด้วย เพื่อให้ระบบอื่นทำงานต่อได้
-        localStorage.setItem('myCourses', JSON.stringify(userData.courses));
-      } else {
-        setMyCourses([]);
-      }
-
+      setMyCourses(coursesWithStatus);
+      localStorage.setItem('myCourses', JSON.stringify(coursesWithStatus));
     } catch (error) {
-      console.error('❌ โหลดข้อมูลคอร์สจาก Backend ล้มเหลว:', error);
+      console.error('❌ โหลดข้อมูลห้องเรียนล้มเหลว:', error);
       setMyCourses([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ ฟังก์ชันสำหรับลบคอร์ส
+  // ===============================
+  // ❌ ฟังก์ชันลบคอร์ส (คงเดิม)
+  // ===============================
   const handleRemoveCourse = (courseId, courseTitle) => {
     Swal.fire({
       title: 'ต้องการลบคอร์สนี้?',
@@ -64,77 +72,56 @@ const MyClassroom = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const userId = localStorage.getItem('userId'); 
-          
-          if (userId) {
-            // 1. ยิง API ไปลบคอร์สออกจาก Database (Backend)
-            await axios.delete(`http://localhost:3000/users/${userId}/remove-course/${courseId}`);
-          }
-
-          // 2. อัปเดตหน้าจอให้คอร์สหายไปทันที 
+          // Logic ลบอาจจะต้องเชื่อม API เพิ่มในอนาคต
           const updatedCourses = myCourses.filter(c => c.id !== courseId);
           setMyCourses(updatedCourses);
-
-          // 3. อัปเดตข้อมูลใน LocalStorage เพื่อให้ตะกร้าและหน้าอื่นๆ รู้ว่าเราลบไปแล้ว
           localStorage.setItem('myCourses', JSON.stringify(updatedCourses));
-
           Swal.fire('ลบสำเร็จ!', 'คอร์สถูกลบออกจากห้องเรียนแล้ว', 'success');
         } catch (error) {
-          console.error('ลบคอร์สไม่สำเร็จ:', error);
-          Swal.fire('ผิดพลาด', 'ไม่สามารถลบคอร์สได้ในขณะนี้', 'error');
+          Swal.fire('ผิดพลาด', 'ไม่สามารถลบคอร์สได้', 'error');
         }
       }
     });
   };
 
-  // กรองข้อมูลแยกหมวดหมู่
-  const activeCourses = myCourses.filter(course => (course.progress || 0) < 100);
-  const completedCourses = myCourses.filter(course => (course.progress || 0) === 100);
+  // ===============================
+  // 🔎 แยกคอร์สตามสถานะ
+  // ===============================
+  // ระบบจะแยกกล่องให้อัตโนมัติเพราะเราแก้ Backend ให้ส่งมาหมดแล้ว
+  const pendingCourses = myCourses.filter(c => c.paymentStatus === 'pending');
+  const approvedCourses = myCourses.filter(c => c.paymentStatus === 'approved');
+  const rejectedCourses = myCourses.filter(c => c.paymentStatus === 'rejected');
 
-  // Component สำหรับสร้างการ์ดคอร์สเรียน (เพิ่ม onRemove เข้ามารับฟังก์ชัน)
+  // ===============================
+  // 🎴 Course Card Component
+  // ===============================
   const CourseCard = ({ course, onRemove }) => {
-    const isCompleted = (course.progress || 0) === 100;
+    const isApproved = course.paymentStatus === 'approved';
+    const isPending = course.paymentStatus === 'pending';
+    const isRejected = course.paymentStatus === 'rejected';
 
     return (
-      // 💡 ใส่ position: 'relative' เพื่อให้ปุ่มกากบาทเกาะที่มุมขวาบนได้
       <div className="course-card" style={{ position: 'relative' }}>
-        
-        {/* ✅ ปุ่ม ✕ สำหรับลบคอร์ส */}
-        <button 
-          onClick={() => onRemove(course.id, course.title)}
-          style={{ 
-            position: 'absolute', top: '10px', right: '10px', 
-            background: '#ff4d4d', color: 'white', border: 'none', 
-            borderRadius: '50%', width: '30px', height: '30px', 
-            cursor: 'pointer', zIndex: 10, fontSize: '14px',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}
-          title="ลบคอร์สนี้"
-        >
-          ✕
-        </button>
-
-        {/* ไอคอนติ๊กถูก (จะโชว์เฉพาะคอร์สที่เรียนจบแล้ว) */}
-        {isCompleted && <FaCheckCircle className="completed-icon" />}
-
-        {/* รูปปกคอร์ส (ถ้ามี) */}
-        {course.coverImageUrl ? (
-           <img 
-             src={`http://localhost:3000${course.coverImageUrl}`} 
-             alt={course.title} 
-             style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '8px 8px 0 0' }} 
-             onError={(e) => { e.target.src = 'https://placehold.co/600x400/eeeeee/999999?text=Image+Not+Found'; }}
-           />
-        ) : (
-           <div style={{ width: '100%', height: '180px', backgroundColor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#aaa', borderRadius: '8px 8px 0 0' }}>
-             ไม่มีรูปภาพปก
-           </div>
+        {/* ปุ่มลบ (เฉพาะ Approved) */}
+        {isApproved && (
+          <button
+            onClick={() => onRemove(course.id, course.title)}
+            style={{
+              position: 'absolute', top: '10px', right: '10px',
+              background: '#ff4d4d', color: 'white', border: 'none',
+              borderRadius: '50%', width: '30px', height: '30px',
+              cursor: 'pointer', zIndex: 10,
+            }}
+          >
+            ✕
+          </button>
         )}
 
+        {isApproved && <FaCheckCircle className="completed-icon" />}
+
         <div style={{ padding: '15px' }}>
-          <h3 className="course-card-title" style={{ marginTop: '0' }}>{course.title}</h3>
-          
+          <h3 className="course-card-title">{course.title}</h3>
+
           <div className="course-info">
             <FaUser /> {course.instructorName || 'ไม่ระบุผู้สอน'}
           </div>
@@ -142,64 +129,80 @@ const MyClassroom = () => {
             <FaRegClock /> {course.classTime || 'ไม่ระบุเวลา'}
           </div>
 
-          <div className="course-date-box" style={{ margin: '15px 0', padding: '8px', backgroundColor: '#e6f0fa', color: '#003366', borderRadius: '6px', textAlign: 'center', fontSize: '14px' }}>
-            {isCompleted ? 'เรียนเสร็จสิ้น' : 'กำลังเรียน'}
-          </div>
+          {/* 🔔 แสดงสถานะและปุ่ม */}
+          {isPending && (
+            <div className="course-date-box" style={{ background: '#f1c40f', color: '#fff' }}>
+              ⏳ รอการอนุมัติ (เข้าเรียนไม่ได้)
+            </div>
+          )}
+          
+          {isRejected && (
+            <div className="course-date-box" style={{ background: '#ffe6e6', color: '#c0392b' }}>
+              ❌ การชำระเงินถูกปฏิเสธ
+            </div>
+          )}
 
-          <div className="progress-container">
-            <div className="progress-header" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px' }}>
-              <span>ความคืบหน้า</span>
-              <span style={{ color: '#F49D58', fontWeight: 'bold' }}>{course.progress || 0}%</span>
-            </div>
-            <div className="progress-bar-bg" style={{ width: '100%', height: '8px', backgroundColor: '#eee', borderRadius: '4px', overflow: 'hidden', marginBottom: '15px' }}>
-              <div className="progress-bar-fill" style={{ width: `${course.progress || 0}%`, height: '100%', backgroundColor: '#4CAF50' }}></div>
-            </div>
-            
-            <button 
-              className="watch-video-btn" 
-              onClick={() => alert(`เดี๋ยวเราจะลิงก์ไปหน้าดูวิดีโอคอร์ส: ${course.title}`)}
-              style={{ width: '100%', padding: '10px', backgroundColor: '#003366', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
+          {/* ✅ ปุ่มเข้าเรียนจะขึ้นเฉพาะตอนสถานะเป็น approved เท่านั้น */}
+          {isApproved && (
+            <button
+              className="watch-video-btn"
+              onClick={() => alert(`เข้าเรียนคอร์ส: ${course.title}`)}
             >
-              <FaPlayCircle /> 
-              {isCompleted ? 'ทบทวนบทเรียน' : 'เข้าเรียนวิดีโอ'}
+              <FaPlayCircle /> เข้าเรียน
             </button>
-          </div>
+          )}
         </div>
       </div>
     );
   };
 
-  if (loading) return <div style={{ textAlign: 'center', padding: '50px' }}>กำลังโหลดห้องเรียน...</div>;
+  if (loading) {
+    return <div style={{ textAlign: 'center', padding: '50px' }}>กำลังโหลดห้องเรียน...</div>;
+  }
 
   return (
-    <div className="classroom-container" style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
-      <div className="classroom-header" style={{ marginBottom: '30px' }}>
-        <h1 className="classroom-title" style={{ color: '#003366' }}>ห้องเรียนของฉัน</h1>
-      </div>
+    <div className="classroom-container">
+      <h1 className="classroom-title">ห้องเรียนของฉัน</h1>
 
       {myCourses.length === 0 ? (
         <EmptyCourseState />
       ) : (
         <>
-          {/* Section 1: คอร์สที่กำลังเรียน */}
-          {activeCourses.length > 0 && (
+          {/* กล่องรออนุมัติ */}
+          {pendingCourses.length > 0 && (
             <>
-              <h2 className="section-title" style={{ color: '#333', borderBottom: '2px solid #eee', paddingBottom: '10px', marginBottom: '20px' }}>คอร์สที่กำลังเรียน</h2>
-              <div className="course-grid-active" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '25px' }}>
-                {activeCourses.map(course => (
-                  <CourseCard key={course.id} course={course} onRemove={handleRemoveCourse} />
+              <h2 className="section-title">รอการอนุมัติ</h2>
+              <div className="course-grid-active">
+                {pendingCourses.map(course => (
+                  <CourseCard key={course.id} course={course} />
                 ))}
               </div>
             </>
           )}
 
-          {/* Section 2: คอร์สที่เรียนจบแล้ว */}
-          {completedCourses.length > 0 && (
+          {/* กล่องคอร์สที่เรียนได้ */}
+          {approvedCourses.length > 0 && (
             <>
-              <h2 className="section-title" style={{ color: '#333', borderBottom: '2px solid #eee', paddingBottom: '10px', marginTop: '40px', marginBottom: '20px' }}>คอร์สที่เรียนจบแล้ว</h2>
-              <div className="course-grid-completed" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '25px' }}>
-                {completedCourses.map(course => (
-                  <CourseCard key={course.id} course={course} onRemove={handleRemoveCourse} />
+              <h2 className="section-title">คอร์สของฉัน</h2>
+              <div className="course-grid-active">
+                {approvedCourses.map(course => (
+                  <CourseCard
+                    key={course.id}
+                    course={course}
+                    onRemove={handleRemoveCourse}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* กล่องถูกปฏิเสธ */}
+          {rejectedCourses.length > 0 && (
+            <>
+              <h2 className="section-title">ถูกปฏิเสธ</h2>
+              <div className="course-grid-active">
+                {rejectedCourses.map(course => (
+                  <CourseCard key={course.id} course={course} />
                 ))}
               </div>
             </>
