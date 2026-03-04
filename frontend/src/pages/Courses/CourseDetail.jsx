@@ -1,4 +1,4 @@
-//CourseDetail.jsx
+// src/pages/Courses/CourseDetail.jsx
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -14,19 +14,43 @@ export default function CourseDetail() {
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeMedia, setActiveMedia] = useState(0); // 0: Cover, 1: Video
+  const [isOwned, setIsOwned] = useState(false); // ✅ เพิ่ม state เช็คความเป็นเจ้าของ
 
   useEffect(() => {
-    const fetchCourse = async () => {
+    const fetchData = async () => {
       try {
+        // 1. ดึงข้อมูลรายละเอียดคอร์ส
         const response = await axios.get(`http://localhost:3000/courses/${id}`);
         setCourse(response.data);
+
+        // 2. เช็คว่า User เป็นเจ้าของคอร์สนี้หรือยัง (ถ้า Login อยู่)
+        const token = localStorage.getItem('token');
+        if (token) {
+          try {
+            // ยิง API เช็ครายการคอร์สของฉันล่าสุด
+            const myCoursesRes = await axios.get('http://localhost:3000/payments/my-courses', {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+
+            // ตรวจสอบว่า ID คอร์สนี้ มีอยู่ในรายการที่ API ส่งมาไหม
+            // (response.data คือ Payment[] ซึ่งมี payment.course.id)
+            const owned = myCoursesRes.data.some(payment => 
+              String(payment.course.id) === String(id) // ✅ แปลงเป็น String เพื่อความชัวร์
+            );
+            setIsOwned(owned);
+          } catch (err) {
+            console.error("Failed to check ownership", err);
+          }
+        }
+
       } catch (error) {
         console.error('ไม่สามารถดึงข้อมูลได้', error);
       } finally {
         setLoading(false);
       }
     };
-    fetchCourse();
+
+    fetchData();
   }, [id]);
 
   if (loading) return (
@@ -38,12 +62,11 @@ export default function CourseDetail() {
   if (!course) return <div style={{ textAlign: 'center', padding: '100px' }}>ไม่พบข้อมูลคอร์ส</div>;
 
   const hasVideo = Boolean(course.sampleVideoUrl);
-  const myCourses = JSON.parse(localStorage.getItem('myCourses')) || [];
-  const isOwned = myCourses.some(c => c.id === course.id);
 
   const addToCart = () => {
     const existingCart = JSON.parse(localStorage.getItem('cart')) || [];
-    if (existingCart.find(item => item.id === course.id)) {
+    // เช็คว่ามีในตะกร้าแล้วหรือยัง
+    if (existingCart.find(item => String(item.id) === String(course.id))) {
       Swal.fire({
         icon: 'warning',
         title: 'คอร์สนี้อยู่ในตะกร้าแล้ว',
@@ -157,9 +180,10 @@ export default function CourseDetail() {
               </div>
             </div>
 
+            {/* ✅ ปุ่ม Action ตามสถานะ */}
             {isOwned ? (
               <button 
-                onClick={() => navigate('/my-courses')} 
+                onClick={() => navigate('/my-classroom')} 
                 style={{ width: '100%', padding: '18px', backgroundColor: '#28a745', color: '#fff', border: 'none', borderRadius: '15px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
                 <FaUserGraduate /> เข้าสู่บทเรียนของคุณ
               </button>
@@ -179,7 +203,6 @@ export default function CourseDetail() {
           <div style={{ marginTop: '30px', background: '#003366', padding: '25px', borderRadius: '25px', color: '#fff' }}>
             <h4 style={{ margin: '0 0 20px 0', fontSize: '18px', borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '10px' }}>ทีมผู้สอน</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {/* ตรวจสอบข้อมูลผู้สอน */}
               {(course.instructors || [
                 { name: course.instructorName, imageUrl: course.instructorImageUrl }
               ]).map((inst, idx) => (
