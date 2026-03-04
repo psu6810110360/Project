@@ -1,20 +1,30 @@
-/* OurStudents.css */
+/* พื้นหลังของหน้านี้ (ให้เป็นสีเทาอ่อนๆ เพื่อให้การ์ดสีขาวดูโดดเด่นขึ้น) */
 .students-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 80px 20px;
-  font-family: 'Kanit', sans-serif;
+  padding: 4rem 2rem;
+  background-color: #fcfcfc; 
 }
 
+/* จัดส่วนหัวข้อให้อยู่ตรงกลาง */
 .students-header {
   text-align: center;
-  margin-bottom: 60px;
+  margin-bottom: 3rem;
 }
 
-.students-header h1 {
-  color: #003366;
-  font-size: 2.5rem;
-  margin-bottom: 10px;
+.students-header h2 {
+  color: #0c356a; /* สีน้ำเงินเข้ม เข้ากับแบรนด์ */
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+}
+
+/* เส้นตกแต่งใต้หัวข้อ */
+.header-line {
+  width: 80px;
+  height: 4px;
+  background-color: #ff9800; /* สีส้ม */
+  margin: 0 auto 1rem auto;
+  border-radius: 2px;
 }
 
 .students-header p {
@@ -22,53 +32,108 @@
   font-size: 1.1rem;
 }
 
+/* การจัดตารางแบบ Responsive */
 .students-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
 }
 
+/* สไตล์ของการ์ดแต่ละใบ */
 .student-card {
-  background: white;
-  border-radius: 20px;
-  padding: 30px;
-  text-align: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
   border: 1px solid #eee;
 }
 
+/* เอฟเฟกต์ตอนเอาเมาส์ไปชี้ที่การ์ด */
 .student-card:hover {
-  transform: translateY(-10px);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
-.student-image img {
-  width: 100px;
-  height: 100px;
+/* ส่วนหัวของการ์ด (จัดรูปและชื่อให้อยู่แนวนอน) */
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.2rem;
+  padding-bottom: 1.2rem;
+  border-bottom: 1px dashed #e0e0e0;
+}
+
+/* รูปโปรไฟล์นักเรียน (ทำเป็นวงกลม) */
+.student-avatar {
+  width: 65px;
+  height: 65px;
   border-radius: 50%;
   object-fit: cover;
-  margin-bottom: 20px;
-  border: 3px solid #FF9F43; /* สีส้มตามปุ่มลงทะเบียน */
+  border: 3px solid #ff9800; /* ขอบสีส้ม */
+  margin-right: 1.2rem;
+}
+
+/* ข้อมูลชื่อและคอร์ส */
+.student-info {
+  display: flex;
+  flex-direction: column;
 }
 
 .student-info h3 {
-  color: #003366;
-  margin-bottom: 5px;
+  margin: 0 0 0.3rem 0;
+  color: #333;
+  font-size: 1.2rem;
 }
 
-.course-tag {
+/* ป้าย Tag บอกชื่อคอร์ส */
+.course-badge {
   display: inline-block;
-  background: #f0f4f8;
-  color: #003366;
-  padding: 4px 12px;
-  border-radius: 15px;
+  background-color: #e3f2fd;
+  color: #0d47a1;
+  padding: 0.25rem 0.8rem;
+  border-radius: 20px;
   font-size: 0.85rem;
-  margin-bottom: 15px;
-  font-weight: 500;
+  font-weight: 600;
+  align-self: flex-start;
 }
 
+.card-body {
+  flex-grow: 1;
+}
+
+/* ตัวอักษรคำรีวิว */
 .review-text {
   color: #555;
-  line-height: 1.6;
   font-style: italic;
+  line-height: 1.6;
+  margin: 0;
+  font-size: 1rem;
+  /* กล่องโชว์ผลงานสอบติด */
+  
+.achievement-box {
+  background-color: #fef0f0; /* สีแดง/ส้มอ่อนๆ */
+  border-left: 4px solid #d32f2f; /* เส้นขอบซ้ายสีแดงเข้ม */
+  padding: 0.8rem;
+  margin-bottom: 1rem;
+  border-radius: 0 8px 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #c62828;
+  font-size: 0.95rem;
+}
+
+.achievement-icon {
+  font-size: 1.5rem;
+}
+
+.achievement-box strong {
+  display: block;
+  font-size: 0.85rem;
+  color: #7f0000;
+  margin-bottom: 2px;
+}
 }

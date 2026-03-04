@@ -13,6 +13,12 @@ export class Student {
 
   @Column({ nullable: true })
   course: string;
+  
+  @Column({ nullable: true })
+  university: string;
+
+  @Column({ nullable: true })
+  faculty: string;
 
   @Column('text')
   description: string;

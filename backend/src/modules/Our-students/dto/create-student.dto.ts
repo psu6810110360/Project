@@ -11,6 +11,14 @@ export class CreateStudentDto {
   @IsOptional()
   @IsString()
   course?: string;
+  
+  @IsOptional()
+  @IsString()
+  university?: string;
+
+  @IsOptional()
+  @IsString()
+  faculty?: string;
 
   @IsString()
   description: string;

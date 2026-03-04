@@ -5,12 +5,14 @@ import "./OurStudentManagement.css";
 function OurStudentManagement() {
   const [students, setStudents] = useState([]);
   
-  // 1. เปลี่ยนชื่อตัวแปรให้ตรงกับ Backend DTO
+  // 1. เพิ่ม university และ faculty ใน State
   const [form, setForm] = useState({
     name: "",
     course: "",
-    description: "", // เปลี่ยนจาก review เป็น description
-    imageUrl: "",    // เปลี่ยนจาก image เป็น imageUrl
+    description: "", 
+    imageUrl: "", 
+    university: "", // <--- เพิ่มตรงนี้
+    faculty: "",    // <--- เพิ่มตรงนี้
   });
 
   useEffect(() => {
@@ -35,12 +37,12 @@ function OurStudentManagement() {
 
     try {
       await axios.post("http://localhost:3000/students", form);
-      // รีเซ็ตฟอร์ม (อัปเดตชื่อให้ตรงกัน)
-      setForm({ name: "", course: "", description: "", imageUrl: "" });
+      // รีเซ็ตฟอร์ม (อัปเดตให้ล้างค่า university และ faculty ด้วย)
+      setForm({ name: "", course: "", description: "", imageUrl: "", university: "", faculty: "" });
       fetchStudents(); 
     } catch (error) {
       console.error("เพิ่มข้อมูลล้มเหลว:", error);
-      alert("ไม่สามารถเพิ่มข้อมูลได้ ลองตรวจสอบ Backend");
+      alert("ไม่สามารถเพิ่มข้อมูลได้ ลองตรวจสอบ Backend ว่าอนุญาตให้รับข้อมูล university และ faculty หรือยัง");
     }
   };
 
@@ -81,10 +83,11 @@ function OurStudentManagement() {
         <input type="text" name="name" placeholder="ชื่อ-นามสกุล" value={form.name} onChange={handleChange} />
         <input type="text" name="course" placeholder="คอร์สที่เรียน" value={form.course} onChange={handleChange} />
         
-        {/* 2. เปลี่ยน name="description" และ value={form.description} */}
-        <textarea name="description" placeholder="คำรีวิวจากน้องๆ" value={form.description} onChange={handleChange} />
+        {/* เพิ่มช่องมหาวิทยาลัยและคณะ */}
+        <input type="text" name="university" placeholder="สอบติดมหาวิทยาลัย (เช่น จุฬาฯ, มหิดล)" value={form.university} onChange={handleChange} />
+        <input type="text" name="faculty" placeholder="คณะ/สาขา (เช่น แพทยศาสตร์)" value={form.faculty} onChange={handleChange} />
         
-        {/* 3. เปลี่ยน name="imageUrl" และ value={form.imageUrl} */}
+        <textarea name="description" placeholder="คำรีวิวจากน้องๆ" value={form.description} onChange={handleChange} />
         <input type="text" name="imageUrl" placeholder="URL รูปภาพ" value={form.imageUrl} onChange={handleChange} />
         
         <button className="add-btn" onClick={handleAdd}>เพิ่มนักเรียน</button>
@@ -93,7 +96,13 @@ function OurStudentManagement() {
       <hr />
 
       <table className="student-table">
-        {/* ... ส่วน Thead เขียนเหมือนเดิม ... */}
+        <thead>
+          <tr>
+            <th style={{ width: "40%" }}>ชื่อ</th>
+            <th style={{ width: "30%" }}>คอร์ส</th>
+            <th style={{ width: "30%" }}>จัดการ</th>
+          </tr>
+        </thead>
         <tbody>
           {students.map((s) => (
             <tr key={s.id}>
