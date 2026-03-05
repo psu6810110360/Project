@@ -101,56 +101,52 @@ const MyClassroom = () => {
     const isRejected = course.paymentStatus === 'rejected';
 
     return (
-      <div className="course-card" style={{ position: 'relative' }}>
-        {/* ปุ่มลบ (เฉพาะ Approved) */}
-        {isApproved && (
-          <button
-            onClick={() => onRemove(course.id, course.title)}
-            style={{
-              position: 'absolute', top: '10px', right: '10px',
-              background: '#ff4d4d', color: 'white', border: 'none',
-              borderRadius: '50%', width: '30px', height: '30px',
-              cursor: 'pointer', zIndex: 10,
-            }}
-          >
-            ✕
-          </button>
-        )}
+      <div className="course-card" style={{ position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        
+        {/* ✅ เพิ่มรูปภาพหน้าปกคอร์ส */}
+        <img 
+          src={course.coverImageUrl ? `http://localhost:3000${course.coverImageUrl}` : 'https://via.placeholder.com/400x200?text=No+Cover'} 
+          alt={course.title}
+          style={{ width: '100%', height: '180px', objectFit: 'cover' }}
+        />
 
-        {isApproved && <FaCheckCircle className="completed-icon" />}
+        {/* ✅ ไอคอนติ๊กถูก ย้ายมาทับบนรูปมุมขวาบนให้สวยงาม */}
+        {isApproved && <FaCheckCircle className="completed-icon" style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '24px', color: '#28a745', background: 'white', borderRadius: '50%' }} />}
 
-        <div style={{ padding: '15px' }}>
-          <h3 className="course-card-title">{course.title}</h3>
+        <div style={{ padding: '15px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <h3 className="course-card-title" style={{ marginTop: '0px' }}>{course.title}</h3>
 
           <div className="course-info">
             <FaUser /> {course.instructorName || 'ไม่ระบุผู้สอน'}
           </div>
-          <div className="course-info">
+          <div className="course-info" style={{ marginBottom: '15px' }}>
             <FaRegClock /> {course.classTime || 'ไม่ระบุเวลา'}
           </div>
 
-          {/* 🔔 แสดงสถานะและปุ่ม */}
-          {isPending && (
-            <div className="course-date-box" style={{ background: '#f1c40f', color: '#fff' }}>
-              ⏳ รอการอนุมัติ (เข้าเรียนไม่ได้)
-            </div>
-          )}
-          
-          {isRejected && (
-            <div className="course-date-box" style={{ background: '#ffe6e6', color: '#c0392b' }}>
-              ❌ การชำระเงินถูกปฏิเสธ
-            </div>
-          )}
+          {/* 🔔 แสดงสถานะและปุ่ม ดันให้อยู่ล่างสุดของการ์ดเสมอ */}
+          <div style={{ marginTop: 'auto' }}>
+            {isPending && (
+              <div className="course-date-box" style={{ background: '#f1c40f', color: '#fff' }}>
+                ⏳ รอการอนุมัติ (เข้าเรียนไม่ได้)
+              </div>
+            )}
+            
+            {isRejected && (
+              <div className="course-date-box" style={{ background: '#ffe6e6', color: '#c0392b' }}>
+                ❌ การชำระเงินถูกปฏิเสธ
+              </div>
+            )}
 
-          {/* ✅ ปุ่มเข้าเรียนจะขึ้นเฉพาะตอนสถานะเป็น approved เท่านั้น */}
-          {isApproved && (
-            <button
-              className="watch-video-btn"
-              onClick={() => alert(`เข้าเรียนคอร์ส: ${course.title}`)}
-            >
-              <FaPlayCircle /> เข้าเรียน
-            </button>
-          )}
+            {/* ✅ ปุ่มเข้าเรียนจะขึ้นเฉพาะตอนสถานะเป็น approved เท่านั้น */}
+            {isApproved && (
+              <button
+                className="watch-video-btn"
+                onClick={() => alert(`เข้าเรียนคอร์ส: ${course.title}`)}
+              >
+                <FaPlayCircle /> เข้าเรียน
+              </button>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -161,8 +157,14 @@ const MyClassroom = () => {
   }
 
   return (
-    <div className="classroom-container">
-      <h1 className="classroom-title">ห้องเรียนของฉัน</h1>
+    <div className="classroom-container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      
+      {/* ✅ จัดหัวข้อให้อยู่กึ่งกลาง */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '40px' }}>
+        <h1 className="classroom-title" style={{ margin: 0, padding: '10px 40px', background: '#ffe8cc', color: '#003366', borderRadius: '30px', display: 'inline-block' }}>
+          ห้องเรียนของฉัน
+        </h1>
+      </div>
 
       {myCourses.length === 0 ? (
         <EmptyCourseState />
@@ -172,7 +174,7 @@ const MyClassroom = () => {
           {pendingCourses.length > 0 && (
             <>
               <h2 className="section-title">รอการอนุมัติ</h2>
-              <div className="course-grid-active">
+              <div className="course-grid-active" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                 {pendingCourses.map(course => (
                   <CourseCard key={course.id} course={course} />
                 ))}
@@ -182,9 +184,9 @@ const MyClassroom = () => {
 
           {/* กล่องคอร์สที่เรียนได้ */}
           {approvedCourses.length > 0 && (
-            <>
+            <div style={{ marginTop: '40px' }}>
               <h2 className="section-title">คอร์สของฉัน</h2>
-              <div className="course-grid-active">
+              <div className="course-grid-active" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                 {approvedCourses.map(course => (
                   <CourseCard
                     key={course.id}
@@ -193,19 +195,19 @@ const MyClassroom = () => {
                   />
                 ))}
               </div>
-            </>
+            </div>
           )}
 
           {/* กล่องถูกปฏิเสธ */}
           {rejectedCourses.length > 0 && (
-            <>
+            <div style={{ marginTop: '40px' }}>
               <h2 className="section-title">ถูกปฏิเสธ</h2>
-              <div className="course-grid-active">
+              <div className="course-grid-active" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                 {rejectedCourses.map(course => (
                   <CourseCard key={course.id} course={course} />
                 ))}
               </div>
-            </>
+            </div>
           )}
         </>
       )}
