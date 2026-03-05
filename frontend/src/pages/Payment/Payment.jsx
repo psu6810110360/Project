@@ -28,8 +28,13 @@ export default function Payment() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // ยังใช้ preview URL ตามที่คุณตั้งใจ
-      setSlipImage(URL.createObjectURL(file));
+      // ✅ แก้ไขตรงนี้: แปลงไฟล์รูปให้กลายเป็น Base64 String 
+      // เพื่อให้สามารถส่งแนบไปใน JSON (slipUrl) ให้ Backend อ่านได้เลย
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSlipImage(reader.result); // จะได้เป็น String เช่น "data:image/jpeg;base64,..."
+      };
+      reader.readAsDataURL(file);
     }
     e.target.value = null;
   };
@@ -65,7 +70,7 @@ export default function Payment() {
         'http://localhost:3000/payments',
         {
           courseIds,
-          slipUrl: slipImage,
+          slipUrl: slipImage, // ส่ง String Base64 ไปได้เลย
           totalPrice,
         },
         {
