@@ -1,3 +1,4 @@
+// src/pages/Admin/UserManagement.jsx
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaTrash, FaPlus, FaArrowLeft, FaUserCog } from 'react-icons/fa';
@@ -14,15 +15,52 @@ export default function UserManagement() {
     fetchInitialData();
   }, []);
 
-  const fetchInitialData = async () => {
+  const fetchInitialData = async (currentSelectedUserId = null) => {
     setIsLoading(true);
     try {
-      const [userRes, courseRes] = await Promise.all([
-        axios.get('http://localhost:3000/users'),
-        axios.get('http://localhost:3000/courses')
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
+
+      // ✅ ดึงข้อมูล Users, Courses และ Payments มาพร้อมกัน
+      const [userRes, courseRes, paymentRes] = await Promise.all([
+        axios.get('http://localhost:3000/users', { headers }),
+        axios.get('http://localhost:3000/courses'),
+        axios.get('http://localhost:3000/payments', { headers }).catch(() => ({ data: [] }))
       ]);
-      setUsers(userRes.data);
-      setAllCourses(courseRes.data);
+
+      const allCoursesData = courseRes.data;
+      const allPaymentsData = paymentRes.data || [];
+
+      // ✅ ประมวลผล: รวมคอร์สที่อนุมัติแล้ว เข้ากับคอร์สที่มีอยู่เดิม
+      const processedUsers = userRes.data.map(user => {
+        const manualCourses = user.courses || [];
+        
+        // หา payment ที่ 'approved' ของ user คนนี้
+        const approvedPayments = allPaymentsData.filter(p => 
+          (p.user?.id === user.id || p.userId === user.id) && p.status === 'approved'
+        );
+        const paidCourses = approvedPayments.map(p => p.course).filter(Boolean);
+
+        // รวมคอร์สทั้ง 2 แหล่งเข้าด้วยกัน และตัดตัวที่ซ้ำกันออก (ด้วย id)
+        const combinedCourses = [...manualCourses, ...paidCourses];
+        const uniqueCourses = Array.from(new Map(combinedCourses.map(c => [c.id, c])).values());
+
+        return {
+          ...user,
+          courses: uniqueCourses
+        };
+      });
+
+      setUsers(processedUsers);
+      setAllCourses(allCoursesData);
+
+      // ✅ อัปเดตข้อมูล selectedUser ด้วย (เพื่อเวลาอยู่ในหน้าจัดการคอร์ส เลขจะได้อัปเดตแบบเรียลไทม์)
+      if (currentSelectedUserId || selectedUser) {
+        const targetId = currentSelectedUserId || selectedUser?.id;
+        const updatedSelectedUser = processedUsers.find(u => u.id === targetId);
+        if (updatedSelectedUser) setSelectedUser(updatedSelectedUser);
+      }
+
     } catch (error) {
       console.error('Error fetching data:', error);
       Swal.fire('ผิดพลาด', 'ไม่สามารถดึงข้อมูลจากเซิร์ฟเวอร์ได้', 'error');
@@ -34,12 +72,16 @@ export default function UserManagement() {
   const handleAddCourse = async () => {
     if (!selectedCourseToAdd) return;
     try {
-      const response = await axios.post(`http://localhost:3000/users/${selectedUser.id}/add-course/${selectedCourseToAdd}`);
-      const updatedUser = response.data;
-      setSelectedUser(updatedUser);
-      setUsers(users.map(u => u.id === updatedUser.id ? updatedUser : u));
-      setSelectedCourseToAdd('');
+      const token = localStorage.getItem('token');
+      await axios.post(`http://localhost:3000/users/${selectedUser.id}/add-course/${selectedCourseToAdd}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
       Swal.fire('สำเร็จ', 'เพิ่มคอร์สให้ผู้เรียนเรียบร้อยแล้ว', 'success');
+      setSelectedCourseToAdd('');
+      
+      // ✅ รีเฟรชข้อมูลใหม่ทั้งหมด
+      await fetchInitialData(selectedUser.id);
     } catch (error) {
       const msg = error.response?.data?.message || 'ไม่สามารถเพิ่มคอร์สได้';
       Swal.fire('เกิดข้อผิดพลาด', msg, 'error');
@@ -49,7 +91,7 @@ export default function UserManagement() {
   const handleRemoveCourse = (courseId) => {
     Swal.fire({
       title: 'ยืนยันการดึงคอร์สคืน?',
-      text: "ผู้เรียนจะเสียสิทธิ์การเข้าถึงคอร์สนี้ทันที",
+      text: "ผู้เรียนจะเสียสิทธิ์การเข้าถึงคอร์สนี้ทันที (หมายเหตุ: หากเป็นคอร์สที่ซื้อผ่านระบบสลิป อาจต้องลบข้อมูล Payment ด้วย)",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
@@ -58,11 +100,15 @@ export default function UserManagement() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const response = await axios.delete(`http://localhost:3000/users/${selectedUser.id}/remove-course/${courseId}`);
-          const updatedUser = response.data;
-          setSelectedUser(updatedUser);
-          setUsers(users.map(u => u.id === updatedUser.id ? updatedUser : u));
+          const token = localStorage.getItem('token');
+          await axios.delete(`http://localhost:3000/users/${selectedUser.id}/remove-course/${courseId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          
           Swal.fire('ลบสำเร็จ', 'ดึงคอร์สออกจากบัญชีผู้ใช้แล้ว', 'success');
+          
+          // ✅ รีเฟรชข้อมูลใหม่ทั้งหมด
+          await fetchInitialData(selectedUser.id);
         } catch (error) {
           Swal.fire('ผิดพลาด', 'ไม่สามารถลบคอร์สได้', 'error');
         }
@@ -82,7 +128,10 @@ export default function UserManagement() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://localhost:3000/users/${userId}`);
+          const token = localStorage.getItem('token');
+          await axios.delete(`http://localhost:3000/users/${userId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
           setUsers(users.filter(u => u.id !== userId));
           Swal.fire('ลบแล้ว!', 'บัญชีผู้ใช้งานถูกลบออกจากระบบแล้ว', 'success');
         } catch (error) {
@@ -111,7 +160,7 @@ export default function UserManagement() {
               <option key={course.id} value={course.id}>{course.title}</option>
             ))}
           </select>
-          <button onClick={handleAddCourse} style={{ padding: '12px 25px', backgroundColor: '#28a745', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
+          <button onClick={handleAddCourse} style={{ padding: '12px 25px', backgroundColor: '#28a745', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', minWidth: '120px' }}>
             <FaPlus /> เพิ่มคอร์ส
           </button>
         </div>
@@ -136,7 +185,7 @@ export default function UserManagement() {
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto', backgroundColor: '#fff', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
       <h2 style={{ color: '#003366', borderBottom: '2px solid #eee', paddingBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <FaUserCog /> ระบบจัดการผู้ใช้งาน (Real-time Database)
+        <FaUserCog /> ระบบจัดการผู้ใช้งาน
       </h2>
       <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
         <thead>
@@ -152,7 +201,11 @@ export default function UserManagement() {
             <tr key={user.id} style={{ borderBottom: '1px solid #eee' }}>
               <td style={{ padding: '15px' }}>{user.firstName || 'ไม่ระบุ'} {user.lastName || ''} {user.role === 'admin' && '(Admin)'}</td>
               <td style={{ padding: '15px' }}>{user.email}</td>
-              <td style={{ padding: '15px' }}>{user.courses?.length || 0} คอร์ส</td>
+              <td style={{ padding: '15px' }}>
+                <strong style={{ color: user.courses?.length > 0 ? '#28a745' : '#888' }}>
+                  {user.courses?.length || 0} คอร์ส
+                </strong>
+              </td>
               <td style={{ padding: '15px', textAlign: 'center' }}>
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
                     <button 
