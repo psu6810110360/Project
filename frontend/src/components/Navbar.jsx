@@ -42,11 +42,18 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
     }).then((result) => {
       if (result.isConfirmed) {
 
-        // backup cart
+        // ✅ ปรับปรุงลอจิก backup cart
         const currentUserId = localStorage.getItem('userId');
         const currentCart = localStorage.getItem('cart');
-        if (currentUserId && currentCart) {
-          localStorage.setItem(`cart_user_${currentUserId}`, currentCart);
+        
+        if (currentUserId) {
+          // ถ้ามีของในตะกร้า ให้เซฟทับตัวเก่า
+          if (currentCart && currentCart !== '[]') {
+            localStorage.setItem(`cart_user_${currentUserId}`, currentCart);
+          } else {
+            // ถ้าตะกร้าว่าง (จ่ายเงินแล้ว) ให้เคลียร์ตัวสำรองด้วย จะได้ไม่เด้งกลับมา
+            localStorage.removeItem(`cart_user_${currentUserId}`);
+          }
         }
 
         localStorage.removeItem('userRole');

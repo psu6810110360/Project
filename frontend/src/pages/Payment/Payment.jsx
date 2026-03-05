@@ -49,6 +49,8 @@ export default function Payment() {
     }
 
     const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId'); // ✅ ดึง userId มาเตรียมไว้
+    
     if (!token) {
       Swal.fire('เกิดข้อผิดพลาด', 'กรุณาเข้าสู่ระบบก่อนทำรายการ', 'error');
       navigate('/login');
@@ -80,8 +82,14 @@ export default function Payment() {
         }
       );
 
-      // 🧹 ล้างตะกร้า
+      // 🧹 ล้างตะกร้าหลัก
       localStorage.removeItem('cart');
+      
+      // ✅ เพิ่มเติม: ล้างตะกร้าสำรอง (Backup) ของ User คนนี้ด้วย
+      if (userId) {
+        localStorage.removeItem(`cart_user_${userId}`);
+      }
+      
       window.dispatchEvent(new Event('cartUpdated'));
 
       Swal.fire(
