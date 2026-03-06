@@ -1,7 +1,7 @@
 // src/pages/Admin/UserManagement.jsx
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaTrash, FaPlus, FaArrowLeft, FaUserCog } from 'react-icons/fa';
+import { FaTrash, FaPlus, FaArrowLeft, FaUserCog, FaBan } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 
 export default function UserManagement() {
@@ -21,7 +21,7 @@ export default function UserManagement() {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
 
-      // ✅ ดึงข้อมูล Users, Courses และ Payments มาพร้อมกัน
+      // ดึงข้อมูล
       const [userRes, courseRes, paymentRes] = await Promise.all([
         axios.get('http://localhost:3000/users', { headers }),
         axios.get('http://localhost:3000/courses'),
@@ -31,19 +31,39 @@ export default function UserManagement() {
       const allCoursesData = courseRes.data;
       const allPaymentsData = paymentRes.data || [];
 
-      // ✅ ประมวลผล: รวมคอร์สที่อนุมัติแล้ว เข้ากับคอร์สที่มีอยู่เดิม
+      // ประมวลผลข้อมูล
       const processedUsers = userRes.data.map(user => {
-        const manualCourses = user.courses || [];
-        
-        // หา payment ที่ 'approved' ของ user คนนี้
-        const approvedPayments = allPaymentsData.filter(p => 
-          (p.user?.id === user.id || p.userId === user.id) && p.status === 'approved'
+        // หา payment
+        const userPayments = allPaymentsData.filter(p => 
+          (p.user?.id === user.id || p.userId === user.id) && 
+          ['approved', 'revoked'].includes(p.status ? p.status.toLowerCase() : '')
         );
-        const paidCourses = approvedPayments.map(p => p.course).filter(Boolean);
 
-        // รวมคอร์สทั้ง 2 แหล่งเข้าด้วยกัน และตัดตัวที่ซ้ำกันออก (ด้วย id)
+        const paidCourses = userPayments.map(p => {
+          if (!p.course) return null;
+          return {
+            ...p.course,
+            paymentId: p.id,
+            paymentStatus: p.status.toLowerCase()
+          };
+        }).filter(Boolean);
+
+        const manualCourses = (user.courses || []).map(c => ({
+          ...c,
+          paymentStatus: 'approved' 
+        }));
+
         const combinedCourses = [...manualCourses, ...paidCourses];
-        const uniqueCourses = Array.from(new Map(combinedCourses.map(c => [c.id, c])).values());
+        
+        // ตัดข้อมูลซ้ำ (โดยใช้ Map) ถ้ามีซ้ำ ระบบจะให้ความสำคัญกับ paidCourses ที่มี paymentStatus 
+        const courseMap = new Map();
+        combinedCourses.forEach(c => {
+          // ถ้ามีอยู่แล้ว และตัวใหม่เป็น revoked ให้อัปเดตทับ
+          if (!courseMap.has(c.id) || c.paymentStatus === 'revoked') {
+            courseMap.set(c.id, c);
+          }
+        });
+        const uniqueCourses = Array.from(courseMap.values());
 
         return {
           ...user,
@@ -54,7 +74,6 @@ export default function UserManagement() {
       setUsers(processedUsers);
       setAllCourses(allCoursesData);
 
-      // ✅ อัปเดตข้อมูล selectedUser ด้วย (เพื่อเวลาอยู่ในหน้าจัดการคอร์ส เลขจะได้อัปเดตแบบเรียลไทม์)
       if (currentSelectedUserId || selectedUser) {
         const targetId = currentSelectedUserId || selectedUser?.id;
         const updatedSelectedUser = processedUsers.find(u => u.id === targetId);
@@ -79,8 +98,6 @@ export default function UserManagement() {
       
       Swal.fire('สำเร็จ', 'เพิ่มคอร์สให้ผู้เรียนเรียบร้อยแล้ว', 'success');
       setSelectedCourseToAdd('');
-      
-      // ✅ รีเฟรชข้อมูลใหม่ทั้งหมด
       await fetchInitialData(selectedUser.id);
     } catch (error) {
       const msg = error.response?.data?.message || 'ไม่สามารถเพิ่มคอร์สได้';
@@ -88,29 +105,31 @@ export default function UserManagement() {
     }
   };
 
-  const handleRemoveCourse = (courseId) => {
+  // ✅ เปลี่ยนฟังก์ชันมารองรับ API ตัวใหม่
+  const handleRevokeCourse = (course) => {
     Swal.fire({
-      title: 'ยืนยันการดึงคอร์สคืน?',
-      text: "ผู้เรียนจะเสียสิทธิ์การเข้าถึงคอร์สนี้ทันที (หมายเหตุ: หากเป็นคอร์สที่ซื้อผ่านระบบสลิป อาจต้องลบข้อมูล Payment ด้วย)",
+      title: 'ยืนยันการระงับสิทธิ์?',
+      text: `ผู้เรียนจะเข้าเรียนไม่ได้ แต่คอร์สยังแสดงในประวัติว่า "ถูกระงับสิทธิ์"`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
-      confirmButtonText: 'ยืนยันการลบ',
+      cancelButtonColor: '#888',
+      confirmButtonText: 'ยืนยันการระงับสิทธิ์',
       cancelButtonText: 'ยกเลิก'
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
           const token = localStorage.getItem('token');
-          await axios.delete(`http://localhost:3000/users/${selectedUser.id}/remove-course/${courseId}`, {
+          // ✅ ยิง API ขั้นเด็ดขาด
+          await axios.patch(`http://localhost:3000/payments/user/${selectedUser.id}/course/${course.id}/revoke`, {}, {
             headers: { Authorization: `Bearer ${token}` }
           });
           
-          Swal.fire('ลบสำเร็จ', 'ดึงคอร์สออกจากบัญชีผู้ใช้แล้ว', 'success');
-          
-          // ✅ รีเฟรชข้อมูลใหม่ทั้งหมด
+          Swal.fire('สำเร็จ', 'ระงับสิทธิ์คอร์สเรียนเรียบร้อยแล้ว', 'success');
           await fetchInitialData(selectedUser.id);
         } catch (error) {
-          Swal.fire('ผิดพลาด', 'ไม่สามารถลบคอร์สได้', 'error');
+          console.error(error);
+          Swal.fire('ผิดพลาด', 'ไม่สามารถระงับสิทธิ์ได้', 'error');
         }
       }
     });
@@ -155,7 +174,7 @@ export default function UserManagement() {
         </h2>
         <div style={{ backgroundColor: '#f8f9fa', padding: '20px', borderRadius: '8px', marginBottom: '30px', display: 'flex', gap: '15px' }}>
           <select value={selectedCourseToAdd} onChange={(e) => setSelectedCourseToAdd(e.target.value)} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #ccc' }}>
-            <option value="">-- เลือกคอร์สเพื่อเพิ่มสิทธิ์ --</option>
+            <option value="">-- เลือกคอร์สเพื่อเพิ่มสิทธิ์ (แบบ Manual) --</option>
             {allCourses.map(course => (
               <option key={course.id} value={course.id}>{course.title}</option>
             ))}
@@ -164,16 +183,32 @@ export default function UserManagement() {
             <FaPlus /> เพิ่มคอร์ส
           </button>
         </div>
+        
         <h3 style={{ color: '#333' }}>คอร์สที่ครอบครอง ({selectedUser.courses?.length || 0})</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
           {selectedUser.courses?.map(course => (
-            <div key={course.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #eee', padding: '15px', borderRadius: '8px' }}>
+            <div key={course.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #eee', padding: '15px', borderRadius: '8px', backgroundColor: course.paymentStatus === 'revoked' ? '#fff3f3' : '#fff' }}>
               <div>
-                <h4 style={{ margin: 0, color: '#003366' }}>{course.title}</h4>
+                <h4 style={{ margin: 0, color: course.paymentStatus === 'revoked' ? '#dc3545' : '#003366', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  {course.title}
+                  {/* ✅ โชว์ป้ายตัวอักษรสีแดงถ้าถูกระงับสิทธิ์ */}
+                  {course.paymentStatus === 'revoked' && (
+                    <span style={{ fontSize: '12px', backgroundColor: '#dc3545', color: '#fff', padding: '2px 8px', borderRadius: '12px', fontWeight: 'normal' }}>
+                      ระงับสิทธิ์แล้ว
+                    </span>
+                  )}
+                </h4>
               </div>
-              <button onClick={() => handleRemoveCourse(course.id)} style={{ padding: '8px 12px', backgroundColor: '#dc3545', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
-                <FaTrash /> ลบสิทธิ์
-              </button>
+
+              {/* ✅ ซ่อนปุ่มถ้าถูกระงับสิทธิ์ไปแล้ว */}
+              {course.paymentStatus !== 'revoked' ? (
+                <button onClick={() => handleRevokeCourse(course)} style={{ padding: '8px 12px', backgroundColor: '#dc3545', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <FaBan /> ระงับสิทธิ์
+                </button>
+              ) : (
+                <span style={{ color: '#dc3545', fontSize: '14px', fontWeight: 'bold' }}>ไม่อนุญาตให้เข้าเรียน</span>
+              )}
+
             </div>
           ))}
         </div>

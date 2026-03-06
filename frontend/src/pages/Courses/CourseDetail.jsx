@@ -14,7 +14,8 @@ export default function CourseDetail() {
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeMedia, setActiveMedia] = useState(0); // 0: Cover, 1: Video
-  const [isOwned, setIsOwned] = useState(false); // ✅ เพิ่ม state เช็คความเป็นเจ้าของ
+  const [isOwned, setIsOwned] = useState(false); // ✅ เช็คความเป็นเจ้าของ
+  const [paymentStatus, setPaymentStatus] = useState(null); // ✅ เพิ่ม state เก็บสถานะ
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,11 +34,20 @@ export default function CourseDetail() {
             });
 
             // ตรวจสอบว่า ID คอร์สนี้ มีอยู่ในรายการที่ API ส่งมาไหม
-            // (response.data คือ Payment[] ซึ่งมี payment.course.id)
-            const owned = myCoursesRes.data.some(payment => 
-              String(payment.course.id) === String(id) // ✅ แปลงเป็น String เพื่อความชัวร์
+            const ownedItem = myCoursesRes.data.find(payment => 
+              String(payment.course.id) === String(id)
             );
-            setIsOwned(owned);
+
+            // ✅ ปรับปรุงลอจิกเช็คสถานะ
+            if (ownedItem) {
+              const status = ownedItem.status ? ownedItem.status.toLowerCase() : 'pending';
+              setPaymentStatus(status);
+              
+              // เป็นเจ้าของก็ต่อเมื่อสถานะอนุมัติแล้วเท่านั้น (ถ้าระงับสิทธิ์ จะเป็น false)
+              if (status === 'approved') {
+                setIsOwned(true);
+              }
+            }
           } catch (err) {
             console.error("Failed to check ownership", err);
           }
@@ -62,6 +72,10 @@ export default function CourseDetail() {
   if (!course) return <div style={{ textAlign: 'center', padding: '100px' }}>ไม่พบข้อมูลคอร์ส</div>;
 
   const hasVideo = Boolean(course.sampleVideoUrl);
+
+  // ✅ เช็คสถานะเพื่อนำไปแสดงผล
+  const isRevoked = ['revoked', 'suspended', 'canceled'].includes(paymentStatus);
+  const isPending = paymentStatus === 'pending';
 
   const addToCart = () => {
     const existingCart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -180,6 +194,20 @@ export default function CourseDetail() {
               </div>
             </div>
 
+            {/* ✅ แจ้งเตือนกรณีถูกระงับสิทธิ์ */}
+            {isRevoked && (
+              <div style={{ padding: '12px', backgroundColor: '#ffe6e6', color: '#c0392b', border: '1px solid #f5c6cb', borderRadius: '10px', marginBottom: '15px', fontSize: '14px', textAlign: 'center' }}>
+                <strong>🚫 ท่านหมดสิทธิ์ในการเรียนคอร์สนี้แล้ว</strong><br/>สามารถกดเพิ่มลงตะกร้าเพื่อสั่งซื้อใหม่ได้
+              </div>
+            )}
+
+            {/* ✅ แจ้งเตือนกรณีรออนุมัติสลิป */}
+            {isPending && (
+              <div style={{ padding: '12px', backgroundColor: '#fff3cd', color: '#856404', border: '1px solid #ffeeba', borderRadius: '10px', marginBottom: '15px', fontSize: '14px', textAlign: 'center' }}>
+                <strong>⏳ อยู่ระหว่างรอการอนุมัติสลิป</strong>
+              </div>
+            )}
+
             {/* ✅ ปุ่ม Action ตามสถานะ */}
             {isOwned ? (
               <button 
@@ -187,7 +215,14 @@ export default function CourseDetail() {
                 style={{ width: '100%', padding: '18px', backgroundColor: '#28a745', color: '#fff', border: 'none', borderRadius: '15px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
                 <FaUserGraduate /> เข้าสู่บทเรียนของคุณ
               </button>
+            ) : isPending ? (
+              <button 
+                disabled
+                style={{ width: '100%', padding: '18px', backgroundColor: '#e9ecef', color: '#6c757d', border: '1px solid #ced4da', borderRadius: '15px', fontSize: '18px', fontWeight: 'bold', cursor: 'not-allowed', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
+                <FaClock /> รอการอนุมัติ
+              </button>
             ) : (
+              // 🛒 ปุ่มนี้จะแสดงเมื่อ ไม่ได้เป็นเจ้าของคอร์ส, ไม่ได้รออนุมัติ (รวมถึงคนที่โดนระงับสิทธิ์ด้วย)
               <button 
                 onClick={addToCart} 
                 style={{ width: '100%', padding: '18px', backgroundColor: '#003366', color: '#fff', border: 'none', borderRadius: '15px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', transition: '0.3s', boxShadow: '0 10px 20px rgba(0,51,102,0.2)' }}

@@ -1,5 +1,4 @@
 // src/modules/payments/payments.controller.ts
-// src/modules/payments/payments.controller.ts
 import {
   Controller,
   Post,
@@ -38,9 +37,8 @@ export class PaymentsController {
   }
 
   // =========================
-  // ✅ ADMIN: GET ALL PAYMENTS (แก้ใหม่)
+  // ✅ ADMIN: GET ALL PAYMENTS
   // =========================
-  // รวม findPending และ findAll ไว้ที่นี่ที่เดียว เพื่อแก้ปัญหา Route ชนกัน
   @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
@@ -48,7 +46,7 @@ export class PaymentsController {
   }
 
   // =========================
-  // ✅ ADMIN: APPROVE PAYMENT (Endpoint นี้ถูกต้องแล้ว)
+  // ✅ ADMIN: APPROVE PAYMENT
   // =========================
   @UseGuards(JwtAuthGuard)
   @Patch(':id/approve')
@@ -57,11 +55,23 @@ export class PaymentsController {
   }
 
   // =========================
-  // ✅ ADMIN: REJECT PAYMENT (Endpoint นี้ถูกต้องแล้ว)
+  // ✅ ADMIN: REJECT PAYMENT
   // =========================
   @UseGuards(JwtAuthGuard)
   @Patch(':id/reject')
   reject(@Param('id') id: number) {
     return this.paymentsService.reject(id);
+  }
+
+  // ==========================================
+  // ✅ API ใหม่: ระงับสิทธิ์ขั้นเด็ดขาด (ครอบคลุมทั้งหมด)
+  // ==========================================
+  @UseGuards(JwtAuthGuard)
+  @Patch('user/:userId/course/:courseId/revoke')
+  revokeCourseAccess(
+    @Param('userId') userId: string,
+    @Param('courseId') courseId: string,
+  ) {
+    return this.paymentsService.revokeCourseAccess(+userId, courseId);
   }
 }

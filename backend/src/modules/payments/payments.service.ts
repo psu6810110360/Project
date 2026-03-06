@@ -1,3 +1,4 @@
+// src/modules/payments/payments.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -20,9 +21,6 @@ export class PaymentsService {
     private courseRepo: Repository<Course>,
   ) {}
 
-  // =========================
-  // USER: CREATE PAYMENT
-  // =========================
   async create(userId: number, dto: CreatePaymentDto) {
     const user = await this.userRepo.findOneBy({ id: userId });
     if (!user) {
@@ -32,12 +30,8 @@ export class PaymentsService {
     const payments: Payment[] = [];
 
     for (const courseId of dto.courseIds) {
-      // แปลง ID เป็น String เสมอ
       const idToCheck = String(courseId); 
-
-      const course = await this.courseRepo.findOneBy({
-        id: idToCheck, 
-      });
+      const course = await this.courseRepo.findOneBy({ id: idToCheck });
       
       if (!course) {
         throw new NotFoundException(`Course ${courseId} not found`);
@@ -48,7 +42,6 @@ export class PaymentsService {
         course,
         price: (course as any).price || 0, 
         slipUrl: dto.slipUrl,
-        // ✅ สำคัญ: ต้องเป็น PENDING เสมอเมื่อสร้างใหม่
         status: PaymentStatus.PENDING,
       });
 
@@ -58,22 +51,14 @@ export class PaymentsService {
     return this.paymentRepo.save(payments);
   }
 
-  // =========================
-  // USER: MY CLASSROOM (แก้ไขแล้ว)
-  // =========================
   async findMyCourses(userId: number) {
     return this.paymentRepo.find({
-      // ✅ เอา status: APPROVED ออก! 
-      // เพื่อให้ Frontend ได้ข้อมูลไปแสดงในส่วน "รอการอนุมัติ" ได้
       where: { user: { id: userId } }, 
       relations: ['course'],
       order: { createdAt: 'DESC' },
     });
   }
 
-  // =========================
-  // ADMIN: FIND ALL
-  // =========================
   async findAll() {
     return this.paymentRepo.find({
       relations: ['user', 'course'],
@@ -81,9 +66,6 @@ export class PaymentsService {
     });
   }
 
-  // =========================
-  // ADMIN: VIEW PENDING PAYMENTS
-  // =========================
   async findPending() {
     return this.paymentRepo.find({
       where: { status: PaymentStatus.PENDING },
@@ -92,9 +74,6 @@ export class PaymentsService {
     });
   }
 
-  // =========================
-  // ADMIN: APPROVE PAYMENT
-  // =========================
   async approve(id: number) {
     const payment = await this.paymentRepo.findOne({
       where: { id },
@@ -102,21 +81,17 @@ export class PaymentsService {
     });
 
     if (!payment) throw new NotFoundException('Payment not found');
-
     if (payment.status === PaymentStatus.APPROVED) return payment;
 
-    // อัปเดตสถานะ
     payment.status = PaymentStatus.APPROVED;
     await this.paymentRepo.save(payment);
 
-    // เพิ่มคอร์สให้ User
     const user = await this.userRepo.findOne({
       where: { id: payment.user.id },
       relations: ['courses'],
     });
 
     if (!user) throw new NotFoundException('User not found');
-
     if (!user.courses) user.courses = [];
 
     const exists = user.courses.some(
@@ -131,15 +106,66 @@ export class PaymentsService {
     return payment;
   }
 
-  // =========================
-  // ADMIN: REJECT PAYMENT
-  // =========================
   async reject(id: number) {
     const payment = await this.paymentRepo.findOne({ where: { id } });
-    
     if (!payment) throw new NotFoundException('Payment not found');
 
     payment.status = PaymentStatus.REJECTED;
     return this.paymentRepo.save(payment);
+  }
+
+  async revoke(id: number) {
+    // เก็บฟังก์ชันนี้ไว้เผื่อมีการเรียกใช้งานจากจุดอื่น
+    const payment = await this.paymentRepo.findOne({
+      where: { id },
+      relations: ['user', 'course'],
+    });
+    if (!payment) throw new NotFoundException('Payment not found');
+
+    payment.status = 'REVOKED' as PaymentStatus;
+    await this.paymentRepo.save(payment);
+
+    if (payment.user && payment.course) {
+      const user = await this.userRepo.findOne({
+        where: { id: payment.user.id },
+        relations: ['courses'],
+      });
+      if (user && user.courses) {
+        user.courses = user.courses.filter(
+          (c) => String(c.id) !== String(payment.course.id)
+        );
+        await this.userRepo.save(user);
+      }
+    }
+    return payment;
+  }
+
+  // ==========================================
+  // ✅ ฟังก์ชันระงับสิทธิ์ขั้นเด็ดขาด (ลบสิทธิ์ 100%)
+  // ==========================================
+  async revokeCourseAccess(userId: number, courseId: string) {
+    // 1. เปลี่ยนสถานะ Payment ทั้งหมดของคอร์สนี้ให้เป็น 'revoked'
+    const payments = await this.paymentRepo.find({
+      where: { user: { id: userId }, course: { id: courseId } },
+      relations: ['user', 'course'],
+    });
+
+    for (const p of payments) {
+      p.status = 'REVOKED' as any; // อัปเดตสถานะเป็นตัวใหญ่หรือเล็กตามฐานข้อมูล
+      await this.paymentRepo.save(p);
+    }
+
+    // 2. ดึงสิทธิ์คอร์สออกจากตาราง User ป้องกันการเข้าถึง
+    const user = await this.userRepo.findOne({
+      where: { id: userId },
+      relations: ['courses'],
+    });
+
+    if (user && user.courses) {
+      user.courses = user.courses.filter((c) => String(c.id) !== String(courseId));
+      await this.userRepo.save(user);
+    }
+
+    return { success: true, message: 'ระงับสิทธิ์สำเร็จ' };
   }
 }

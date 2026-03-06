@@ -78,7 +78,6 @@ export class UsersService implements OnModuleInit {
   // 3. FIND ALL USERS
   // =========================
   findAll() {
-    // ❗ ระบบใหม่ไม่ดึง courses แล้ว
     return this.usersRepository.find();
   }
 
@@ -101,37 +100,44 @@ export class UsersService implements OnModuleInit {
   }
 
   // =========================
-  // 6. ADD COURSE TO USER (DEPRECATED)
+  // 6. ADD COURSE TO USER
   // =========================
-  /**
-   * ⚠️ ฟังก์ชันนี้ถูก "ยกเลิกการใช้งานเชิงธุรกิจ"
-   * ระบบใหม่ใช้ Payment เป็นตัวกลาง
-   * แต่คงฟังก์ชันไว้เพื่อไม่ให้ route / frontend เก่าพัง
-   */
   async addCourseToUser(userId: number, courseId: string) {
     const user = await this.usersRepository.findOne({
       where: { id: userId },
+      relations: ['courses'], // ต้องดึง relations คอร์สมาด้วย
     });
 
     if (!user) throw new NotFoundException('ไม่พบผู้ใช้งาน');
 
-    // ❌ ไม่ทำอะไรแล้ว
-    // ✅ คืน user กลับไปเฉย ๆ
+    if (!user.courses) user.courses = [];
+    
+    // ป้องกันการแอดคอร์สซ้ำ
+    const exists = user.courses.some(c => String(c.id) === String(courseId));
+    if (!exists) {
+      user.courses.push({ id: Number(courseId) } as any);
+      await this.usersRepository.save(user);
+    }
+
     return user;
   }
 
   // =========================
-  // 7. REMOVE COURSE FROM USER (DEPRECATED)
+  // 7. REMOVE COURSE FROM USER
   // =========================
-  /**
-   * ⚠️ Deprecated เช่นเดียวกัน
-   */
   async removeCourseFromUser(userId: number, courseId: string) {
     const user = await this.usersRepository.findOne({
       where: { id: userId },
+      relations: ['courses'], // ต้องดึง relations เพื่อเอาไปแก้ไข
     });
 
     if (!user) throw new NotFoundException('ไม่พบผู้ใช้งาน');
+
+    // ลบคอร์สออกจากการครอบครอง
+    if (user.courses) {
+      user.courses = user.courses.filter(c => String(c.id) !== String(courseId));
+      await this.usersRepository.save(user);
+    }
 
     return user;
   }

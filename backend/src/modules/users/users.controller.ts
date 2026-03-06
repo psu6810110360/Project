@@ -1,3 +1,4 @@
+// src/modules/users/users.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { UsersService } from './users.service';
 
@@ -12,8 +13,6 @@ export class UsersController {
 
   @Post('register')
   register(@Body() userData: any) { 
-    // แนะนำให้เปลี่ยน any เป็น DTO (Data Transfer Object) เช่น CreateUserDto ในภายหลังนะครับ
-    // และเรียกใช้ฟังก์ชันใน Service (สมมติว่าใน Service น้องต้นกล้าตั้งชื่อฟังก์ชันว่า create หรือ register)
     return this.usersService.create(userData); 
   }
 
