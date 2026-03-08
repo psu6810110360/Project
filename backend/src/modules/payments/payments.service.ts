@@ -168,4 +168,37 @@ export class PaymentsService {
 
     return { success: true, message: 'ระงับสิทธิ์สำเร็จ' };
   }
+
+// ==========================================
+  // ✅ บันทึกความคืบหน้าว่าดูวิดีโอจบแล้ว
+  // ==========================================
+  async markVideoAsCompleted(userId: number, courseId: string, videoId: string) {
+    // 1. หาประวัติการซื้อคอร์สนี้ของนักเรียนที่ผ่านการอนุมัติแล้ว
+    const payment = await this.paymentRepo.findOne({
+      where: { 
+        user: { id: userId }, 
+        course: { id: courseId }, 
+        status: PaymentStatus.APPROVED 
+      }
+    });
+
+    if (!payment) {
+      throw new NotFoundException('ไม่พบสิทธิ์การเข้าเรียนคอร์สนี้ หรือยังไม่อนุมัติ');
+    }
+
+    // 2. ดึงข้อมูลวิดีโอที่เคยดูจบแล้วออกมา (ถ้ายังไม่มีให้เป็น Array ว่าง)
+    let completed = payment.completedVideos || [];
+
+    // 3. เช็คว่าเคยกดจบวิดีโอนี้ไปแล้วหรือยัง ถ้ายังให้เพิ่มเข้าไป
+    if (!completed.includes(videoId)) {
+      completed.push(videoId);
+      payment.completedVideos = completed;
+      await this.paymentRepo.save(payment);
+    }
+
+    return { 
+      message: 'บันทึกการดูวิดีโอสำเร็จ', 
+      completedVideos: payment.completedVideos 
+    };
+  }
 }

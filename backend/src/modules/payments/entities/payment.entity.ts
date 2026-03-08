@@ -22,19 +22,18 @@ export class Payment {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // ✅ เพิ่ม price เพื่อให้ Frontend แสดงราคาได้
   @Column('decimal', { precision: 10, scale: 2, default: 0 })
   price: number;
 
   @ManyToOne(() => User, (user) => user.payments, { eager: true })
-  @JoinColumn({ name: 'userId' }) // เพิ่ม JoinColumn เพื่อความชัวร์
+  @JoinColumn({ name: 'userId' }) 
   user: User;
 
   @ManyToOne(() => Course, { eager: true })
   @JoinColumn({ name: 'courseId' })
   course: Course;
 
-  @Column({ nullable: true }) // แก้ให้ nullable ได้เผื่อเคสไม่มีสลิป
+  @Column({ nullable: true }) 
   slipUrl: string;
 
   @Column({
@@ -43,6 +42,12 @@ export class Payment {
     default: PaymentStatus.PENDING,
   })
   status: PaymentStatus;
+
+  // ==========================================
+  // ✅ [เพิ่มตรงนี้] คอลัมน์เก็บ Array ของ ID วิดีโอที่ดูจบแล้ว
+  // ==========================================
+  @Column({ type: 'json', nullable: true })
+  completedVideos: any[];
 
   @CreateDateColumn()
   createdAt: Date;

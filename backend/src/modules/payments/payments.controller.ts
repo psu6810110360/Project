@@ -74,4 +74,17 @@ export class PaymentsController {
   ) {
     return this.paymentsService.revokeCourseAccess(+userId, courseId);
   }
+
+  // ==========================================
+  // ✅ API สำหรับให้นักเรียนกดยืนยันตอนดูวิดีโอจบ
+  // ==========================================
+  @UseGuards(JwtAuthGuard)
+  @Post('complete-video')
+  async completeVideo(
+    @Req() req,
+    @Body() body: { courseId: string; videoId: string }
+  ) {
+    // ใช้ req.user.id ให้ตรงกับระบบ Auth ปัจจุบันของคุณ
+    return this.paymentsService.markVideoAsCompleted(req.user.id, body.courseId, body.videoId);
+  }
 }
