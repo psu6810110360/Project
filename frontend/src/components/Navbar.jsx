@@ -122,7 +122,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
                   style={{ color: '#F2984A', fontWeight: 'bold' }} 
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  จัดการนักเรียน
+                  จัดการรีวิวนักเรียน
                 </Link>
 
                 <Link
