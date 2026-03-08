@@ -32,11 +32,32 @@ const MyClassroom = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      const coursesWithStatus = response.data.map((payment) => ({
-        ...payment.course,
-        // สำคัญ: ป้องกัน Error และแปลค่าให้เป็นพิมพ์เล็กเสมอ
-        paymentStatus: payment.status ? payment.status.toLowerCase() : 'pending',
-      }));
+      const coursesWithStatus = response.data.map((payment) => {
+        // 1. คำนวณจำนวนวิดีโอทั้งหมดในคอร์ส
+        let totalVideos = 0;
+        if (payment.course.videos) {
+          try {
+            const parsedVideos = typeof payment.course.videos === 'string' 
+              ? JSON.parse(payment.course.videos) 
+              : payment.course.videos;
+            totalVideos = parsedVideos.length;
+          } catch (e) {
+            console.error('Parse videos error', e);
+          }
+        }
+
+        // 2. คำนวณจำนวนวิดีโอที่ดูจบแล้ว
+        const completedCount = payment.completedVideos ? payment.completedVideos.length : 0;
+        
+        // 3. คิดเป็นเปอร์เซ็นต์
+        const progressPercent = totalVideos > 0 ? Math.round((completedCount / totalVideos) * 100) : 0;
+
+        return {
+          ...payment.course,
+          paymentStatus: payment.status ? payment.status.toLowerCase() : 'pending',
+          progressPercent: progressPercent, // ✅ เก็บเปอร์เซ็นต์ส่งไปให้ Card
+        };
+      });
 
       setMyCourses(coursesWithStatus);
       localStorage.setItem('myCourses', JSON.stringify(coursesWithStatus));
@@ -113,11 +134,32 @@ const MyClassroom = () => {
             )}
 
             {isApproved && (
-              <Link to={`/attend/${course.id}`} style={{ textDecoration: 'none', display: 'block' }}>
-                <button className="watch-video-btn">
-                  <FaPlayCircle /> เข้าเรียน
-                </button>
-              </Link>
+              <div style={{ marginTop: '15px' }}>
+                
+                {/* 🟢 หลอด Progress Bar */}
+                <div style={{ marginBottom: '15px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#666', marginBottom: '5px' }}>
+                    <span>ความคืบหน้า</span>
+                    <span style={{ color: '#27ae60', fontWeight: 'bold' }}>{course.progressPercent || 0}%</span>
+                  </div>
+                  <div style={{ width: '100%', backgroundColor: '#eee', borderRadius: '10px', height: '8px', overflow: 'hidden' }}>
+                    <div style={{ 
+                      width: `${course.progressPercent || 0}%`, 
+                      backgroundColor: '#27ae60', 
+                      height: '100%', 
+                      transition: 'width 0.5s ease' 
+                    }}></div>
+                  </div>
+                </div>
+
+                {/* 🔵 ปุ่มเข้าเรียน */}
+                <Link to={`/attend/${course.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+                  <button className="watch-video-btn">
+                    <FaPlayCircle /> เข้าเรียน
+                  </button>
+                </Link>
+
+              </div>
             )}
           </div>
         </div>
