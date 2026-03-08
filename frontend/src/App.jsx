@@ -16,6 +16,7 @@ import Cart from './pages/Cart/Cart';
 import Payment from './pages/Payment/Payment';
 import PaymentSuccess from './pages/Payment/PaymentSuccess';
 import UserManagement from './pages/Admin/UserManagement';
+import CoursePlayer from './pages/AttendClass/CoursePlayer';
 
 // ✅ รวม Import จากทั้ง 2 ฝั่ง
 import OurStudentManagement from "./pages/Admin/OurStudentManagement";
@@ -109,6 +110,8 @@ function App() {
                 </div>
               </ProtectedRoute>
             } />
+
+            <Route path="/attend/:courseId" element={<CoursePlayer />} />
 
             {/* 🔴 Admin Only */}
             <Route path="/add" element={

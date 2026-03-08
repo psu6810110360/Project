@@ -5,6 +5,8 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import './MyClassroom.css';
 import EmptyCourseState from './EmptyCourseState';
+import { Link } from 'react-router-dom';
+
 
 const MyClassroom = () => {
   const [myCourses, setMyCourses] = useState([]);
@@ -111,12 +113,11 @@ const MyClassroom = () => {
             )}
 
             {isApproved && (
-              <button
-                className="watch-video-btn"
-                onClick={() => alert(`เข้าเรียนคอร์ส: ${course.title}`)}
-              >
-                <FaPlayCircle /> เข้าเรียน
-              </button>
+              <Link to={`/attend/${course.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+                <button className="watch-video-btn">
+                  <FaPlayCircle /> เข้าเรียน
+                </button>
+              </Link>
             )}
           </div>
         </div>
