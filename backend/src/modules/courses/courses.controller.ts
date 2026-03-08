@@ -1,6 +1,9 @@
-//courses.controller.ts
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFiles } from '@nestjs/common';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
+// src/modules/courses/courses.controller.ts
+import { 
+  Controller, Get, Post, Body, Patch, Param, Delete, 
+  UseInterceptors, UploadedFiles, UploadedFile, BadRequestException 
+} from '@nestjs/common';
+import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { CoursesService } from './courses.service';
@@ -35,6 +38,16 @@ export class CoursesController {
     return this.coursesService.create(createCourseDto);
   }
 
+  @Get()
+  findAll() {
+    return this.coursesService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.coursesService.findOne(id);
+  }
+
   @Patch(':id')
   @UseInterceptors(FileFieldsInterceptor([
     { name: 'coverImage', maxCount: 1 },
@@ -43,23 +56,48 @@ export class CoursesController {
   ], multerOptions))
   update(
     @Param('id') id: string, 
-    @Body() updateCourseDto: any,
+    @Body() updateCourseDto: any, 
     @UploadedFiles() files: any
   ) {
     this.prepareData(updateCourseDto, files);
     return this.coursesService.update(id, updateCourseDto);
   }
 
-  
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.coursesService.remove(id);
+  }
+
+  // ==========================================
+  // ✅ API ใหม่: สำหรับอัปโหลดวิดีโอโดยเฉพาะ (ลดภาระ Controller หลัก)
+  // ==========================================
+  @Post('upload-video')
+  @UseInterceptors(FileInterceptor('file', multerOptions))
+  uploadVideo(@UploadedFile() file: any) {
+    if (!file) {
+      throw new BadRequestException('ไม่พบไฟล์วิดีโอ');
+    }
+    // คืนค่า URL ของไฟล์กลับไปให้ Frontend ไปใช้งานต่อ
+    return {
+      url: `/uploads/${file.filename}`,
+      message: 'อัปโหลดวิดีโอสำเร็จ'
+    };
+  }
+
+  @Patch(':id/videos')
+  updateCourseVideos(@Param('id') id: string, @Body() body: any) {
+    // โยน { videos: [...] } เข้า Service โดยตรง ข้ามระบบดักจับไฟล์ทุกอย่าง
+    return this.coursesService.update(id, { videos: body.videos });
+  }
+
+  // ==========================================
+  // Private Helper (ของเดิม)
+  // ==========================================
   private prepareData(dto: any, files: any) {
-   
     if (files?.coverImage) dto.coverImageUrl = `/uploads/${files.coverImage[0].filename}`;
     if (files?.sampleVideo) dto.sampleVideoUrl = `/uploads/${files.sampleVideo[0].filename}`;
     if (dto.instructorNames) {
-      
       const names = Array.isArray(dto.instructorNames) ? dto.instructorNames : [dto.instructorNames];
-      
-     
       dto.instructors = names.map((name, index) => {
         return {
           name: name,
@@ -68,18 +106,13 @@ export class CoursesController {
             : null
         };
       });
-
-      
       delete dto.instructorNames;
     }
 
-    
     if (dto.isActive !== undefined) {
-     
       dto.isActive = (String(dto.isActive) === 'true' || dto.isActive === '1');
     }
 
-   
     if (dto.courseContents && typeof dto.courseContents === 'string') {
       try {
         dto.courseContents = JSON.parse(dto.courseContents);
@@ -88,12 +121,13 @@ export class CoursesController {
       }
     }
 
-    
-    console.log('--- ตรวจสอบสถานะ Active ---');
-    console.log('Value:', dto.isActive, ' | Type:', typeof dto.isActive);
+    // ✅ [เพิ่มตรงนี้] แปลงข้อมูล videos จาก String กลับเป็น Array ก่อนเซฟลง Database
+    if (dto.videos && typeof dto.videos === 'string') {
+      try {
+        dto.videos = JSON.parse(dto.videos);
+      } catch (e) {
+        dto.videos = [];
+      }
+    }
   }
-
-  @Get() findAll() { return this.coursesService.findAll(); }
-  @Get(':id') findOne(@Param('id') id: string) { return this.coursesService.findOne(id); }
-  @Delete(':id') remove(@Param('id') id: string) { return this.coursesService.remove(id); }
 }

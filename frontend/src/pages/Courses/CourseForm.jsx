@@ -73,8 +73,11 @@ export default function CourseForm() {
         // ✅ ดึงข้อมูลวิดีโอมาโชว์ (ถ้ามี)
         if (course.videos) {
             const parsedVideos = typeof course.videos === 'string' ? JSON.parse(course.videos) : course.videos;
-            setVideos(parsedVideos || []);
+            setVideos(parsedVideos || []); 
+        } else{
+          setVideos([]); // ถ้าไม่มีวิดีโอเลย ให้ตั้งเป็น Array ว่างไว้
         }
+
       }).catch(err => {
           console.error("Failed to fetch course data", err);
       });
@@ -133,6 +136,9 @@ export default function CourseForm() {
   // ==========================================
   // 📌 ฟังก์ชันจัดการวิดีโอ (ของใหม่)
   // ==========================================
+// ==========================================
+  // 📌 ฟังก์ชันจัดการวิดีโอ
+  // ==========================================
   const handleUploadVideo = async () => {
     if (!newVideoTitle || !newVideoFile) {
       Swal.fire('แจ้งเตือน', 'กรุณากรอกชื่อตอนและเลือกไฟล์วิดีโอ', 'warning');
@@ -140,41 +146,39 @@ export default function CourseForm() {
     }
 
     setIsUploading(true);
-    
-    // ตรงนี้คือการเตรียมไฟล์เพื่อส่งไป Backend 
-    // *หมายเหตุ: ต้องมี API Backend สำหรับอัปโหลดไฟล์วิดีโอโดยเฉพาะ
     const videoData = new FormData();
-    videoData.append('file', newVideoFile); // ส่งไฟล์วิดีโอไป
+    videoData.append('file', newVideoFile); 
     
     try {
-      // 1. อัปโหลดไฟล์วิดีโอไปยังเซิร์ฟเวอร์ (สมมติว่าเป็น endpoint /upload-video)
-      // *คุณจะต้องสร้าง API /upload-video ใน Backend เพื่อรับไฟล์นี้
-      // const uploadRes = await axios.post('http://localhost:3000/upload-video', videoData);
-      // const videoUrl = uploadRes.data.url; 
+      // ✅ 1. ยิงไฟล์วิดีโอไปให้ Backend อัปโหลด
+      const uploadRes = await axios.post('http://localhost:3000/courses/upload-video', videoData);
       
-      // (จำลอง URL ข้อมูลระหว่างที่ยังไม่มี API อัปโหลดไฟล์วิดีโอ)
-      const mockVideoUrl = `/uploads/videos/mock_video_${Date.now()}.mp4`; 
+      // ✅ 2. เอา URL จริงที่ Backend ตอบกลับมา ใช้งานต่อ
+      const realVideoUrl = uploadRes.data.url; 
 
       const newVideoObj = {
-        id: Date.now().toString(), // สร้าง ID ชั่วคราว
+        id: Date.now().toString(), 
         title: newVideoTitle,
-        url: mockVideoUrl, // ใช้ URL จริงที่ได้จาก Backend
-        order: videos.length + 1 // ต่อท้าย
+        url: realVideoUrl, 
+        order: videos.length + 1 
       };
 
       const updatedVideos = [...videos, newVideoObj];
       setVideos(updatedVideos);
 
-      // 2. อัปเดตฐานข้อมูล Course เพื่อเซฟรายการวิดีโอ (เก็บเป็น JSON ลงคอลัมน์ videos)
-      await axios.patch(`http://localhost:3000/courses/${id}`, { videos: JSON.stringify(updatedVideos) });
+      // ✅ ยิงไปที่ API เส้นใหม่ (ต่อท้ายด้วย /videos) แบบ JSON ธรรมดา
+      await axios.patch(`http://localhost:3000/courses/${id}/videos`, { 
+        videos: updatedVideos 
+      });
 
-      Swal.fire('สำเร็จ', 'อัปโหลดวิดีโอเรียบร้อย (จำลอง)', 'success');
+      Swal.fire('สำเร็จ', 'อัปโหลดวิดีโอเรียบร้อย', 'success');
       setNewVideoTitle('');
       setNewVideoFile(null);
-    } catch (error) {
+
+    } catch (error) { // <--- [เพิ่มตรงนี้] ถ้ามี Error ให้มาเข้าตรงนี้
       console.error(error);
       Swal.fire('ผิดพลาด', 'อัปโหลดวิดีโอไม่สำเร็จ', 'error');
-    } finally {
+    } finally { // <--- [เพิ่มตรงนี้] ปิดสถานะกำลังอัปโหลด ไม่ว่าจะสำเร็จหรือพัง
       setIsUploading(false);
     }
   };
@@ -193,8 +197,11 @@ export default function CourseForm() {
             const updatedVideos = videos.filter(v => v.id !== videoId);
             setVideos(updatedVideos);
             try {
-              // อัปเดตข้อมูลกลับไปที่ Backend
-              await axios.patch(`http://localhost:3000/courses/${id}`, { videos: JSON.stringify(updatedVideos) });
+              // ✅ ยิงไปที่ API เส้นใหม่เพื่ออัปเดตข้อมูลลบวิดีโอ
+              await axios.patch(`http://localhost:3000/courses/${id}/videos`, { 
+                videos: updatedVideos 
+              });
+              
               Swal.fire('สำเร็จ', 'ลบวิดีโอแล้ว', 'success');
             } catch (error) {
               Swal.fire('ผิดพลาด', 'ไม่สามารถลบวิดีโอได้', 'error');

@@ -55,4 +55,7 @@ export class CreateCourseDto {
   @IsOptional()
   @IsArray() 
   courseContents?: any[];
+
+  @IsOptional()
+  videos?: any[];
 }

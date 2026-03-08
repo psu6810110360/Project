@@ -47,6 +47,10 @@ export class Course {
   @Column({ type: 'json', nullable: true })
   courseContents: any[];
 
+  // ✅ [เพิ่มตรงนี้] สร้างคอลัมน์ใหม่สำหรับเก็บข้อมูล Array วิดีโอ
+  @Column({ type: 'json', nullable: true })
+  videos: any[];
+
   @CreateDateColumn()
   createdAt: Date;
 
@@ -55,5 +59,7 @@ export class Course {
 
   @ManyToMany(() => User, (user) => user.courses)
   users: User[];
+
+  
   
   }
