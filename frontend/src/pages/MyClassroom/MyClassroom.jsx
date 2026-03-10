@@ -1,6 +1,6 @@
 // src/pages/MyClassroom/MyClassroom.jsx
 import React, { useState, useEffect } from 'react';
-import { FaUser, FaRegClock, FaCheckCircle, FaPlayCircle } from 'react-icons/fa';
+import { FaUser, FaRegClock, FaCheckCircle, FaPlayCircle, FaChevronDown, FaChevronRight} from 'react-icons/fa';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import './MyClassroom.css';
@@ -8,9 +8,12 @@ import EmptyCourseState from './EmptyCourseState';
 import { Link } from 'react-router-dom';
 
 
+
 const MyClassroom = () => {
   const [myCourses, setMyCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showRevoked, setShowRevoked] = useState(false);
+  const [showRejected, setShowRejected] = useState(false);  
 
   useEffect(() => {
     fetchMyCoursesFromBackend();
@@ -207,25 +210,53 @@ const MyClassroom = () => {
           )}
 
           {/* ✅ กล่องถูกระงับสิทธิ์ */}
+          {/* ✅ หมวดหมู่: คอร์สที่ถูกระงับสิทธิ์ (แบบพับเก็บได้) */}
           {revokedCourses.length > 0 && (
             <div style={{ marginTop: '40px' }}>
-              <h2 className="section-title" style={{ color: '#7f8c8d' }}>คอร์สที่ถูกระงับสิทธิ์</h2>
-              <div className="course-grid-active" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-                {revokedCourses.map(course => (
-                  <CourseCard key={course.id} course={course} />
-                ))}
+              {/* ส่วนหัวข้อ (กดเพื่อเปิด-ปิด) */}
+              <div 
+                onClick={() => setShowRevoked(!showRevoked)}
+                style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer', gap: '10px', color: '#7f8c8d' }}
+              >
+                {showRevoked ? <FaChevronDown /> : <FaChevronRight />}
+                <h2 className="section-title" style={{ margin: 0, color: 'inherit', borderBottom: 'none' }}>
+                  คอร์สที่ถูกระงับสิทธิ์ ({revokedCourses.length})
+                </h2>
               </div>
+              
+              {/* ส่วนเนื้อหาการ์ด (จะแสดงก็ต่อเมื่อ showRevoked เป็น true) */}
+              {showRevoked && (
+                <div className="course-grid-active" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
+                  {revokedCourses.map(course => (
+                    <CourseCard key={course.id} course={course} />
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
+          {/* ✅ หมวดหมู่: ถูกปฏิเสธ (แบบพับเก็บได้) */}
           {rejectedCourses.length > 0 && (
             <div style={{ marginTop: '40px' }}>
-              <h2 className="section-title">ถูกปฏิเสธ</h2>
-              <div className="course-grid-active" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-                {rejectedCourses.map(course => (
-                  <CourseCard key={course.id} course={course} />
-                ))}
+              {/* ส่วนหัวข้อ (กดเพื่อเปิด-ปิด) */}
+              <div 
+                onClick={() => setShowRejected(!showRejected)}
+                style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer', gap: '10px', color: '#c0392b' }}
+              >
+                {showRejected ? <FaChevronDown /> : <FaChevronRight />}
+                <h2 className="section-title" style={{ margin: 0, color: 'inherit', borderBottom: 'none' }}>
+                  การสั่งซื้อถูกปฏิเสธ ({rejectedCourses.length})
+                </h2>
               </div>
+
+              {/* ส่วนเนื้อหาการ์ด (จะแสดงก็ต่อเมื่อ showRejected เป็น true) */}
+              {showRejected && (
+                <div className="course-grid-active" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
+                  {rejectedCourses.map(course => (
+                    <CourseCard key={course.id} course={course} />
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </>
