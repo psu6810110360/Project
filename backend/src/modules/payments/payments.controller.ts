@@ -4,6 +4,7 @@ import {
   Post,
   Get,
   Patch,
+  Delete,
   Body,
   Param,
   Req,
@@ -46,12 +47,16 @@ export class PaymentsController {
   }
 
   // =========================
-  // ✅ ADMIN: APPROVE PAYMENT
+  // ✅ ADMIN: APPROVE PAYMENT (พร้อม expiresAt optional)
   // =========================
   @UseGuards(JwtAuthGuard)
   @Patch(':id/approve')
-  approve(@Param('id') id: number) {
-    return this.paymentsService.approve(id);
+  approve(
+    @Param('id') id: number,
+    @Body() body: { expiresAt?: string | null },
+  ) {
+    const expiresAt = body?.expiresAt ? new Date(body.expiresAt) : null;
+    return this.paymentsService.approve(id, expiresAt);
   }
 
   // =========================
@@ -64,15 +69,15 @@ export class PaymentsController {
   }
 
   // ==========================================
-  // ✅ API ใหม่: ระงับสิทธิ์ขั้นเด็ดขาด (ครอบคลุมทั้งหมด)
+  // ✅ ADMIN: ลบ enrollment คอร์สของ user ออกทั้งหมด
   // ==========================================
   @UseGuards(JwtAuthGuard)
-  @Patch('user/:userId/course/:courseId/revoke')
-  revokeCourseAccess(
+  @Delete('user/:userId/course/:courseId')
+  deleteCourseEnrollment(
     @Param('userId') userId: string,
     @Param('courseId') courseId: string,
   ) {
-    return this.paymentsService.revokeCourseAccess(+userId, courseId);
+    return this.paymentsService.deleteCourseEnrollment(+userId, courseId);
   }
 
   // ==========================================
@@ -82,9 +87,8 @@ export class PaymentsController {
   @Post('complete-video')
   async completeVideo(
     @Req() req,
-    @Body() body: { courseId: string; videoId: string }
+    @Body() body: { courseId: string; videoId: string },
   ) {
-    // ใช้ req.user.id ให้ตรงกับระบบ Auth ปัจจุบันของคุณ
     return this.paymentsService.markVideoAsCompleted(req.user.id, body.courseId, body.videoId);
   }
 }

@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { Course } from './entities/course.entity';
+import { Payment } from '../payments/entities/payment.entity';
 
 @Injectable()
 export class CoursesService {
@@ -12,6 +13,9 @@ export class CoursesService {
     
     @InjectRepository(Course)
     private readonly courseRepository: Repository<Course>,
+
+    @InjectRepository(Payment)
+    private readonly paymentRepository: Repository<Payment>,
   ) {}
 
   // 1. เพิ่มคอร์สใหม่
@@ -49,7 +53,9 @@ export class CoursesService {
       throw new NotFoundException(`ไม่พบคอร์สที่มี ID: ${id}`);
     }
 
-    // สั่งลบได้เลยเดี๋ยว TypeORM จัดการลบข้อมูลในตารางกลางให้เอง (เพราะเราใส่ CASCADE ไว้แล้ว)
+    // ✅ ลบ payments ที่เกี่ยวข้องก่อน เพื่อหลีกเลี่ยง FK constraint error
+    await this.paymentRepository.delete({ course: { id } });
+
     return this.courseRepository.remove(course);
   }
 }

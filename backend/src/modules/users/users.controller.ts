@@ -1,5 +1,5 @@
 // src/modules/users/users.controller.ts
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -12,26 +12,27 @@ export class UsersController {
   }
 
   @Post('register')
-  register(@Body() userData: any) { 
-    return this.usersService.create(userData); 
+  register(@Body() userData: any) {
+    return this.usersService.create(userData);
   }
 
-  // 🔍 ดึงข้อมูลผู้ใช้ 1 คน (พร้อมคอร์สที่ซื้อไว้) - เปลี่ยนมาใช้ .findOne() ให้ตรงกับ Service
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);
   }
 
-  // 🛒 API สำหรับการซื้อคอร์ส / เพิ่มคอร์สเข้า User
+  // 🛒 API สำหรับการซื้อคอร์ส / เพิ่มคอร์สเข้า User (พร้อม expiresAt optional)
   @Post(':userId/add-course/:courseId')
   addCourse(
     @Param('userId') userId: string,
     @Param('courseId') courseId: string,
+    @Body() body: { expiresAt?: string | null },
   ) {
-    return this.usersService.addCourseToUser(+userId, courseId);
+    const expiresAt = body?.expiresAt ? new Date(body.expiresAt) : null;
+    return this.usersService.addCourseToUser(+userId, courseId, expiresAt);
   }
 
-  // ❌ API สำหรับลบคอร์ส (Admin หรือ User กดยกเลิก)
+  // ❌ API สำหรับลบคอร์สแบบ manual (ไม่มี payment record)
   @Delete(':userId/remove-course/:courseId')
   removeCourse(
     @Param('userId') userId: string,
