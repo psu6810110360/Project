@@ -6,24 +6,24 @@ import { FaPlus, FaTrash, FaEdit, FaEye, FaBook } from 'react-icons/fa';
 
 export default function CourseList({ isAdmin }) {
   const [courses, setCourses] = useState([]);
-  const [ownedCourseIds, setOwnedCourseIds] = useState([]);
+  const [myPayments, setMyPayments] = useState([]); // ✅ เพิ่ม State เก็บประวัติ
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate(); 
 
   const fetchData = async () => {
     setLoading(true);
     try {
+      // 1. ดึงคอร์สทั้งหมด
       const coursesRes = await axios.get('http://localhost:3000/courses');
       setCourses(coursesRes.data);
 
-      const userId = localStorage.getItem('userId');
-      if (userId && !isAdmin) {
-        const userRes = await axios.get(`http://localhost:3000/users/${userId}`);
-        if (userRes.data && userRes.data.courses) {
-          const ownedIds = userRes.data.courses.map(c => c.id);
-          setOwnedCourseIds(ownedIds);
-          localStorage.setItem('myCourses', JSON.stringify(userRes.data.courses));
-        }
+      const token = localStorage.getItem('token');
+      if (token && !isAdmin) {
+        // 2. ✅ ดึงประวัติการสั่งซื้อของยูสเซอร์คนนั้น
+        const resPayments = await axios.get('http://localhost:3000/payments/my-courses', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setMyPayments(resPayments.data);
       }
     } catch (error) {
       console.error('ดึงข้อมูลไม่สำเร็จ', error);
@@ -47,12 +47,34 @@ export default function CourseList({ isAdmin }) {
     }
   };
 
-  const displayedCourses = courses.filter((course) => {
-    if (isAdmin) return true;
-    if (course.isActive !== true) return false;
-    if (ownedCourseIds.includes(course.id)) return false; 
-    return true; 
-  });
+  // ==========================================
+  // ✅ ระบบกรองคอร์ส (ซ่อนคอร์สที่ซื้อไปแล้ว หรือ รออนุมัติ)
+  // ==========================================
+  const getFilteredCourses = () => {
+    return courses.filter(course => {
+      // 1. ถ้าเป็น Admin ให้เห็นทั้งหมด
+      if (isAdmin) return true; 
+      // 2. ซ่อนคอร์สที่ไม่ได้เปิดขาย
+      if (!course.isActive) return false; 
+
+      // 3. หาว่ายูสเซอร์เคยทำรายการคอร์สนี้ไหม
+      const payment = myPayments.find(p => String(p.course.id) === String(course.id));
+      
+      if (payment) {
+        const status = payment.status.toLowerCase();
+        
+        // 🔴 ถ้าสถานะเป็น 'approved' หรือ 'pending' ให้ซ่อนออกจากหน้าขาย!
+        if (status === 'approved' || status === 'pending') {
+          return false; 
+        }
+        // 🟢 ถ้าเป็น 'rejected' หรือ 'revoked' จะทะลุเงื่อนไขนี้ลงไป และ return true ทำให้แสดงผลใหม่ได้!
+      }
+
+      return true; // ไม่เคยซื้อเลย -> แสดงปกติ
+    });
+  };
+
+  const coursesToShow = getFilteredCourses();
 
   if (loading) {
     return <div style={{ textAlign: 'center', padding: '100px', color: '#003366', fontSize: '18px', fontFamily: '"Prompt", sans-serif' }}>กำลังค้นหาคอร์สที่ใช่สำหรับคุณ...</div>;
@@ -61,11 +83,11 @@ export default function CourseList({ isAdmin }) {
   return (
     <div style={{ fontFamily: '"Prompt", sans-serif', paddingBottom: '50px' }}>
       
-      {/* ส่วนหัวของหน้าและปุ่มเพิ่มคอร์สสำหรับแอดมิน */}
+      {/* ส่วนหัวของหน้า */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
         <div>
           <h2 style={{ margin: 0, color: '#003366' }}>คอร์สเรียนทั้งหมด</h2>
-          <p style={{ margin: '5px 0 0 0', color: '#888' }}>พบ {displayedCourses.length} คอร์สที่น่าสนใจ</p>
+          <p style={{ margin: '5px 0 0 0', color: '#888' }}>พบ {coursesToShow.length} คอร์สที่พร้อมให้คุณเรียนรู้</p>
         </div>
         
         {isAdmin && (
@@ -81,22 +103,22 @@ export default function CourseList({ isAdmin }) {
         )}
       </div>
 
-      {/* Grid รายการคอร์ส */}
+      {/* ✅ กริดแสดงผลคอร์สแบบเรียบง่าย (เหมือนออริจินัล) */}
       <div style={{ display: 'grid', gap: '30px', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
-        {displayedCourses.length === 0 ? (
+        {coursesToShow.length === 0 ? (
           <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '100px', background: '#f9f9f9', borderRadius: '20px', color: '#aaa' }}>
             <FaBook style={{ fontSize: '50px', marginBottom: '15px' }} />
-            <p>ไม่พบคอร์สเรียนที่ต้องการแสดงในขณะนี้</p>
+            <p>ไม่พบคอร์สเรียนที่สามารถสั่งซื้อได้ในขณะนี้</p>
           </div>
         ) : (
-          displayedCourses.map((course) => (
+          coursesToShow.map((course) => (
             <div key={course.id} className="course-card" style={{ 
               background: '#FFFFFF', border: '1px solid #f0f0f0', borderRadius: '20px', 
               overflow: 'hidden', boxShadow: '0 10px 20px rgba(0,0,0,0.03)', 
-              display: 'flex', flexDirection: 'column', transition: '0.3s'
+              display: 'flex', flexDirection: 'column', transition: '0.3s', position: 'relative'
             }}>
               
-              {/* Badge สถานะสำหรับ Admin */}
+              {/* ป้ายกำกับ Admin */}
               {isAdmin && (
                 <div style={{
                   position: 'absolute', top: '15px', left: '15px',
@@ -111,11 +133,7 @@ export default function CourseList({ isAdmin }) {
               {/* รูปภาพหน้าปก */}
               <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden', background: '#f5f5f5' }}>
                 {course.coverImageUrl ? (
-                  <img 
-                    src={`http://localhost:3000${course.coverImageUrl}`} 
-                    alt={course.title} 
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                  />
+                  <img src={`http://localhost:3000${course.coverImageUrl}`} alt={course.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
                   <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ccc' }}>
                     <FaBook style={{ fontSize: '40px' }} />
@@ -123,7 +141,7 @@ export default function CourseList({ isAdmin }) {
                 )}
               </div>
               
-              {/* เนื้อหาใน Card */}
+              {/* รายละเอียดเนื้อหา */}
               <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
                 <h3 style={{ fontSize: '18px', color: '#003366', margin: '0 0 10px 0', lineHeight: '1.4', height: '50px', overflow: 'hidden' }}>
                   {course.title}
@@ -154,26 +172,16 @@ export default function CourseList({ isAdmin }) {
                       <>
                         <div style={{ display: 'flex', gap: '8px' }}>
                           <Link to={`/edit/${course.id}`} style={{ flex: 1, textDecoration: 'none' }}>
-                            <button style={{ 
-                              width: '100%', padding: '10px', background: '#003366', color: '#FFFFFF', 
-                              border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px'
-                            }}>
+                            <button style={{ width: '100%', padding: '10px', background: '#003366', color: '#FFFFFF', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
                               <FaEdit /> แก้ไข
                             </button>
                           </Link>
-                          <button 
-                            onClick={() => handleDelete(course.id)} 
-                            style={{ 
-                              padding: '10px 15px', background: '#fff', color: '#dc3545', 
-                              border: '1px solid #dc3545', borderRadius: '10px', cursor: 'pointer' 
-                            }}
-                          >
+                          <button onClick={() => handleDelete(course.id)} style={{ padding: '10px 15px', background: '#fff', color: '#dc3545', border: '1px solid #dc3545', borderRadius: '10px', cursor: 'pointer' }}>
                             <FaTrash />
                           </button>
                         </div>
                         <Link to={`/course/${course.id}`} style={{ textDecoration: 'none' }}>
-                          <button style={{ width: '100%', padding: '10px', background: '#f0f5ff', color: '#003366', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold' }}>
+                          <button style={{ width: '100%', padding: '10px', background: '#f0f5ff', color: '#003366', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
                             <FaEye /> ดูตัวอย่างหน้าเว็บ
                           </button>
                         </Link>
@@ -181,10 +189,8 @@ export default function CourseList({ isAdmin }) {
                     ) : (
                       <Link to={`/course/${course.id}`} style={{ textDecoration: 'none' }}>
                         <button style={{ 
-                          width: '100%', padding: '14px', background: '#F2984A', 
-                          color: '#FFFFFF', border: 'none', borderRadius: '12px', 
-                          cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', 
-                          boxShadow: '0 4px 10px rgba(242, 152, 74, 0.2)', transition: '0.3s'
+                          width: '100%', padding: '14px', background: '#F2984A', color: '#FFFFFF', border: 'none', borderRadius: '12px', 
+                          cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', boxShadow: '0 4px 10px rgba(242, 152, 74, 0.2)', transition: '0.3s'
                         }}
                         onMouseOver={(e) => e.target.style.backgroundColor = '#e0873a'}
                         onMouseOut={(e) => e.target.style.backgroundColor = '#F2984A'}
@@ -196,7 +202,6 @@ export default function CourseList({ isAdmin }) {
                   </div>
                 </div>
               </div>
-
             </div>
           ))
         )}
