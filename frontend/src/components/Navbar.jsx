@@ -36,7 +36,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#d33',
-      cancelButtonColor: '#003366',
+      cancelButtonColor: 'var(--primary-color)',
       confirmButtonText: 'ออกจากระบบ',
       cancelButtonText: 'ยกเลิก'
     }).then((result) => {
@@ -146,14 +146,14 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
               onClick={() => setIsMobileMenuOpen(false)} 
               style={{ position: 'relative', display: 'flex', alignItems: 'center', marginLeft: '10px' }}
             >
-              <FaShoppingCart size={24} color="#003366" />
+              <FaShoppingCart size={24} color="var(--primary-color)" />
               {cartCount > 0 && (
                 <span
                   style={{
                     position: 'absolute',
                     top: '-8px',
                     right: '-12px',
-                    backgroundColor: '#F2984A',
+                    backgroundColor: 'var(--accent-color)', color: 'var(--text-light)',
                     color: 'white',
                     borderRadius: '50%',
                     padding: '2px 6px',

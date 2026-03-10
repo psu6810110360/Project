@@ -1,37 +1,39 @@
+/* 1. นำเข้าฟอนต์ Prompt (พร้อม) จาก Google Fonts เพื่อใช้กับภาษาไทยและอังกฤษ */
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
+
+/* 🎨 2. Design System (ตัวแปรสำหรับคุมโทนสีทั้งเว็บ) */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  /* สีหลักของแบรนด์ */
+  --primary-color: #003366; /* สีน้ำเงินเข้ม */
+  --accent-color: #F2984A;  /* สีส้ม (ปุ่ม, เน้นคำ) */
+  --accent-hover: #e0873a;  /* สีส้มเวลาเอาเมาส์ชี้ */
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-  color-scheme: light;
+  /* สีตัวอักษร */
+  --text-dark: #1e293b;     /* สีข้อความหลัก (ดำอมเทา อ่านสบายตากว่าดำสนิท) */
+  --text-muted: #64748b;    /* สีข้อความรอง (เช่น รายละเอียด, วันที่) */
+  --text-light: #ffffff;    /* สีข้อความบนพื้นเข้ม */
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* สีพื้นหลัง */
+  --bg-main: #f8f9fa;       /* สีพื้นหลังเว็บ */
+  --bg-card: #ffffff;       /* สีพื้นหลังกล่องต่างๆ */
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+/* 🛠️ 3. Reset ค่าพื้นฐานและบังคับใช้ฟอนต์ */
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-  background-color: #FFFFFF !important;
-  color: #003366 !important;
+  padding: 0;
+  font-family: 'Prompt', sans-serif; /* บังคับใช้ฟอนต์ Prompt ทั้งเว็บ */
+  color: var(--text-dark);
+  background-color: var(--bg-main);
+  line-height: 1.6; /* ระยะห่างบรรทัดให้อ่านง่ายขึ้น */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
 #root {
   width: 100%;
   min-height: 100vh;
@@ -39,39 +41,36 @@ body {
   flex-direction: column;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* 🏷️ 4. จัดการหัวข้อ (Headings) ให้ไปในทางเดียวกัน */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--primary-color);
+  font-weight: 600; /* ความหนากำลังดี ไม่หนาจนเกินไป */
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
+/* 📝 5. บังคับช่องกรอกข้อมูลและปุ่มให้ใช้ฟอนต์ตามเว็บ (ป้องกันเบราว์เซอร์เด้งไปใช้ฟอนต์ระบบ) */
+button, input, textarea, select {
   font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  font-size: 16px; 
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+/* 🔗 6. ลิงก์ต่างๆ */
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
 }
+
+a:hover {
+  color: var(--accent-color);
+}
+
+/* 🧩 7. คลาสตัวช่วย (Utility Classes) เผื่อเรียกใช้ตามจุดต่างๆ ง่ายๆ */
+.text-primary { color: var(--primary-color); }
+.text-accent { color: var(--accent-color); }
+.text-muted { color: var(--text-muted); font-size: 0.9em; }
+.font-bold { font-weight: 600; }
+.font-normal { font-weight: 400; }
