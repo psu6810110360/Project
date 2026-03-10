@@ -13,6 +13,7 @@ export enum PaymentStatus {
   PENDING = 'pending',
   APPROVED = 'approved',
   REJECTED = 'rejected',
+  REVOKED = 'revoked',
 }
 
 @Entity()
@@ -55,4 +56,4 @@ export class Payment {
 
   @CreateDateColumn()
   createdAt: Date;
-}
+}
