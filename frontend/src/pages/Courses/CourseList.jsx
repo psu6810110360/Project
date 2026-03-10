@@ -55,22 +55,26 @@ export default function CourseList({ isAdmin }) {
       // 1. ถ้าเป็น Admin ให้เห็นทั้งหมด
       if (isAdmin) return true; 
       // 2. ซ่อนคอร์สที่ไม่ได้เปิดขาย
-      if (!course.isActive) return false; 
-
-      // 3. หาว่ายูสเซอร์เคยทำรายการคอร์สนี้ไหม
-      const payment = myPayments.find(p => String(p.course.id) === String(course.id));
-      
-      if (payment) {
-        const status = payment.status.toLowerCase();
+      if (!course.isActive) return false;       
+      // 3. หาว่ายูสเซอร์เคยทำรายการคอร์สนี้ไหม (ดึงมาทั้งหมด)
+      const relatedPayments = myPayments.filter(item => {
+        if (item.course && String(item.course.id) === String(course.id)) return true;
+        if (item.courses && item.courses.some(c => String(c.id) === String(course.id))) return true;
+        if (String(item.id) === String(course.id)) return true;
+        return false;
+      });
+            
+      if (relatedPayments.length > 0) {
+        // เช็คว่ามีประวัติที่ผ่าน (approved) หรือกำลังรอตรวจ (pending) อยู่หรือไม่
+        const shouldHide = relatedPayments.some(p => {
+          const status = p.status ? p.status.toLowerCase() : '';
+          return status === 'approved' || status === 'pending';
+        });
         
-        // 🔴 ถ้าสถานะเป็น 'approved' หรือ 'pending' ให้ซ่อนออกจากหน้าขาย!
-        if (status === 'approved' || status === 'pending') {
-          return false; 
-        }
-        // 🟢 ถ้าเป็น 'rejected' หรือ 'revoked' จะทะลุเงื่อนไขนี้ลงไป และ return true ทำให้แสดงผลใหม่ได้!
+        // 🔴 ถ้าเจอว่ากำลังรออนุมัติ หรืออนุมัติแล้ว ให้ซ่อนออกจากหน้าขายเลย!
+        if (shouldHide) return false; 
       }
-
-      return true; // ไม่เคยซื้อเลย -> แสดงปกติ
+      return true;
     });
   };
 

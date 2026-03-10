@@ -34,9 +34,14 @@ export default function CourseDetail() {
             });
 
             // ตรวจสอบว่า ID คอร์สนี้ มีอยู่ในรายการที่ API ส่งมาไหม
-            const ownedItem = myCoursesRes.data.find(payment => 
-              String(payment.course.id) === String(id)
-            );
+            // โค้ดใหม่: กัน Error และรองรับโครงสร้างข้อมูลที่หลากหลาย
+// 1. ค้นหาประวัติทั้งหมดที่เกี่ยวกับคอร์สนี้ (เผื่อมีการกดซื้อหลายรอบ)
+            const relatedPayments = myCoursesRes.data.filter(item => {
+              if (item.course && String(item.course.id) === String(id)) return true;
+              if (item.courses && item.courses.some(c => String(c.id) === String(id))) return true;
+              if (String(item.id) === String(id)) return true;
+              return false;
+            });
 
             // ✅ ปรับปรุงลอจิกเช็คสถานะ
             if (ownedItem) {
