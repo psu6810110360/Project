@@ -11,6 +11,7 @@ import { User } from './entities/user.entity';
 import { Payment, PaymentStatus } from '../payments/entities/payment.entity';
 import { Course } from '../courses/entities/course.entity';
 import * as bcrypt from 'bcrypt';
+import { BadRequestException } from '@nestjs/common';
 
 @Injectable()
 export class UsersService implements OnModuleInit {
@@ -193,16 +194,19 @@ export class UsersService implements OnModuleInit {
   // =========================
   // เปลี่ยนรหัสผ่าน
   // =========================
+  // =========================
+  // เปลี่ยนรหัสผ่าน
+  // =========================
   async changePassword(userId: number, passwords: { oldPassword: string; newPassword: string }) {
     const user = await this.findOne(userId);
     
-    // เช็กรหัสผ่านเดิม
+    // 1. นำรหัสผ่านเดิมมาเช็กกับในฐานข้อมูล
     const isMatch = await bcrypt.compare(passwords.oldPassword, user.password);
     if (!isMatch) {
-      throw new ConflictException('รหัสผ่านเดิมไม่ถูกต้อง');
+      throw new BadRequestException('รหัสผ่านเดิมไม่ถูกต้อง');
     }
     
-    // เข้ารหัสผ่านใหม่แล้วบันทึก
+    // 2. ถ้ารหัสผ่านเดิมถูก ให้นำรหัสผ่านใหม่ไป Hash และบันทึกลงฐานข้อมูล
     user.password = await bcrypt.hash(passwords.newPassword, 10);
     await this.usersRepository.save(user);
     

@@ -94,21 +94,39 @@ export default function Profile() {
   };
 
   // ฟังก์ชันเปลี่ยนรหัสผ่าน
+  // ฟังก์ชันเปลี่ยนรหัสผ่าน (เชื่อมต่อ API จริง)
   const handleChangePassword = async (e) => {
     e.preventDefault();
+    
+    // 1. เช็กว่ารหัสผ่านใหม่กับช่องยืนยันรหัสผ่านตรงกันไหม
     if (passwords.newPassword !== passwords.confirmPassword) {
       Swal.fire('รหัสผ่านไม่ตรงกัน', 'กรุณายืนยันรหัสผ่านใหม่ให้ถูกต้อง', 'error');
       return;
     }
 
     try {
-      // 💡 นำ axios มาต่อ API เปลี่ยนรหัสผ่านตรงนี้
-      // await axios.post('http://localhost:3000/auth/change-password', passwords, ...);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        Swal.fire('แจ้งเตือน', 'กรุณาเข้าสู่ระบบใหม่', 'warning');
+        return;
+      }
+
+      // 2. ยิง API ไปที่ Backend เพื่อเปลี่ยนรหัสผ่าน
+      await axios.patch('http://localhost:3000/users/change-password', {
+        oldPassword: passwords.oldPassword,
+        newPassword: passwords.newPassword
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       
-      Swal.fire('สำเร็จ', 'อัปเดตรหัสผ่านเรียบร้อยแล้ว (ระบบจำลอง)', 'success');
+      // 3. ถ้าสำเร็จ ให้แจ้งเตือนและล้างข้อมูลในช่องกรอก
+      Swal.fire('สำเร็จ', 'อัปเดตรหัสผ่านเรียบร้อยแล้ว', 'success');
       setPasswords({ oldPassword: '', newPassword: '', confirmPassword: '' });
+      
     } catch (error) {
-      Swal.fire('เกิดข้อผิดพลาด', 'รหัสผ่านเดิมไม่ถูกต้อง หรือระบบมีปัญหา', 'error');
+      // 4. ถ้า Backend ฟ้อง Error (เช่น รหัสผ่านเดิมผิด)
+      const errorMessage = error.response?.data?.message || 'ระบบมีปัญหา ไม่สามารถเปลี่ยนรหัสผ่านได้';
+      Swal.fire('เกิดข้อผิดพลาด', errorMessage, 'error');
     }
   };
 
