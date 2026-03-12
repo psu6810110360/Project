@@ -10,6 +10,7 @@ import CourseDetail from './pages/Courses/CourseDetail';
 import HomePage from './pages/Home/HomePage';
 import Login from './pages/Login/Login';
 import OurStudents from './pages/OurStudents/OurStudents';
+import Contact from './pages/Contact/Contact'; // ✅ เพิ่มหน้า Contact เข้ามา
 
 import MyClassroom from "./pages/MyClassroom/MyClassroom";
 import Cart from './pages/Cart/Cart';
@@ -17,6 +18,7 @@ import Payment from './pages/Payment/Payment';
 import PaymentSuccess from './pages/Payment/PaymentSuccess';
 import UserManagement from './pages/Admin/UserManagement';
 import CoursePlayer from './pages/AttendClass/CoursePlayer';
+import Profile from './pages/Profile/Profile'; // ✅ เพิ่มหน้าโปรไฟล์เข้ามา  
 
 // ✅ รวม Import จากทั้ง 2 ฝั่ง
 import OurStudentManagement from "./pages/Admin/OurStudentManagement";
@@ -60,13 +62,23 @@ function App() {
             {/* 🟢 Public Pages (รวมหน้า OurStudents ไว้ด้วย) */}
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} /> 
-            <Route path="/our-students" element={<OurStudents />} /> 
+            <Route path="/our-students" element={<OurStudents />} />
+            <Route path="/contact" element={<Contact />} /> 
 
             {/* 🟡 Logged-in Users */}
             <Route path="/courses" element={
               <ProtectedRoute>
                 <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
                   <CourseList isAdmin={isAdminUser} />
+                </div>
+              </ProtectedRoute>
+            } />
+
+            {/* ✅ เพิ่ม Route สำหรับ Profile ตรงนี้ */}
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
+                  <Profile />
                 </div>
               </ProtectedRoute>
             } />

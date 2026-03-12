@@ -1,5 +1,6 @@
 // src/modules/users/users.controller.ts
-import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Patch, UseGuards, Request } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport'; // ✅ เพิ่ม Import AuthGuard
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -15,6 +16,31 @@ export class UsersController {
   register(@Body() userData: any) {
     return this.usersService.create(userData);
   }
+
+  // ===============================================
+  // 🟢 3 API ใหม่สำหรับระบบ Profile (ต้องอยู่เหนือ :id)
+  // ===============================================
+  @UseGuards(AuthGuard('jwt')) // 🔒 บังคับว่าต้องมี Token
+  @Get('profile')
+  getProfile(@Request() req: any) {
+    const userId = req.user.id || req.user.sub; 
+    return this.usersService.getProfile(+userId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('profile')
+  updateProfile(@Request() req: any, @Body() updateData: { name: string }) {
+    const userId = req.user.id || req.user.sub;
+    return this.usersService.updateProfile(+userId, updateData);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('change-password')
+  changePassword(@Request() req: any, @Body() passwords: any) {
+    const userId = req.user.id || req.user.sub;
+    return this.usersService.changePassword(+userId, passwords);
+  }
+  // ===============================================
 
   @Get(':id')
   findOne(@Param('id') id: string) {

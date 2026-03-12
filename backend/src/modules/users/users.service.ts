@@ -161,6 +161,55 @@ export class UsersService implements OnModuleInit {
   }
 
   // =========================
+  // ดึงข้อมูลโปรไฟล์ตัวเอง (ไม่ส่งรหัสผ่านกลับไป)
+  // =========================
+  async getProfile(userId: number) {
+    const user = await this.findOne(userId);
+    const { password, ...result } = user as any;
+    
+    // รวม firstName และ lastName ส่งกลับไปเป็นตัวแปร name ให้หน้าเว็บใช้
+    const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ') || 'ผู้ใช้งาน';
+    
+    return { ...result, name: fullName };
+  }
+
+  // =========================
+  // อัปเดตข้อมูลส่วนตัว (รับเป็น name แล้วแยกบันทึกลงฐานข้อมูล)
+  // =========================
+  async updateProfile(userId: number, updateData: { name: string }) {
+    const user = await this.findOne(userId);
+    
+    if (updateData.name) {
+      // แยกชื่อ-นามสกุล ด้วยช่องว่าง
+      const nameParts = updateData.name.split(' ');
+      user.firstName = nameParts[0];
+      user.lastName = nameParts.slice(1).join(' ') || '';
+    }
+    
+    await this.usersRepository.save(user);
+    return { message: 'อัปเดตข้อมูลโปรไฟล์สำเร็จ' };
+  }
+
+  // =========================
+  // เปลี่ยนรหัสผ่าน
+  // =========================
+  async changePassword(userId: number, passwords: { oldPassword: string; newPassword: string }) {
+    const user = await this.findOne(userId);
+    
+    // เช็กรหัสผ่านเดิม
+    const isMatch = await bcrypt.compare(passwords.oldPassword, user.password);
+    if (!isMatch) {
+      throw new ConflictException('รหัสผ่านเดิมไม่ถูกต้อง');
+    }
+    
+    // เข้ารหัสผ่านใหม่แล้วบันทึก
+    user.password = await bcrypt.hash(passwords.newPassword, 10);
+    await this.usersRepository.save(user);
+    
+    return { message: 'เปลี่ยนรหัสผ่านสำเร็จ' };
+  }
+
+  // =========================
   // 7. REMOVE COURSE FROM USER
   // =========================
   async removeCourseFromUser(userId: number, courseId: string) {

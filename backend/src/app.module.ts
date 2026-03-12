@@ -8,10 +8,12 @@ import { join } from 'path';
 import { CoursesModule } from './modules/courses/courses.module';
 import { UsersModule } from './modules/users/users.module'; 
 import { AuthModule } from './auth/auth.module';
+import { ContactController } from './contact.controller'; 
 
 // ✅ รวม Import ทั้ง 2 อันเข้าด้วยกัน
 import { StudentsModule } from './modules/Our-students/students.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { importOrRequireFile } from 'typeorm/util/ImportUtils.js';
 
 @Module({
   imports: [
@@ -49,7 +51,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
     StudentsModule, 
     PaymentsModule,
   ],
-  controllers: [],
+  controllers: [ContactController],
   providers: [],
 })
 export class AppModule {}

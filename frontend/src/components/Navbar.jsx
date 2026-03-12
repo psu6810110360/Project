@@ -2,15 +2,17 @@
 import React, { useState, useEffect } from 'react'; 
 import { Link, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import { FaShoppingCart } from 'react-icons/fa'; 
+import { FaShoppingCart, FaUserCircle } from 'react-icons/fa'; 
 import './Navbar.css'; 
 
 function Navbar({ isLoggedIn, setIsLoggedIn }) {
   const navigate = useNavigate();
   const userRole = localStorage.getItem('userRole'); 
+  const userName = localStorage.getItem('userName') || 'โปรไฟล์';
   
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0); 
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
   // สลับเมนูมือถือ
   const toggleMobileMenu = () => {
@@ -36,22 +38,20 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#d33',
-      cancelButtonColor: 'var(--primary-color)',
+      cancelButtonColor: '#003366',
       confirmButtonText: 'ออกจากระบบ',
       cancelButtonText: 'ยกเลิก'
     }).then((result) => {
       if (result.isConfirmed) {
 
-        // ✅ ปรับปรุงลอจิก backup cart
+        // ลอจิก backup cart
         const currentUserId = localStorage.getItem('userId');
         const currentCart = localStorage.getItem('cart');
         
         if (currentUserId) {
-          // ถ้ามีของในตะกร้า ให้เซฟทับตัวเก่า
           if (currentCart && currentCart !== '[]') {
             localStorage.setItem(`cart_user_${currentUserId}`, currentCart);
           } else {
-            // ถ้าตะกร้าว่าง (จ่ายเงินแล้ว) ให้เคลียร์ตัวสำรองด้วย จะได้ไม่เด้งกลับมา
             localStorage.removeItem(`cart_user_${currentUserId}`);
           }
         }
@@ -61,6 +61,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
         localStorage.removeItem('userId');
         localStorage.removeItem('token');
         localStorage.removeItem('myCourses');
+        localStorage.removeItem('userName');
         localStorage.removeItem('cart');
 
         setCartCount(0);
@@ -101,12 +102,14 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
           <div className="nav-links">
 
             <Link to="/our-students" onClick={() => setIsMobileMenuOpen(false)}>นักเรียนของเรา</Link>
-            <span onClick={() => setIsMobileMenuOpen(false)}>ติดต่อเรา</span>
+            <Link to="/contact" onClick={() => setIsMobileMenuOpen(false)}>
+              ติดต่อเรา
+            </Link>
             <Link to="/courses" onClick={() => setIsMobileMenuOpen(false)}>
               คอร์สเรียน
             </Link>
 
-            {/* 🔥 ADMIN MENU (รวมทุกฟังก์ชัน) */}
+            {/* 🔥 ADMIN MENU */}
             {userRole === 'admin' ? (
               <>
                 <Link 
@@ -134,7 +137,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
                 </Link>
               </>
             ) : (
-              // User ทั่วไป ให้ไปหน้า MyClassroom
+              // User ทั่วไป
               <Link to="/my-classroom" onClick={() => setIsMobileMenuOpen(false)}>
                 ห้องเรียนของฉัน
               </Link>
@@ -146,14 +149,14 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
               onClick={() => setIsMobileMenuOpen(false)} 
               style={{ position: 'relative', display: 'flex', alignItems: 'center', marginLeft: '10px' }}
             >
-              <FaShoppingCart size={24} color="var(--primary-color)" />
+              <FaShoppingCart size={24} color="#003366" />
               {cartCount > 0 && (
                 <span
                   style={{
                     position: 'absolute',
                     top: '-8px',
                     right: '-12px',
-                    backgroundColor: 'var(--accent-color)', color: 'var(--text-light)',
+                    backgroundColor: '#F2984A', 
                     color: 'white',
                     borderRadius: '50%',
                     padding: '2px 6px',
@@ -165,16 +168,70 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
                 </span>
               )}
             </Link>
+
+            {/* ✅ ปุ่มโปรไฟล์แบบมี Dropdown (แสดงเฉพาะตอน Login) */}
+            {isLoggedIn && (
+              <div style={{ position: 'relative', marginLeft: '10px' }}>
+                <button 
+                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px', 
+                    color: '#003366', 
+                    fontWeight: 'bold',
+                    backgroundColor: '#fff3e6', 
+                    padding: '6px 14px', 
+                    borderRadius: '20px',
+                    border: '1px solid #fce7d4',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <FaUserCircle size={22} color="#F2984A" /> 
+                  {userName}
+                </button>
+
+                {/* กล่อง Dropdown เมนู */}
+                {isProfileDropdownOpen && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '120%',
+                    right: '0',
+                    backgroundColor: '#fff',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    width: '180px',
+                    zIndex: 1000,
+                    border: '1px solid #eaeaea',
+                    display: 'flex',
+                    flexDirection: 'column'
+                  }}>
+                    <Link 
+                      to="/profile" 
+                      onClick={() => { setIsProfileDropdownOpen(false); setIsMobileMenuOpen(false); }}
+                      style={{ padding: '12px 16px', color: '#003366', textDecoration: 'none', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}
+                      onMouseOver={(e) => e.target.style.backgroundColor = '#f9f9f9'}
+                      onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
+                    >
+                      <FaUserCircle /> ดูข้อมูลส่วนตัว
+                    </Link>
+                    <button 
+                      onClick={() => { setIsProfileDropdownOpen(false); handleLogout(); setIsMobileMenuOpen(false); }}
+                      style={{ padding: '12px 16px', color: '#dc3545', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', fontSize: '15px' }}
+                      onMouseOver={(e) => e.target.style.backgroundColor = '#fff5f5'}
+                      onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
+                    >
+                      ออกจากระบบ
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
           </div>
 
-          {isLoggedIn ? (
-            <button
-              onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}
-              className="btn-logout"
-            >
-              ออกจากระบบ {userRole === 'admin' ? '(Admin)' : ''}
-            </button>
-          ) : (
+          {!isLoggedIn && (
             <Link
               to="/login"
               className="btn-login"
