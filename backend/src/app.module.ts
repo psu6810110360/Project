@@ -13,7 +13,6 @@ import { ContactController } from './contact.controller';
 // ✅ รวม Import ทั้ง 2 อันเข้าด้วยกัน
 import { StudentsModule } from './modules/Our-students/students.module';
 import { PaymentsModule } from './modules/payments/payments.module';
-import { importOrRequireFile } from 'typeorm/util/ImportUtils.js';
 
 @Module({
   imports: [
@@ -38,6 +37,7 @@ import { importOrRequireFile } from 'typeorm/util/ImportUtils.js';
       inject: [ConfigService],
     }), 
 
+    // ✅ ตั้งค่าให้เปิดโฟลเดอร์ uploads เป็น Public ถูกต้องแล้วครับ
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'), 
       serveRoot: '/uploads',

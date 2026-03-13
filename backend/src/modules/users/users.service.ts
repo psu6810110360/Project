@@ -192,8 +192,23 @@ export class UsersService implements OnModuleInit {
   }
 
   // =========================
-  // เปลี่ยนรหัสผ่าน
+  // 🟢 ส่วนที่เพิ่มใหม่: อัปเดตรูปโปรไฟล์ลงฐานข้อมูล
   // =========================
+  async updateProfilePicture(userId: number, filePath: string) {
+    const user = await this.findOne(userId);
+    
+    // บันทึก path ของรูปลงไปใน Entity
+    // หมายเหตุ: อย่าลืมไปเพิ่มคอลัมน์ profilePicture ใน user.entity.ts ด้วยนะครับ
+    (user as any).profilePicture = filePath; 
+    
+    await this.usersRepository.save(user);
+    
+    return { 
+      message: 'อัปโหลดรูปโปรไฟล์สำเร็จ', 
+      profilePicture: filePath 
+    };
+  }
+
   // =========================
   // เปลี่ยนรหัสผ่าน
   // =========================
