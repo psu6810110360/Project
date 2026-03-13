@@ -168,23 +168,25 @@ export class UsersService implements OnModuleInit {
     const user = await this.findOne(userId);
     const { password, ...result } = user as any;
     
-    // รวม firstName และ lastName ส่งกลับไปเป็นตัวแปร name ให้หน้าเว็บใช้
-    const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ') || 'ผู้ใช้งาน';
-    
-    return { ...result, name: fullName };
+    // ไม่ต้องจับมัดรวมกันแล้ว ส่งข้อมูลแยกช่องกลับไปให้ Frontend ใช้งานได้เลย
+    return result; 
   }
 
   // =========================
-  // อัปเดตข้อมูลส่วนตัว (รับเป็น name แล้วแยกบันทึกลงฐานข้อมูล)
+  // อัปเดตข้อมูลส่วนตัว (รับข้อมูลแยกช่องจาก Frontend)
   // =========================
-  async updateProfile(userId: number, updateData: { name: string }) {
+  async updateProfile(userId: number, updateData: { firstName?: string; lastName?: string; phone?: string }) {
     const user = await this.findOne(userId);
     
-    if (updateData.name) {
-      // แยกชื่อ-นามสกุล ด้วยช่องว่าง
-      const nameParts = updateData.name.split(' ');
-      user.firstName = nameParts[0];
-      user.lastName = nameParts.slice(1).join(' ') || '';
+    // อัปเดตข้อมูลทีละช่อง (ตรวจสอบก่อนว่ามีส่งค่ามาไหม จะได้ไม่ทับของเก่าด้วยค่าว่าง)
+    if (updateData.firstName !== undefined) {
+      user.firstName = updateData.firstName;
+    }
+    if (updateData.lastName !== undefined) {
+      user.lastName = updateData.lastName;
+    }
+    if (updateData.phone !== undefined) {
+      user.phone = updateData.phone;
     }
     
     await this.usersRepository.save(user);
