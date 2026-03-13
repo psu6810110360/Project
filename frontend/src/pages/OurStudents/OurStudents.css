@@ -176,3 +176,46 @@
   margin: 0;
   line-height: 1.5;
 }
+
+/* =========================================
+   📱 ปรับ Responsive สำหรับหน้าจอมือถือโดยเฉพาะ
+   ========================================= */
+@media (max-width: 768px) {
+  /* เปลี่ยนการ์ดจาก ซ้าย-ขวา เป็น บน-ล่าง */
+  .split-card {
+    flex-direction: column; 
+    height: auto; 
+  }
+
+  /* ปรับขนาดรูปภาพให้อยู่ด้านบน */
+  .card-left {
+    width: 100%;
+    height: 280px; 
+    flex: none; 
+  }
+
+  /* ปรับเนื้อหาให้อยู่ด้านล่าง */
+  .card-right {
+    width: 100%;
+    flex: none;
+    padding: 1.5rem; 
+    border-left: none; 
+    border-top: 3px solid #f0f0f0; 
+    /* 🟢 เพิ่มบรรทัดนี้: บังคับให้ padding อยู่ใน width 100% กล่องจะได้ไม่ล้นและเสียศูนย์ */
+    box-sizing: border-box; 
+  }
+
+  /* ให้ป้ายชื่อคณะกว้างพอดีกับตัวหนังสือแทนการยืดเต็มจอ */
+  .faculty-highlight {
+    /* 🟢 เพิ่ม display: flex เพื่อให้จัดกึ่งกลางข้อความและใช้ margin auto ได้สมบูรณ์ */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    width: fit-content; 
+    max-width: 100%; 
+    font-size: 1.1rem; 
+    padding: 6px 24px; 
+    margin: 0 auto 0.8rem auto; 
+  }
+}
