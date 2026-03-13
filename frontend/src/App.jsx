@@ -17,7 +17,8 @@ import Cart from './pages/Cart/Cart';
 import Payment from './pages/Payment/Payment';
 import PaymentSuccess from './pages/Payment/PaymentSuccess';
 import UserManagement from './pages/Admin/UserManagement/UserManagement';
-import CoursePlayer from './pages/CoursePlayer/CoursePlayer';
+import CoursePlayer from './pages/AttendClass/CoursePlayer';
+import OurStudentManagement from "./pages/Admin/OurStudentManagement/OurStudentManagement";
 import Profile from './pages/Profile/Profile'; 
 import PaymentReview from './pages/Admin/PaymentReview/PaymentReview';
 
@@ -147,14 +148,13 @@ function App() {
             } />
 
             {/* 🔴 ปิด Route นี้ไว้ชั่วคราวเพื่อไม่ให้แอปพัง */}
-            {/* <Route path="/manage-students" element={
+                        <Route path="/manage-students" element={
               <ProtectedRoute requireAdmin={true}>
                 <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
                   <OurStudentManagement />
                 </div>
               </ProtectedRoute>
-            } /> 
-            */}
+            } />
 
             {/* 🧾 Admin: ตรวจสอบการชำระเงิน (จาก Code ใหม่) */}
             <Route path="/admin/payments" element={
