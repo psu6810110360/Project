@@ -1,0 +1,272 @@
+/* Contact.css */
+
+.contact-container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  color: #333;
+  box-sizing: border-box;
+}
+
+.contact-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.contact-header h1 {
+  color: #003366;
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.contact-header p {
+  color: #666;
+  font-size: 16px;
+}
+
+.contact-content {
+  display: flex;
+  flex-direction: column; /* 🟢 บังคับให้เรียงจากบนลงล่าง */
+  align-items: center;    /* 🟢 จัดทุกอย่างให้อยู่กึ่งกลางหน้าจอ */
+  gap: 40px;              /* ระยะห่างระหว่างฟอร์มกับกล่องข้อมูลด้านล่าง */
+  margin-bottom: 60px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* แบ่งครึ่งจอซ้าย-ขวา ถ้าจอเล็กจะตกลงมาเรียงบน-ล่าง */
+.contact-form-section {
+  width: 100%;
+  max-width: 800px; /* 🟢 ล็อกความกว้างฟอร์มไว้ ไม่ให้ยืดเต็มจอจนเกินไป */
+  box-sizing: border-box;
+}
+
+.contact-info-section {
+  width: 100%;
+  max-width: 800px; /* ล็อกความกว้างให้เท่ากับตัวฟอร์มด้านบน */
+  display: grid;    /* 🟢 ใช้ Grid เพื่อจัดเรียงกล่องข้อมูล */
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); /* จอใหญ่แบ่ง 2 คอลัมน์ จอเล็กเหลือ 1 คอลัมน์ */
+  gap: 20px;
+  box-sizing: border-box;
+}
+
+.contact-card {
+  background: #fff;
+  border: 1px solid #003366;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  /* เอา height: 100% ออก เพื่อให้กล่องยืดตามเนื้อหาอัตโนมัติ จะได้ไม่ล้น */
+}
+
+.contact-card h3 {
+  color: #003366;
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 20px;
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.form-group {
+  width: 100%;
+}
+
+.form-label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #333;
+  font-size: 14px;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  outline-color: #003366;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 15px;
+}
+
+.form-textarea {
+  height: 120px;
+  resize: vertical;
+}
+
+.submit-btn {
+  background: #F2984A;
+  color: #fff;
+  border: none;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  width: 100%;
+  transition: background 0.3s;
+}
+
+.submit-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* ข้อมูลติดต่อ */
+.info-box {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  box-sizing: border-box;
+}
+
+.info-box.highlight {
+  background: #fdfbf7;
+  border-color: #f4dec4;
+}
+
+.icon-circle {
+  background: #fff3e0;
+  color: #F2984A;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.info-box.highlight .icon-circle {
+  background: #fff;
+  border: 1px solid #f4dec4;
+}
+
+.info-content {
+  width: 100%;
+}
+
+.info-content h4 {
+  margin: 0 0 5px 0;
+  color: #333;
+}
+
+.info-content p {
+  margin: 0;
+  color: #666;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.time-row {
+  display: flex;
+  justify-content: space-between;
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.time-closed {
+  color: #F2984A;
+  font-weight: bold;
+}
+
+/* โซเชียลมีเดีย */
+.social-section {
+  text-align: center;
+  margin-top: 40px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.social-section h2 {
+  color: #003366;
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.social-section p {
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.social-cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  width: 100%;
+}
+
+.social-card {
+  background: #fff;
+  border: 1px solid #003366;
+  border-radius: 12px;
+  padding: 30px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  flex: 1 1 250px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.social-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.social-icon.fb { background: #e0f2fe; color: #0284c7; font-size: 28px; }
+.social-icon.line { background: #dcfce7; color: #16a34a; font-size: 32px; }
+.social-icon.ig { background: #fce7f3; color: #db2777; font-size: 30px; }
+
+.social-card h3 {
+  margin: 5px 0;
+  color: #333;
+}
+
+.social-card p {
+  margin: 0 0 15px 0;
+  color: #888;
+  font-size: 14px;
+}
+
+.follow-btn {
+  width: 100%;
+  padding: 10px;
+  background: #003366;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
