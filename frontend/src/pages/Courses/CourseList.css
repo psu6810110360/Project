@@ -1,0 +1,242 @@
+/* CourseList.css */
+
+/* โครงสร้างหลัก */
+.course-container {
+  font-family: "Prompt", sans-serif;
+  padding-bottom: 50px;
+}
+
+.loading-screen {
+  text-align: center;
+  padding: 100px;
+  color: #003366;
+  font-size: 18px;
+  font-family: "Prompt", sans-serif;
+}
+
+/* ส่วนหัว */
+.course-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.course-title {
+  margin: 0;
+  color: #003366;
+}
+
+.course-subtitle {
+  margin: 5px 0 0 0;
+  color: #888;
+}
+
+/* Grid สินค้า */
+.course-grid {
+  display: grid;
+  gap: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.course-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 100px;
+  background: #f9f9f9;
+  border-radius: 20px;
+  color: #aaa;
+}
+
+.course-empty-icon {
+  font-size: 50px;
+  margin-bottom: 15px;
+}
+
+/* การ์ดคอร์สเรียน */
+.course-card {
+  background: #FFFFFF;
+  border: 1px solid #f0f0f0;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+  transition: 0.3s;
+  position: relative;
+}
+
+.course-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+  border-color: #F2984A;
+}
+
+/* ป้ายสถานะ Admin */
+.badge-status {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  color: #fff;
+  padding: 5px 12px;
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: bold;
+  z-index: 1;
+}
+
+.badge-active { background-color: #28a745; }
+.badge-inactive { background-color: #dc3545; }
+
+/* รูปภาพปกคอร์ส */
+.course-cover {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+.course-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.course-cover-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ccc;
+  font-size: 40px;
+}
+
+/* เนื้อหาการ์ด */
+.course-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.course-name {
+  font-size: 18px;
+  color: #003366;
+  margin: 0 0 10px 0;
+  line-height: 1.4;
+  height: 50px;
+  overflow: hidden;
+}
+
+.course-desc {
+  color: #777;
+  font-size: 14px;
+  margin-bottom: 20px;
+  height: 40px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ส่วนราคาและปุ่มด้านล่าง */
+.course-footer {
+  margin-top: auto;
+}
+
+.course-price-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.sale-price {
+  color: #F2984A;
+  font-weight: bold;
+  font-size: 24px;
+}
+
+.original-price {
+  text-decoration: line-through;
+  color: #ccc;
+  font-size: 14px;
+}
+
+/* กลุ่มปุ่มกด */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* สไตล์ปุ่มต่างๆ */
+.btn {
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: 0.3s;
+}
+
+.btn-add-course {
+  padding: 12px 24px;
+  background: #28a745;
+  color: #FFFFFF;
+  border-radius: 12px;
+  font-size: 16px;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
+}
+
+.btn-add-course:hover { background: #218838; }
+
+.btn-edit {
+  width: 100%;
+  padding: 10px;
+  background: #003366;
+  color: #FFFFFF;
+  border-radius: 10px;
+}
+.btn-edit:hover { background: #002244; }
+
+.btn-delete {
+  padding: 10px 15px;
+  background: #fff;
+  color: #dc3545;
+  border: 1px solid #dc3545;
+  border-radius: 10px;
+}
+.btn-delete:hover { background: #dc3545; color: #fff; }
+
+.btn-preview {
+  width: 100%;
+  padding: 10px;
+  background: #f0f5ff;
+  color: #003366;
+  border-radius: 10px;
+}
+.btn-preview:hover { background: #dce6f7; }
+
+.btn-detail {
+  width: 100%;
+  padding: 14px;
+  background: #F2984A;
+  color: #FFFFFF;
+  border-radius: 12px;
+  font-size: 16px;
+  box-shadow: 0 4px 10px rgba(242, 152, 74, 0.2);
+}
+
+.btn-detail:hover {
+  background-color: #e0873a;
+}

@@ -1,0 +1,243 @@
+/* src/pages/Profile/Profile.css */
+
+.profile-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 0 20px;
+  font-family: 'Prompt', sans-serif;
+}
+
+.btn-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: #eee;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  color: #555;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.btn-back:hover {
+  background: #003366;
+  color: #fff;
+}
+
+.profile-card {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  border: 1px solid #eee;
+}
+
+.profile-header {
+  background: #003366;
+  padding: 40px 20px;
+  text-align: center;
+  color: #fff;
+  position: relative;
+}
+
+.profile-image-wrapper {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  margin-bottom: 15px;
+}
+
+.profile-img {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #fff;
+  background-color: #fff;
+}
+
+.profile-icon-fallback {
+  font-size: 90px;
+  color: #F2984A;
+  background-color: #fff;
+  border-radius: 50%;
+  padding: 2px;
+  border: 3px solid #fff;
+}
+
+.camera-badge {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  background: #fff;
+  border-radius: 50%;
+  padding: 6px;
+  color: #003366;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-name {
+  margin: 0;
+  font-size: 24px;
+}
+
+.profile-role {
+  margin: 5px 0 0 0;
+  color: #bbdefb;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.profile-body {
+  padding: 40px 30px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 40px;
+}
+
+.section-title {
+  color: #003366;
+  font-size: 20px;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ส่วนของการฟอร์มและ Input */
+.edit-box {
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.input-label {
+  display: block;
+  font-weight: bold;
+  color: #003366;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.input-field {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  outline-color: #F2984A;
+  font-size: 15px;
+  box-sizing: border-box;
+  margin-bottom: 15px;
+  font-family: 'Prompt', sans-serif;
+}
+
+/* ส่วนแสดงข้อมูลทั่วไป */
+.info-view {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.info-item .info-label {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.info-item .info-value {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* ปุ่มต่างๆ */
+.btn-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.btn-save {
+  flex: 1;
+  padding: 10px;
+  background: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Prompt', sans-serif;
+}
+
+.btn-save:hover {
+  background: #218838;
+}
+
+.btn-cancel {
+  flex: 1;
+  padding: 10px;
+  background: #ccc;
+  color: #333;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: 'Prompt', sans-serif;
+}
+
+.btn-cancel:hover {
+  background: #bbb;
+}
+
+.btn-edit {
+  margin-top: 10px;
+  padding: 10px;
+  background: #f0f5ff;
+  color: #003366;
+  border: 1px solid #cce0ff;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
+  font-family: 'Prompt', sans-serif;
+}
+
+.btn-edit:hover {
+  background: #d9e8ff;
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 12px;
+  background: #003366;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s;
+  font-family: 'Prompt', sans-serif;
+}
+
+.btn-submit:hover {
+  background: #002244;
+}

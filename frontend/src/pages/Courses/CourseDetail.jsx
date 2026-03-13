@@ -7,35 +7,30 @@ import {
   FaClock, FaUserGraduate, FaChevronLeft, FaChevronRight, 
   FaShoppingCart, FaArrowLeft, FaPlayCircle, FaCheckCircle 
 } from 'react-icons/fa';
+import './CourseDetail.css'; // ✅ Import CSS ที่แยกไว้
 
 export default function CourseDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeMedia, setActiveMedia] = useState(0); // 0: Cover, 1: Video
-  const [isOwned, setIsOwned] = useState(false); // ✅ เช็คความเป็นเจ้าของ
-  const [paymentStatus, setPaymentStatus] = useState(null); // ✅ เพิ่ม state เก็บสถานะ
+  const [activeMedia, setActiveMedia] = useState(0); 
+  const [isOwned, setIsOwned] = useState(false); 
+  const [paymentStatus, setPaymentStatus] = useState(null); 
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 1. ดึงข้อมูลรายละเอียดคอร์ส
         const response = await axios.get(`http://localhost:3000/courses/${id}`);
         setCourse(response.data);
 
-        // 2. เช็คว่า User เป็นเจ้าของคอร์สนี้หรือยัง (ถ้า Login อยู่)
         const token = localStorage.getItem('token');
         if (token) {
           try {
-            // ยิง API เช็ครายการคอร์สของฉันล่าสุด
             const myCoursesRes = await axios.get('http://localhost:3000/payments/my-courses', {
               headers: { Authorization: `Bearer ${token}` }
             });
 
-            // ตรวจสอบว่า ID คอร์สนี้ มีอยู่ในรายการที่ API ส่งมาไหม
-            // โค้ดใหม่: กัน Error และรองรับโครงสร้างข้อมูลที่หลากหลาย
-// 1. ค้นหาประวัติทั้งหมดที่เกี่ยวกับคอร์สนี้ (เผื่อมีการกดซื้อหลายรอบ)
             const relatedPayments = myCoursesRes.data.filter(item => {
               if (item.course && String(item.course.id) === String(id)) return true;
               if (item.courses && item.courses.some(c => String(c.id) === String(id))) return true;
@@ -43,12 +38,15 @@ export default function CourseDetail() {
               return false;
             });
 
-            // ✅ ปรับปรุงลอจิกเช็คสถานะ
-            if (ownedItem) {
-              const status = ownedItem.status ? ownedItem.status.toLowerCase() : 'pending';
+            if (relatedPayments.length > 0) {
+              const approvedItem = relatedPayments.find(p => p.status && p.status.toLowerCase() === 'approved');
+              const pendingItem = relatedPayments.find(p => p.status && p.status.toLowerCase() === 'pending');
+              
+              const targetPayment = approvedItem || pendingItem || relatedPayments[0];
+              const status = targetPayment.status ? targetPayment.status.toLowerCase() : 'pending';
+              
               setPaymentStatus(status);
               
-              // เป็นเจ้าของก็ต่อเมื่อสถานะอนุมัติแล้วเท่านั้น (ถ้าระงับสิทธิ์ จะเป็น false)
               if (status === 'approved') {
                 setIsOwned(true);
               }
@@ -69,22 +67,19 @@ export default function CourseDetail() {
   }, [id]);
 
   if (loading) return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh', fontFamily: '"Prompt", sans-serif' }}>
+    <div className="loader-container">
       <div className="loader">กำลังโหลดข้อมูลคอร์ส...</div>
     </div>
   );
 
-  if (!course) return <div style={{ textAlign: 'center', padding: '100px' }}>ไม่พบข้อมูลคอร์ส</div>;
+  if (!course) return <div className="not-found">ไม่พบข้อมูลคอร์ส</div>;
 
   const hasVideo = Boolean(course.sampleVideoUrl);
-
-  // ✅ เช็คสถานะเพื่อนำไปแสดงผล
   const isRevoked = ['revoked', 'suspended', 'canceled'].includes(paymentStatus);
   const isPending = paymentStatus === 'pending';
 
   const addToCart = () => {
     const existingCart = JSON.parse(localStorage.getItem('cart')) || [];
-    // เช็คว่ามีในตะกร้าแล้วหรือยัง
     if (existingCart.find(item => String(item.id) === String(course.id))) {
       Swal.fire({
         icon: 'warning',
@@ -108,51 +103,44 @@ export default function CourseDetail() {
   };
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '30px 20px', fontFamily: '"Prompt", sans-serif', backgroundColor: '#fdfdfd' }}>
+    <div className="course-detail-container">
       
-      {/* Navigation Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-        <button 
-          onClick={() => navigate(-1)} 
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: '#eee', padding: '8px 16px', borderRadius: '20px', cursor: 'pointer', color: '#555', transition: '0.3s' }}
-          onMouseOver={(e) => {e.target.style.background = '#003366'; e.target.style.color = '#fff'}}
-          onMouseOut={(e) => {e.target.style.background = '#eee'; e.target.style.color = '#555'}}
-        >
+      <div className="nav-header">
+        <button className="btn-back" onClick={() => navigate(-1)}>
           <FaArrowLeft /> ย้อนกลับ
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.6fr) minmax(0, 1fr)', gap: '40px', alignItems: 'start' }}>
+      <div className="detail-grid">
         
-        {/* LEFT COLUMN: Media & Description */}
+        {/* Left Column */}
         <div>
-          <div style={{ position: 'relative', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.1)', backgroundColor: '#000' }}>
+          <div className="media-wrapper">
             {activeMedia === 0 ? (
               <img 
                 src={course.coverImageUrl ? `http://localhost:3000${course.coverImageUrl}` : 'https://via.placeholder.com/800x450'} 
                 alt="Course Cover" 
-                style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', display: 'block' }} 
+                className="media-content"
               />
             ) : (
               <video 
                 src={`http://localhost:3000${course.sampleVideoUrl}`} 
                 controls autoPlay 
-                style={{ width: '100%', aspectRatio: '16/9', display: 'block' }} 
+                className="media-content"
               />
             )}
 
-            {/* Media Toggler */}
             {hasVideo && (
-              <div style={{ position: 'absolute', bottom: '20px', right: '20px', display: 'flex', gap: '10px' }}>
+              <div className="media-toggle-container">
                 <button 
                   onClick={() => setActiveMedia(0)}
-                  style={{ padding: '8px 15px', borderRadius: '30px', border: 'none', background: activeMedia === 0 ? '#F2984A' : 'rgba(255,255,255,0.9)', cursor: 'pointer', fontWeight: 'bold' }}
+                  className={`btn-toggle ${activeMedia === 0 ? 'active' : ''}`}
                 >
                   รูปหน้าปก
                 </button>
                 <button 
                   onClick={() => setActiveMedia(1)}
-                  style={{ padding: '8px 15px', borderRadius: '30px', border: 'none', background: activeMedia === 1 ? '#F2984A' : 'rgba(255,255,255,0.9)', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' }}
+                  className={`btn-toggle ${activeMedia === 1 ? 'active' : ''}`}
                 >
                   <FaPlayCircle /> ตัวอย่างวิดีโอ
                 </button>
@@ -160,107 +148,94 @@ export default function CourseDetail() {
             )}
           </div>
 
-          <div style={{ marginTop: '40px' }}>
-            <h2 style={{ fontSize: '26px', color: '#003366', borderLeft: '5px solid #F2984A', paddingLeft: '15px', marginBottom: '25px' }}>รายละเอียดคอร์ส</h2>
+          <div className="content-section">
+            <h2 className="section-title">รายละเอียดคอร์ส</h2>
             {course.courseContents?.map((content, idx) => (
-              <div key={idx} style={{ background: '#fff', padding: '20px', borderRadius: '15px', marginBottom: '15px', border: '1px solid #f0f0f0' }}>
-                <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#333' }}>{idx + 1}. {content.title}</h3>
-                <p style={{ color: '#666', fontSize: '14px', margin: '5px 0' }}><strong>เนื้อหาเรียน:</strong> {content.lessons}</p>
-                <p style={{ color: '#666', fontSize: '14px', margin: '0' }}><strong>โจทย์ฝึกฝน:</strong> {content.problems}</p>
+              <div key={idx} className="content-card">
+                <h3>{idx + 1}. {content.title}</h3>
+                <p><strong>เนื้อหาเรียน:</strong> {content.lessons}</p>
+                <p><strong>โจทย์ฝึกฝน:</strong> {content.problems}</p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Buying Info */}
-        <div style={{ position: 'sticky', top: '20px' }}>
-          <div style={{ background: '#fff', padding: '30px', borderRadius: '25px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', border: '1px solid #f0f0f0' }}>
-            <h1 style={{ fontSize: '28px', color: '#003366', marginTop: '15px', lineHeight: '1.3' }}>{course.title}</h1>
-            <p style={{ color: '#888', fontSize: '15px' }}>{course.suitableFor || 'เหมาะสำหรับผู้เริ่มต้นถึงระดับกลาง'}</p>
+        {/* Right Column */}
+        <div className="right-column">
+          <div className="purchase-card">
+            <h1 className="course-detail-title">{course.title}</h1>
+            <p className="course-subtitle">{course.suitableFor || 'เหมาะสำหรับผู้เริ่มต้นถึงระดับกลาง'}</p>
             
-            <div style={{ margin: '25px 0', padding: '20px 0', borderTop: '1px solid #eee', borderBottom: '1px solid #eee' }}>
-              <div style={{ fontSize: '14px', color: '#888' }}>ราคาพิเศษเพียง</div>
-              <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#F2984A' }}>
+            <div className="price-section">
+              <div className="price-label">ราคาพิเศษเพียง</div>
+              <div className="price-wrapper">
                 ฿{course.salePrice?.toLocaleString()}
                 {course.originalPrice && (
-                  <span style={{ fontSize: '18px', color: '#ccc', textDecoration: 'line-through', marginLeft: '10px' }}>
+                  <span className="price-original">
                     ฿{course.originalPrice.toLocaleString()}
                   </span>
                 )}
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '30px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#555', fontSize: '14px' }}>
+            <div className="features-list">
+              <div className="feature-item">
                 <FaClock style={{ color: '#F2984A' }} /> <span>เวลาเรียนทั้งหมด: {course.classTime || 'ไม่จำกัด'}</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#555', fontSize: '14px' }}>
+              <div className="feature-item">
                 <FaCheckCircle style={{ color: '#28a745' }} /> <span>เข้าเรียนได้ตลอดชีพ</span>
               </div>
             </div>
 
-            {/* ✅ แจ้งเตือนกรณีถูกระงับสิทธิ์ */}
             {isRevoked && (
-              <div style={{ padding: '12px', backgroundColor: '#ffe6e6', color: '#c0392b', border: '1px solid #f5c6cb', borderRadius: '10px', marginBottom: '15px', fontSize: '14px', textAlign: 'center' }}>
+              <div className="alert-box alert-revoked">
                 <strong>🚫 ท่านหมดสิทธิ์ในการเรียนคอร์สนี้แล้ว</strong><br/>สามารถกดเพิ่มลงตะกร้าเพื่อสั่งซื้อใหม่ได้
               </div>
             )}
 
-            {/* ✅ แจ้งเตือนกรณีรออนุมัติสลิป */}
             {isPending && (
-              <div style={{ padding: '12px', backgroundColor: '#fff3cd', color: '#856404', border: '1px solid #ffeeba', borderRadius: '10px', marginBottom: '15px', fontSize: '14px', textAlign: 'center' }}>
+              <div className="alert-box alert-pending">
                 <strong>⏳ อยู่ระหว่างรอการอนุมัติสลิป</strong>
               </div>
             )}
 
-            {/* ✅ ปุ่ม Action ตามสถานะ */}
             {isOwned ? (
-              <button 
-                onClick={() => navigate('/my-classroom')} 
-                style={{ width: '100%', padding: '18px', backgroundColor: '#28a745', color: '#fff', border: 'none', borderRadius: '15px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
+              <button className="btn-action btn-study" onClick={() => navigate('/my-classroom')}>
                 <FaUserGraduate /> เข้าสู่บทเรียนของคุณ
               </button>
             ) : isPending ? (
-              <button 
-                disabled
-                style={{ width: '100%', padding: '18px', backgroundColor: '#e9ecef', color: '#6c757d', border: '1px solid #ced4da', borderRadius: '15px', fontSize: '18px', fontWeight: 'bold', cursor: 'not-allowed', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
+              <button className="btn-action btn-pending" disabled>
                 <FaClock /> รอการอนุมัติ
               </button>
             ) : (
-              // 🛒 ปุ่มนี้จะแสดงเมื่อ ไม่ได้เป็นเจ้าของคอร์ส, ไม่ได้รออนุมัติ (รวมถึงคนที่โดนระงับสิทธิ์ด้วย)
-              <button 
-                onClick={addToCart} 
-                style={{ width: '100%', padding: '18px', backgroundColor: '#003366', color: '#fff', border: 'none', borderRadius: '15px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', transition: '0.3s', boxShadow: '0 10px 20px rgba(0,51,102,0.2)' }}
-                onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
-                onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
-              >
+              <button className="btn-action btn-add-cart" onClick={addToCart}>
                 <FaShoppingCart /> เพิ่มลงตะกร้าสินค้า
               </button>
             )}
           </div>
 
-          {/* Instructor Profile Card */}
-          <div style={{ marginTop: '30px', background: '#003366', padding: '25px', borderRadius: '25px', color: '#fff' }}>
-            <h4 style={{ margin: '0 0 20px 0', fontSize: '18px', borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '10px' }}>ทีมผู้สอน</h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div className="instructor-card">
+            <h4 className="instructor-title">ทีมผู้สอน</h4>
+            <div className="instructor-list">
               {(course.instructors || [
                 { name: course.instructorName, imageUrl: course.instructorImageUrl }
               ]).map((inst, idx) => (
-                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <div key={idx} className="instructor-item">
                   <img 
                     src={inst.imageUrl ? `http://localhost:3000${inst.imageUrl}` : 'https://via.placeholder.com/60'} 
                     alt={inst.name} 
-                    style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #F2984A' }} 
+                    className="instructor-img"
                   />
-                  <div>
-                    <div style={{ fontWeight: 'bold', fontSize: '16px' }}>{inst.name || 'อาจารย์ผู้เชี่ยวชาญ'}</div>
-                    <div style={{ fontSize: '12px', color: '#bbdefb' }}>Expert Instructor</div>
+                  <div className="instructor-info">
+                    <div className="instructor-name">{inst.name || 'อาจารย์ผู้เชี่ยวชาญ'}</div>
+                    <div className="instructor-role">Expert Instructor</div>
                   </div>
                 </div>
               ))}
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );

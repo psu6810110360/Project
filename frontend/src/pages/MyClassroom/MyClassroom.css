@@ -5,21 +5,21 @@
   margin: 0 auto;
   padding: 40px 20px;
   font-family: 'Prompt', sans-serif;
+  box-sizing: border-box; /* 🌟 เพิ่มอันนี้ เพื่อไม่ให้ padding ดันจอจนล้น/เบี้ยว */
+  overflow-x: hidden; /* 🌟 ป้องกันการเลื่อนซ้ายขวา (แนวนอน) บนมือถือ */
 }
 
 .classroom-header {
   text-align: center;
-  margin-bottom: 50px;
+  margin-bottom: 40px;
 }
 
 .classroom-title {
-  display: inline-block;
-  background-color: #FCE7D4;
+  /* 🌟 เอาสีพื้นหลัง (ไฮไลท์) และกรอบออกแล้ว */
   color: #003366;
-  padding: 12px 50px;
-  border-radius: 30px;
   font-size: 28px;
   font-weight: bold;
+  margin: 0;
 }
 
 .section-title {
@@ -54,6 +54,16 @@
   display: flex;
   flex-direction: column;
   position: relative;
+  box-sizing: border-box; /* 🌟 ป้องกันการ์ดล้นจอ */
+}
+
+/* 🌟 จัดการรูปภาพในคอร์สไม่ให้ใหญ่เกินจนดันการ์ดเบี้ยว */
+.course-card img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 15px;
 }
 
 .course-card-title {

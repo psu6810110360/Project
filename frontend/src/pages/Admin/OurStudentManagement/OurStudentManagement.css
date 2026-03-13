@@ -228,4 +228,46 @@ hr {
 @keyframes modalPopIn {
   from { opacity: 0; transform: scale(0.9); }
   to { opacity: 1; transform: scale(1); }
+
+  
+}
+
+/* =========================================
+   ✏️ ปุ่มในตาราง (แก้ไข / ลบ) แบบสีทึบ
+   ========================================= */
+.edit-btn {
+  background-color: #003366; /* สีน้ำเงินเข้มแบบในรูป */
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px; /* ปรับให้อ้วนขึ้นนิดนึงให้ดูเต็มก้อน */
+  border-radius: 6px; /* มุมมนกำลังสวย */
+  margin-right: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: inherit;
+  font-weight: 600; /* ตัวหนังสือหนาขึ้นให้อ่านง่าย */
+  transition: all 0.2s ease;
+}
+
+.edit-btn:hover {
+  background-color: #002244; /* สีเข้มขึ้นตอนเอาเมาส์ชี้ */
+  transform: translateY(-1px); /* ให้ปุ่มขยับนิดๆ ดูมีลูกเล่น */
+}
+
+.delete-btn {
+  background-color: #dc3545; /* สีแดงสดแบบในรูป */
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: inherit;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+  background-color: #c82333; /* แดงเข้มขึ้นตอนเอาเมาส์ชี้ */
+  transform: translateY(-1px);
 }

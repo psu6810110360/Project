@@ -178,10 +178,10 @@ const MyClassroom = () => {
     <div className="classroom-container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
       
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '40px' }}>
-        <h1 className="classroom-title" style={{ margin: '0', padding: '10px 40px', background: '#ffe8cc', color: '#003366', borderRadius: '30px', display: 'inline-block' }}>
-          ห้องเรียนของฉัน
-        </h1>
-      </div>
+  <h1 className="classroom-title" style={{ margin: '0', color: '#003366', display: 'inline-block' }}>
+    ห้องเรียนของฉัน
+  </h1>
+</div>
 
       {myCourses.length === 0 ? (
         <EmptyCourseState />
