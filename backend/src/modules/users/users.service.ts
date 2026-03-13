@@ -194,7 +194,7 @@ export class UsersService implements OnModuleInit {
   }
 
   // =========================
-  // 🟢 ส่วนที่เพิ่มใหม่: อัปเดตรูปโปรไฟล์ลงฐานข้อมูล
+  // ส่วนที่เพิ่มใหม่: อัปเดตรูปโปรไฟล์ลงฐานข้อมูล
   // =========================
   async updateProfilePicture(userId: number, filePath: string) {
     const user = await this.findOne(userId);

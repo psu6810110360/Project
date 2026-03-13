@@ -148,13 +148,13 @@ function App() {
             } />
 
             {/* 🔴 ปิด Route นี้ไว้ชั่วคราวเพื่อไม่ให้แอปพัง */}
-                        <Route path="/manage-students" element={
-              <ProtectedRoute requireAdmin={true}>
-                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
-                  <OurStudentManagement />
-                </div>
-              </ProtectedRoute>
-            } />
+                      <Route path="/manage-students" element={
+            <ProtectedRoute requireAdmin={true}>
+              <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
+                <OurStudentManagement />
+              </div>
+            </ProtectedRoute>
+          } />
 
             {/* 🧾 Admin: ตรวจสอบการชำระเงิน (จาก Code ใหม่) */}
             <Route path="/admin/payments" element={
