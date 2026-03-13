@@ -1,6 +1,12 @@
 // src/modules/users/users.controller.ts
-import { Controller, Get, Post, Body, Param, Delete, Patch, UseGuards, Request } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport'; // ✅ เพิ่ม Import AuthGuard
+import { 
+  Controller, Get, Post, Body, Param, Delete, Patch, 
+  UseGuards, Request, UseInterceptors, UploadedFile, BadRequestException // 🟢 เพิ่ม UseInterceptors, UploadedFile, BadRequestException
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { FileInterceptor } from '@nestjs/platform-express'; // 🟢 เพิ่ม Import สำหรับ Upload
+import { diskStorage } from 'multer'; // 🟢 เพิ่ม Import
+import { extname } from 'path'; // 🟢 เพิ่ม Import
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -18,9 +24,9 @@ export class UsersController {
   }
 
   // ===============================================
-  // 🟢 3 API ใหม่สำหรับระบบ Profile (ต้องอยู่เหนือ :id)
+  // 🟢 API สำหรับระบบ Profile (ต้องอยู่เหนือ :id)
   // ===============================================
-  @UseGuards(AuthGuard('jwt')) // 🔒 บังคับว่าต้องมี Token
+  @UseGuards(AuthGuard('jwt')) 
   @Get('profile')
   getProfile(@Request() req: any) {
     const userId = req.user.id || req.user.sub; 
@@ -40,6 +46,29 @@ export class UsersController {
     const userId = req.user.id || req.user.sub;
     return this.usersService.changePassword(+userId, passwords);
   }
+
+  // 🟢 ส่วนที่เพิ่มใหม่: API สำหรับอัปโหลดรูปโปรไฟล์
+  @UseGuards(AuthGuard('jwt'))
+  @Post('upload-profile')
+  @UseInterceptors(FileInterceptor('profilePicture', {
+    storage: diskStorage({
+      destination: './uploads/profiles', // โฟลเดอร์ปลายทาง
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        const ext = extname(file.originalname);
+        cb(null, `profile-${uniqueSuffix}${ext}`); // ตั้งชื่อไฟล์ใหม่
+      },
+    }),
+  }))
+  uploadProfilePicture(@Request() req: any, @UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('ไม่พบไฟล์รูปภาพ กรุณาแนบไฟล์มาด้วย');
+    }
+    const userId = req.user.id || req.user.sub;
+    const filePath = `/uploads/profiles/${file.filename}`;
+    
+    return this.usersService.updateProfilePicture(+userId, filePath);
+  }
   // ===============================================
 
   @Get(':id')
@@ -47,7 +76,7 @@ export class UsersController {
     return this.usersService.findOne(+id);
   }
 
-  // 🛒 API สำหรับการซื้อคอร์ส / เพิ่มคอร์สเข้า User (พร้อม expiresAt optional)
+  // 🛒 API สำหรับการซื้อคอร์ส / เพิ่มคอร์สเข้า User
   @Post(':userId/add-course/:courseId')
   addCourse(
     @Param('userId') userId: string,
@@ -58,7 +87,7 @@ export class UsersController {
     return this.usersService.addCourseToUser(+userId, courseId, expiresAt);
   }
 
-  // ❌ API สำหรับลบคอร์สแบบ manual (ไม่มี payment record)
+  // ❌ API สำหรับลบคอร์สแบบ manual
   @Delete(':userId/remove-course/:courseId')
   removeCourse(
     @Param('userId') userId: string,
