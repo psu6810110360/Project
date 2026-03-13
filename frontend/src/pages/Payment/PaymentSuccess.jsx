@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FaCheckCircle } from 'react-icons/fa';
+import Swal from 'sweetalert2';
 
 export default function PaymentSuccess() {
   const navigate = useNavigate();
@@ -59,7 +60,16 @@ export default function PaymentSuccess() {
       {/* ปุ่มกด */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         <button 
-          onClick={() => alert('ดาวน์โหลดใบเสร็จสำเร็จ!')}
+          // เปลี่ยนจาก alert ธรรมดา เป็น Swal.fire สวยๆ
+          onClick={() => {
+            Swal.fire({
+              icon: 'success',
+              title: 'สำเร็จ!',
+              text: 'ดาวน์โหลดใบเสร็จเรียบร้อยแล้ว',
+              showConfirmButton: false,
+              timer: 1500
+            });
+          }}
           style={{ width: '100%', padding: '15px', backgroundColor: '#003366', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
           ดาวน์โหลดใบเสร็จ
         </button>

@@ -3,13 +3,14 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaTrash, FaPlus, FaArrowLeft, FaUserCog, FaClock } from 'react-icons/fa';
 import Swal from 'sweetalert2';
+import './UserManagement.css'; // ดึงไฟล์ CSS มาใช้ตรงนี้
 
 export default function UserManagement() {
   const [users, setUsers] = useState([]);
   const [allCourses, setAllCourses] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedCourseToAdd, setSelectedCourseToAdd] = useState('');
-  const [expiresAt, setExpiresAt] = useState(''); // วันหมดอายุสำหรับคอร์สที่เพิ่ม Manual
+  const [expiresAt, setExpiresAt] = useState(''); 
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -31,7 +32,6 @@ export default function UserManagement() {
       const allCoursesData = courseRes.data;
       const allPaymentsData = paymentRes.data || [];
 
-      // ประมวลผลข้อมูล: ดึงเฉพาะ approved payments มาแสดง
       const processedUsers = userRes.data.map((user) => {
         const userPayments = allPaymentsData.filter(
           (p) =>
@@ -51,7 +51,6 @@ export default function UserManagement() {
           })
           .filter(Boolean);
 
-        // ตัดข้อมูลซ้ำ (ใช้ Map, ให้ paidCourses ที่มี paymentId เป็นหลัก)
         const courseMap = new Map();
         paidCourses.forEach((c) => {
           courseMap.set(c.id, c);
@@ -97,7 +96,6 @@ export default function UserManagement() {
     }
   };
 
-  // ✅ ลบคอร์สออกจาก user (ลบทั้ง user_courses และ payment records)
   const handleDeleteCourse = (course) => {
     Swal.fire({
       title: 'ยืนยันการลบคอร์ส?',
@@ -112,7 +110,6 @@ export default function UserManagement() {
       if (result.isConfirmed) {
         try {
           const token = localStorage.getItem('token');
-          // ใช้ DELETE endpoint เดียว — backend จัดการทั้ง user_courses และ payment records
           await axios.delete(
             `http://localhost:3000/payments/user/${selectedUser.id}/course/${course.id}`,
             { headers: { Authorization: `Bearer ${token}` } },
@@ -153,7 +150,6 @@ export default function UserManagement() {
     });
   };
 
-  // ตรวจสอบว่าคอร์สหมดอายุแล้วหรือยัง
   const isExpired = (expiresAt) => {
     if (!expiresAt) return false;
     return new Date(expiresAt) < new Date();
@@ -165,24 +161,22 @@ export default function UserManagement() {
   // 1. หน้าจัดการคอร์สรายบุคคล
   if (selectedUser) {
     return (
-      <div style={{ maxWidth: '900px', margin: '0 auto', backgroundColor: '#fff', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-        <button
-          onClick={() => setSelectedUser(null)}
-          style={{ background: 'none', border: 'none', color: '#003366', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '20px' }}
-        >
+      <div className="manage-course-container">
+        <button onClick={() => setSelectedUser(null)} className="btn-back">
           <FaArrowLeft /> กลับไปหน้ารายชื่อ
         </button>
-        <h2 style={{ color: '#003366', borderBottom: '2px solid #eee', paddingBottom: '15px' }}>
-          จัดการคอร์ส: <span style={{ color: '#F2984A' }}>{selectedUser.firstName} {selectedUser.lastName}</span>
+        
+        <h2 className="page-title">
+          จัดการคอร์ส: <span className="highlight-text">{selectedUser.firstName} {selectedUser.lastName}</span>
         </h2>
 
         {/* ส่วนเพิ่มคอร์ส Manual */}
-        <div style={{ backgroundColor: '#f8f9fa', padding: '20px', borderRadius: '8px', marginBottom: '30px' }}>
-          <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+        <div className="add-course-box">
+          <div className="add-course-flex">
             <select
               value={selectedCourseToAdd}
               onChange={(e) => setSelectedCourseToAdd(e.target.value)}
-              style={{ flex: 2, padding: '12px', borderRadius: '8px', border: '1px solid #ccc', minWidth: '200px' }}
+              className="form-select"
             >
               <option value="">-- เลือกคอร์สเพื่อเพิ่มสิทธิ์ (แบบ Manual) --</option>
               {allCourses.map((course) => (
@@ -199,63 +193,41 @@ export default function UserManagement() {
                 type="date"
                 value={expiresAt}
                 onChange={(e) => setExpiresAt(e.target.value)}
-                style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ccc', minWidth: '160px' }}
+                className="form-input"
               />
             </div>
 
-            <button
-              onClick={handleAddCourse}
-              style={{ padding: '12px 25px', backgroundColor: '#28a745', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', alignSelf: 'flex-end' }}
-            >
+            <button onClick={handleAddCourse} className="btn-add">
               <FaPlus /> เพิ่มคอร์ส
             </button>
           </div>
         </div>
 
         <h3 style={{ color: '#333' }}>คอร์สที่ครอบครอง ({selectedUser.courses?.length || 0})</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+        <div className="course-list">
           {selectedUser.courses?.length === 0 && (
             <p style={{ color: '#888', textAlign: 'center', padding: '20px' }}>ยังไม่มีคอร์สที่ครอบครอง</p>
           )}
           {selectedUser.courses?.map((course) => {
             const expired = isExpired(course.expiresAt);
             return (
-              <div
-                key={course.id}
-                style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  border: `1px solid ${expired ? '#ffc107' : '#eee'}`,
-                  padding: '15px', borderRadius: '8px',
-                  backgroundColor: expired ? '#fffbf0' : '#fff',
-                }}
-              >
+              <div key={course.id} className={`course-item ${expired ? 'expired' : ''}`}>
                 <div>
-                  <h4 style={{ margin: 0, color: '#003366', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                  <h4 className="course-title">
                     {course.title}
-                    {/* badge หมดอายุ */}
-                    {expired && (
-                      <span style={{ fontSize: '12px', backgroundColor: '#ffc107', color: '#333', padding: '2px 8px', borderRadius: '12px', fontWeight: 'normal' }}>
-                        ⏰ หมดอายุแล้ว
-                      </span>
-                    )}
+                    {expired && <span className="badge-expired">⏰ หมดอายุแล้ว</span>}
                   </h4>
-                  {/* แสดงวันหมดอายุถ้ามี */}
-                  {course.expiresAt && (
-                    <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: expired ? '#e67e22' : '#888', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  {course.expiresAt ? (
+                    <p className="course-date" style={{ color: expired ? '#e67e22' : '#888' }}>
                       <FaClock size={12} />
                       หมดอายุ: {new Date(course.expiresAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}
                     </p>
-                  )}
-                  {!course.expiresAt && (
-                    <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#aaa' }}>ไม่มีวันหมดอายุ</p>
+                  ) : (
+                    <p className="course-date" style={{ color: '#aaa' }}>ไม่มีวันหมดอายุ</p>
                   )}
                 </div>
 
-                {/* ปุ่มลบคอร์ส */}
-                <button
-                  onClick={() => handleDeleteCourse(course)}
-                  style={{ padding: '8px 14px', backgroundColor: '#dc3545', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap' }}
-                >
+                <button onClick={() => handleDeleteCourse(course)} className="btn-delete">
                   <FaTrash /> ลบคอร์ส
                 </button>
               </div>
@@ -268,54 +240,52 @@ export default function UserManagement() {
 
   // 2. หน้ารวมรายชื่อผู้ใช้งาน (ตัวหลัก)
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', backgroundColor: '#fff', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-      <h2 style={{ color: '#003366', borderBottom: '2px solid #eee', paddingBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <div className="user-management-container">
+      <h2 className="page-title">
         <FaUserCog /> ระบบจัดการผู้ใช้งาน
       </h2>
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
-        <thead>
-          <tr style={{ backgroundColor: '#003366', color: '#fff', textAlign: 'left' }}>
-            <th style={{ padding: '15px' }}>ชื่อ - นามสกุล</th>
-            <th style={{ padding: '15px' }}>อีเมล</th>
-            <th style={{ padding: '15px' }}>คอร์สที่มี</th>
-            <th style={{ padding: '15px', textAlign: 'center' }}>การจัดการ</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user) => (
-            <tr key={user.id} style={{ borderBottom: '1px solid #eee' }}>
-              <td style={{ padding: '15px' }}>
-                {user.firstName || 'ไม่ระบุ'} {user.lastName || ''}{' '}
-                {user.role === 'admin' && '(Admin)'}
-              </td>
-              <td style={{ padding: '15px' }}>{user.email}</td>
-              <td style={{ padding: '15px' }}>
-                <strong style={{ color: user.courses?.length > 0 ? '#28a745' : '#888' }}>
-                  {user.courses?.length || 0} คอร์ส
-                </strong>
-              </td>
-              <td style={{ padding: '15px', textAlign: 'center' }}>
-                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                  <button
-                    onClick={() => setSelectedUser(user)}
-                    style={{ padding: '8px 15px', backgroundColor: '#003366', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
-                  >
-                    จัดการคอร์ส
-                  </button>
-                  {user.role !== 'admin' && (
-                    <button
-                      onClick={() => handleDeleteUser(user.id, user.firstName)}
-                      style={{ padding: '8px 15px', backgroundColor: '#dc3545', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
-                    >
-                      ลบผู้ใช้
-                    </button>
-                  )}
-                </div>
-              </td>
+      
+      {/* ครอบตารางเพื่อให้เลื่อนได้บนจอมือถือ */}
+      <div className="table-responsive">
+        <table className="custom-table">
+          <thead>
+            <tr>
+              <th>ชื่อ - นามสกุล</th>
+              <th>อีเมล</th>
+              <th>คอร์สที่มี</th>
+              <th style={{ textAlign: 'center' }}>การจัดการ</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {users.map((user) => (
+              <tr key={user.id}>
+                <td style={{ whiteSpace: 'nowrap' }}>
+                  {user.firstName || 'ไม่ระบุ'} {user.lastName || ''}{' '}
+                  {user.role === 'admin' && '(Admin)'}
+                </td>
+                <td>{user.email}</td>
+                <td style={{ whiteSpace: 'nowrap' }}>
+                  <strong style={{ color: user.courses?.length > 0 ? '#28a745' : '#888' }}>
+                    {user.courses?.length || 0} คอร์ส
+                  </strong>
+                </td>
+                <td style={{ textAlign: 'center' }}>
+                  <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                    <button onClick={() => setSelectedUser(user)} className="btn-manage">
+                      จัดการคอร์ส
+                    </button>
+                    {user.role !== 'admin' && (
+                      <button onClick={() => handleDeleteUser(user.id, user.firstName)} className="btn-delete">
+                        ลบผู้ใช้
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

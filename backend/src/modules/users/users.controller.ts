@@ -23,9 +23,6 @@ export class UsersController {
     return this.usersService.create(userData);
   }
 
-  // ===============================================
-  // 🟢 API สำหรับระบบ Profile (ต้องอยู่เหนือ :id)
-  // ===============================================
   @UseGuards(AuthGuard('jwt')) 
   @Get('profile')
   getProfile(@Request() req: any) {
@@ -33,9 +30,6 @@ export class UsersController {
     return this.usersService.getProfile(+userId);
   }
 
-  // ===============================================
-  // 🟢 แก้ไข API สำหรับอัปเดต Profile ให้รับข้อมูลได้หลายช่อง
-  // ===============================================
   @UseGuards(AuthGuard('jwt'))
   @Patch('profile')
   updateProfile(

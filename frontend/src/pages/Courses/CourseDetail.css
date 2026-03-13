@@ -1,0 +1,375 @@
+/* src/pages/Courses/CourseDetail.css */
+
+.course-detail-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px 20px;
+  font-family: "Prompt", sans-serif;
+  background-color: #fdfdfd;
+}
+
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh;
+  font-family: "Prompt", sans-serif;
+}
+
+.not-found {
+  text-align: center;
+  padding: 100px;
+}
+
+/* Header & Navigation */
+.nav-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.btn-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: #eee;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  color: #555;
+  transition: 0.3s;
+}
+
+.btn-back:hover {
+  background: #003366;
+  color: #fff;
+}
+
+/* ตัวการที่ทำให้เบี้ยวบนมือถือ */
+.detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); /* บังคับ 2 คอลัมน์ */
+  gap: 40px;
+  align-items: start;
+}
+
+/* Left Column: Media */
+.media-wrapper {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  background-color: #000;
+}
+
+.media-content {
+  width: 100%;
+  aspect-ratio: 16/9;
+  display: block;
+}
+
+img.media-content {
+  object-fit: cover;
+}
+
+.media-toggle-container {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.btn-toggle {
+  padding: 8px 15px;
+  border-radius: 30px;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: 0.3s;
+  color: #333;
+}
+
+.btn-toggle:hover {
+  background: #fff;
+}
+
+.btn-toggle.active {
+  background: #F2984A;
+  color: #fff;
+}
+
+/* Left Column: Content Section */
+.content-section {
+  margin-top: 40px;
+}
+
+.section-title {
+  font-size: 26px;
+  color: #003366;
+  border-left: 5px solid #F2984A;
+  padding-left: 15px;
+  margin-bottom: 25px;
+}
+
+.content-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 15px;
+  margin-bottom: 15px;
+  border: 1px solid #f0f0f0;
+}
+
+.content-card h3 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.content-card p {
+  color: #666;
+  font-size: 14px;
+  margin: 5px 0;
+}
+
+/* Right Column */
+.right-column {
+  position: sticky;
+  top: 20px;
+}
+
+.purchase-card {
+  background: #fff;
+  padding: 30px;
+  border-radius: 25px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  border: 1px solid #f0f0f0;
+}
+
+.course-detail-title {
+  font-size: 28px;
+  color: #003366;
+  margin-top: 15px;
+  line-height: 1.3;
+}
+
+.course-subtitle {
+  color: #888;
+  font-size: 15px;
+}
+
+.price-section {
+  margin: 25px 0;
+  padding: 20px 0;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+}
+
+.price-label {
+  font-size: 14px;
+  color: #888;
+}
+
+.price-wrapper {
+  font-size: 36px;
+  font-weight: bold;
+  color: #F2984A;
+}
+
+.price-original {
+  font-size: 18px;
+  color: #ccc;
+  text-decoration: line-through;
+  margin-left: 10px;
+}
+
+.features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #555;
+  font-size: 14px;
+}
+
+/* Alerts */
+.alert-box {
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.alert-revoked {
+  background-color: #ffe6e6;
+  color: #c0392b;
+  border: 1px solid #f5c6cb;
+}
+
+.alert-pending {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+}
+
+/* Action Buttons */
+.btn-action {
+  width: 100%;
+  padding: 18px;
+  border-radius: 15px;
+  font-size: 18px;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  transition: 0.3s;
+}
+
+.btn-study {
+  background-color: #28a745;
+  color: #fff;
+  cursor: pointer;
+}
+.btn-study:hover { background-color: #218838; }
+
+.btn-pending {
+  background-color: #e9ecef;
+  color: #6c757d;
+  border: 1px solid #ced4da;
+  cursor: not-allowed;
+}
+
+.btn-add-cart {
+  background-color: #003366;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(0, 51, 102, 0.2);
+}
+.btn-add-cart:hover {
+  transform: translateY(-2px);
+  background-color: #002244;
+}
+
+/* Instructor Card */
+.instructor-card {
+  margin-top: 30px;
+  background: #003366;
+  padding: 25px;
+  border-radius: 25px;
+  color: #fff;
+}
+
+.instructor-title {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+  padding-bottom: 10px;
+}
+
+.instructor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.instructor-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.instructor-img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #F2984A;
+}
+
+.instructor-name {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.instructor-role {
+  font-size: 12px;
+  color: #bbdefb;
+}
+/* =========================================
+   📱 โค้ดสำหรับมือถือ (จัดเรียงแนวตั้ง + ปรับขนาดให้พอดีจอ)
+   ========================================= */
+@media screen and (max-width: 768px) {
+  /* บังคับเรียงแนวตั้งและไม่ให้ล้นจอ */
+  .detail-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+  }
+
+  /* ควบคุมความกว้างให้พอดี 100% ป้องกันการเลื่อนซ้ายขวา (Horizontal Scroll) */
+  .course-detail-container, .right-column, .media-wrapper, .purchase-card, .content-card {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* -------------------------------------
+     ส่วนลดขนาดช่องว่าง (Padding) 
+     ------------------------------------- */
+  .course-detail-container {
+    padding: 15px 10px !important; /* ลดขอบซ้ายขวาของทั้งหน้า */
+  }
+
+  .purchase-card {
+    padding: 20px 15px !important; /* ลดขอบในกล่องราคา */
+    border-radius: 15px !important;
+  }
+
+  .content-card {
+    padding: 15px !important; /* ลดขอบในกล่องเนื้อหา */
+  }
+
+  .instructor-card {
+    padding: 20px 15px !important;
+    border-radius: 15px !important;
+  }
+
+  /* -------------------------------------
+     ส่วนลดขนาดตัวอักษร (Typography) 
+     ------------------------------------- */
+  .course-detail-title {
+    font-size: 22px !important; /* ชื่อคอร์ส */
+  }
+
+  .section-title {
+    font-size: 20px !important; /* หัวข้อต่างๆ */
+  }
+
+  .price-wrapper {
+    font-size: 28px !important; /* ขนาดราคา (ของเดิม 36px ใหญ่ไป) */
+  }
+
+  .btn-action {
+    font-size: 16px !important; /* ขนาดตัวหนังสือในปุ่ม */
+    padding: 14px 15px !important; /* ความอ้วนของปุ่ม */
+  }
+
+  /* ปิดการเกาะจอของฝั่งขวา */
+  .right-column {
+    position: static !important;
+  }
+}

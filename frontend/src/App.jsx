@@ -10,19 +10,17 @@ import CourseDetail from './pages/Courses/CourseDetail';
 import HomePage from './pages/Home/HomePage';
 import Login from './pages/Login/Login';
 import OurStudents from './pages/OurStudents/OurStudents';
-import Contact from './pages/Contact/Contact'; // ✅ เพิ่มหน้า Contact เข้ามา
+import Contact from './pages/Contact/contact'; 
 
 import MyClassroom from "./pages/MyClassroom/MyClassroom";
 import Cart from './pages/Cart/Cart';
 import Payment from './pages/Payment/Payment';
 import PaymentSuccess from './pages/Payment/PaymentSuccess';
-import UserManagement from './pages/Admin/UserManagement';
+import UserManagement from './pages/Admin/UserManagement/UserManagement';
 import CoursePlayer from './pages/AttendClass/CoursePlayer';
-import Profile from './pages/Profile/Profile'; // ✅ เพิ่มหน้าโปรไฟล์เข้ามา  
-
-// ✅ รวม Import จากทั้ง 2 ฝั่ง
-import OurStudentManagement from "./pages/Admin/OurStudentManagement";
-import PaymentReview from './pages/Admin/PaymentReview';
+import OurStudentManagement from "./pages/Admin/OurStudentManagement/OurStudentManagement";
+import Profile from './pages/Profile/Profile'; 
+import PaymentReview from './pages/Admin/PaymentReview/PaymentReview';
 
 // ==========================================
 // 🛡️ Protected Route
@@ -74,7 +72,6 @@ function App() {
               </ProtectedRoute>
             } />
 
-            {/* ✅ เพิ่ม Route สำหรับ Profile ตรงนี้ */}
             <Route path="/profile" element={
               <ProtectedRoute>
                 <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
@@ -150,14 +147,14 @@ function App() {
               </ProtectedRoute>
             } />
 
-            {/* 👑 Admin: จัดการนักเรียน (จาก Code เก่า) */}
-            <Route path="/manage-students" element={
-              <ProtectedRoute requireAdmin={true}>
-                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
-                  <OurStudentManagement />
-                </div>
-              </ProtectedRoute>
-            } />
+            {/* 🔴 ปิด Route นี้ไว้ชั่วคราวเพื่อไม่ให้แอปพัง */}
+                      <Route path="/manage-students" element={
+            <ProtectedRoute requireAdmin={true}>
+              <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px', width: '100%' }}>
+                <OurStudentManagement />
+              </div>
+            </ProtectedRoute>
+          } />
 
             {/* 🧾 Admin: ตรวจสอบการชำระเงิน (จาก Code ใหม่) */}
             <Route path="/admin/payments" element={

@@ -8,11 +8,13 @@ import {
   FaKey, FaEnvelope, FaUserTag, FaCamera, FaPhone 
 } from 'react-icons/fa';
 
+// Import ไฟล์ CSS ที่เราแยกไว้
+import './Profile.css';
+
 export default function Profile() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   
-  // State สำหรับเก็บข้อมูลผู้ใช้แบบแยกฟิลด์
   const [userData, setUserData] = useState({
     firstName: '',
     lastName: '',
@@ -22,7 +24,6 @@ export default function Profile() {
     profilePicture: null
   });
 
-  // State สำหรับโหมดแก้ไขแบบ Object
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     firstName: '',
@@ -30,7 +31,6 @@ export default function Profile() {
     phone: ''
   });
 
-  // State สำหรับเปลี่ยนรหัสผ่าน
   const [passwords, setPasswords] = useState({
     oldPassword: '',
     newPassword: '',
@@ -49,7 +49,6 @@ export default function Profile() {
 
         const data = response.data;
         
-        // จัดการกรณี backend ส่งมาเป็น name รวม หรือ แยก firstName/lastName
         const fetchedFirstName = data.firstName || (data.name ? data.name.split(' ')[0] : '') || localStorage.getItem('userName') || 'ผู้ใช้งาน';
         const fetchedLastName = data.lastName || (data.name && data.name.includes(' ') ? data.name.split(' ').slice(1).join(' ') : '') || '';
         const fetchedPhone = data.phone || '';
@@ -116,7 +115,6 @@ export default function Profile() {
     }
   };
 
-  // ฟังก์ชันบันทึกข้อมูลส่วนตัว (ยิง API จริง)
   const handleSaveProfile = async () => {
     if (!editData.firstName.trim() || !editData.lastName.trim()) {
       Swal.fire('แจ้งเตือน', 'กรุณากรอกชื่อและนามสกุลให้ครบถ้วน', 'warning');
@@ -126,7 +124,6 @@ export default function Profile() {
     try {
       const token = localStorage.getItem('token');
       
-      // ส่งข้อมูลไปอัปเดตที่ Backend
       await axios.patch('http://localhost:3000/users/profile', {
         firstName: editData.firstName,
         lastName: editData.lastName,
@@ -135,7 +132,6 @@ export default function Profile() {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // อัปเดตข้อมูลหน้าเว็บและ LocalStorage
       localStorage.setItem('userName', `${editData.firstName} ${editData.lastName}`);
       setUserData({ 
         ...userData, 
@@ -182,28 +178,20 @@ export default function Profile() {
     }
   };
 
-  const inputStyle = { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc', outlineColor: '#F2984A', fontSize: '15px', boxSizing: 'border-box', marginBottom: '15px' };
-  const labelStyle = { display: 'block', fontWeight: 'bold', color: '#003366', marginBottom: '8px', fontSize: '14px' };
-
   return (
-    <div style={{ maxWidth: '800px', margin: '40px auto', padding: '0 20px', fontFamily: '"Prompt", sans-serif' }}>
+    <div className="profile-container">
       
-      <button 
-        onClick={() => navigate(-1)} 
-        style={{ display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: '#eee', padding: '10px 20px', borderRadius: '20px', cursor: 'pointer', color: '#555', transition: '0.3s', marginBottom: '20px', fontWeight: 'bold' }}
-        onMouseOver={(e) => {e.target.style.background = '#003366'; e.target.style.color = '#fff'}}
-        onMouseOut={(e) => {e.target.style.background = '#eee'; e.target.style.color = '#555'}}
-      >
+      <button className="btn-back" onClick={() => navigate(-1)}>
         <FaArrowLeft /> ย้อนกลับ
       </button>
 
-      <div style={{ background: '#fff', borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', overflow: 'hidden', border: '1px solid #eee' }}>
+      <div className="profile-card">
         
         {/* Header ส่วนหัวโปรไฟล์ */}
-        <div style={{ background: '#003366', padding: '40px 20px', textAlign: 'center', color: '#fff', position: 'relative' }}>
+        <div className="profile-header">
           
           <div 
-            style={{ position: 'relative', display: 'inline-block', cursor: 'pointer', marginBottom: '15px' }} 
+            className="profile-image-wrapper"
             onClick={() => fileInputRef.current.click()}
             title="คลิกเพื่อเปลี่ยนรูปโปรไฟล์"
           >
@@ -211,13 +199,13 @@ export default function Profile() {
               <img 
                 src={userData.profilePicture} 
                 alt="Profile" 
-                style={{ width: '90px', height: '90px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #fff', backgroundColor: '#fff' }} 
+                className="profile-img"
               />
             ) : (
-              <FaUserCircle style={{ fontSize: '90px', color: '#F2984A', backgroundColor: '#fff', borderRadius: '50%', padding: '2px', border: '3px solid #fff' }} />
+              <FaUserCircle className="profile-icon-fallback" />
             )}
             
-            <div style={{ position: 'absolute', bottom: '0px', right: '0px', background: '#fff', borderRadius: '50%', padding: '6px', color: '#003366', boxShadow: '0 2px 5px rgba(0,0,0,0.2)' }}>
+            <div className="camera-badge">
               <FaCamera size={16} />
             </div>
           </div>
@@ -230,72 +218,71 @@ export default function Profile() {
             style={{ display: 'none' }} 
           />
 
-          {/* แสดงชื่อและนามสกุล */}
-          <h1 style={{ margin: 0, fontSize: '24px' }}>{userData.firstName} {userData.lastName}</h1>
-          <p style={{ margin: '5px 0 0 0', color: '#bbdefb', fontSize: '14px' }}><FaUserTag /> {userData.role}</p>
+          <h1 className="profile-name">{userData.firstName} {userData.lastName}</h1>
+          <p className="profile-role"><FaUserTag /> {userData.role}</p>
         </div>
 
-        <div style={{ padding: '40px 30px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px' }}>
+        <div className="profile-body">
           
           {/* Section 1: ข้อมูลส่วนตัว */}
           <div>
-            <h2 style={{ color: '#003366', fontSize: '20px', borderBottom: '2px solid #f0f0f0', paddingBottom: '10px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h2 className="section-title">
               <FaEdit color="#F2984A" /> ข้อมูลส่วนตัว
             </h2>
 
             {isEditing ? (
-              <div style={{ background: '#f9f9f9', padding: '20px', borderRadius: '12px' }}>
-                <label style={labelStyle}>ชื่อจริง</label>
+              <div className="edit-box">
+                <label className="input-label">ชื่อจริง</label>
                 <input 
                   type="text" 
                   value={editData.firstName} 
                   onChange={(e) => setEditData({...editData, firstName: e.target.value})} 
-                  style={inputStyle} 
+                  className="input-field" 
                 />
 
-                <label style={labelStyle}>นามสกุล</label>
+                <label className="input-label">นามสกุล</label>
                 <input 
                   type="text" 
                   value={editData.lastName} 
                   onChange={(e) => setEditData({...editData, lastName: e.target.value})} 
-                  style={inputStyle} 
+                  className="input-field" 
                 />
 
-                <label style={labelStyle}>เบอร์โทรศัพท์</label>
+                <label className="input-label">เบอร์โทรศัพท์</label>
                 <input 
                   type="text" 
                   value={editData.phone} 
                   onChange={(e) => setEditData({...editData, phone: e.target.value})} 
-                  style={inputStyle} 
+                  className="input-field" 
                 />
                 
-                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                  <button onClick={handleSaveProfile} style={{ flex: 1, padding: '10px', background: '#28a745', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', gap: '5px' }}>
+                <div className="btn-group">
+                  <button onClick={handleSaveProfile} className="btn-save">
                     <FaSave /> บันทึก
                   </button>
-                  <button onClick={() => {setIsEditing(false); setEditData({firstName: userData.firstName, lastName: userData.lastName, phone: userData.phone});}} style={{ flex: 1, padding: '10px', background: '#ccc', color: '#333', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
+                  <button onClick={() => {setIsEditing(false); setEditData({firstName: userData.firstName, lastName: userData.lastName, phone: userData.phone});}} className="btn-cancel">
                     ยกเลิก
                   </button>
                 </div>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                <div>
-                  <div style={{ fontSize: '13px', color: '#888', marginBottom: '5px' }}>ชื่อ - นามสกุล</div>
-                  <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#333' }}>{userData.firstName} {userData.lastName}</div>
+              <div className="info-view">
+                <div className="info-item">
+                  <div className="info-label">ชื่อ - นามสกุล</div>
+                  <div className="info-value">{userData.firstName} {userData.lastName}</div>
                 </div>
-                <div>
-                  <div style={{ fontSize: '13px', color: '#888', marginBottom: '5px' }}><FaPhone /> เบอร์โทรศัพท์</div>
-                  <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#333' }}>{userData.phone || '- ไม่ระบุ -'}</div>
+                <div className="info-item">
+                  <div className="info-label"><FaPhone /> เบอร์โทรศัพท์</div>
+                  <div className="info-value">{userData.phone || '- ไม่ระบุ -'}</div>
                 </div>
-                <div>
-                  <div style={{ fontSize: '13px', color: '#888', marginBottom: '5px' }}><FaEnvelope /> อีเมลบัญชีผู้ใช้</div>
-                  <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#333' }}>{userData.email}</div>
+                <div className="info-item">
+                  <div className="info-label"><FaEnvelope /> อีเมลบัญชีผู้ใช้</div>
+                  <div className="info-value">{userData.email}</div>
                 </div>
                 
                 <button 
                   onClick={() => setIsEditing(true)}
-                  style={{ marginTop: '10px', padding: '10px', background: '#f0f5ff', color: '#003366', border: '1px solid #cce0ff', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: '0.3s' }}
+                  className="btn-edit"
                 >
                   แก้ไขข้อมูลส่วนตัว
                 </button>
@@ -303,38 +290,38 @@ export default function Profile() {
             )}
           </div>
 
-          {/* Section 2: เปลี่ยนรหัสผ่าน (เหมือนเดิม) */}
+          {/* Section 2: เปลี่ยนรหัสผ่าน */}
           <div>
-            <h2 style={{ color: '#003366', fontSize: '20px', borderBottom: '2px solid #f0f0f0', paddingBottom: '10px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h2 className="section-title">
               <FaKey color="#F2984A" /> เปลี่ยนรหัสผ่าน
             </h2>
 
             <form onSubmit={handleChangePassword}>
-              <label style={labelStyle}>รหัสผ่านเดิม</label>
+              <label className="input-label">รหัสผ่านเดิม</label>
               <input 
                 type="password" required
                 value={passwords.oldPassword} 
                 onChange={(e) => setPasswords({...passwords, oldPassword: e.target.value})} 
-                style={inputStyle} placeholder="••••••••"
+                className="input-field" placeholder="••••••••"
               />
 
-              <label style={labelStyle}>รหัสผ่านใหม่</label>
+              <label className="input-label">รหัสผ่านใหม่</label>
               <input 
                 type="password" required minLength="6"
                 value={passwords.newPassword} 
                 onChange={(e) => setPasswords({...passwords, newPassword: e.target.value})} 
-                style={inputStyle} placeholder="••••••••"
+                className="input-field" placeholder="••••••••"
               />
 
-              <label style={labelStyle}>ยืนยันรหัสผ่านใหม่</label>
+              <label className="input-label">ยืนยันรหัสผ่านใหม่</label>
               <input 
                 type="password" required minLength="6"
                 value={passwords.confirmPassword} 
                 onChange={(e) => setPasswords({...passwords, confirmPassword: e.target.value})} 
-                style={inputStyle} placeholder="••••••••"
+                className="input-field" placeholder="••••••••"
               />
 
-              <button type="submit" style={{ width: '100%', padding: '12px', background: '#003366', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', transition: '0.3s' }}>
+              <button type="submit" className="btn-submit">
                 อัปเดตรหัสผ่าน
               </button>
             </form>
