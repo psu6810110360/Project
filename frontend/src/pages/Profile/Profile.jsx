@@ -1,28 +1,34 @@
 // src/pages/Profile/Profile.jsx
-import React, { useState, useEffect, useRef } from 'react'; // 🟢 เพิ่ม useRef
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import { 
   FaUserCircle, FaEdit, FaSave, FaArrowLeft, 
-  FaKey, FaEnvelope, FaUserTag, FaCamera // 🟢 เพิ่ม FaCamera
+  FaKey, FaEnvelope, FaUserTag, FaCamera, FaPhone 
 } from 'react-icons/fa';
 
 export default function Profile() {
   const navigate = useNavigate();
-  const fileInputRef = useRef(null); // 🟢 เอาไว้อ้างอิง input file ที่ซ่อนอยู่
+  const fileInputRef = useRef(null);
   
-  // State สำหรับเก็บข้อมูลผู้ใช้
+  // State สำหรับเก็บข้อมูลผู้ใช้แบบแยกฟิลด์
   const [userData, setUserData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
+    phone: '',
     role: '',
     email: 'user@example.com',
-    profilePicture: null // 🟢 เพิ่ม state เก็บรูปล่าสุด
+    profilePicture: null
   });
 
-  // State สำหรับโหมดแก้ไข
+  // State สำหรับโหมดแก้ไขแบบ Object
   const [isEditing, setIsEditing] = useState(false);
-  const [editName, setEditName] = useState('');
+  const [editData, setEditData] = useState({
+    firstName: '',
+    lastName: '',
+    phone: ''
+  });
 
   // State สำหรับเปลี่ยนรหัสผ่าน
   const [passwords, setPasswords] = useState({
@@ -43,15 +49,25 @@ export default function Profile() {
 
         const data = response.data;
         
+        // จัดการกรณี backend ส่งมาเป็น name รวม หรือ แยก firstName/lastName
+        const fetchedFirstName = data.firstName || (data.name ? data.name.split(' ')[0] : '') || localStorage.getItem('userName') || 'ผู้ใช้งาน';
+        const fetchedLastName = data.lastName || (data.name && data.name.includes(' ') ? data.name.split(' ').slice(1).join(' ') : '') || '';
+        const fetchedPhone = data.phone || '';
+
         setUserData({
-          name: data.name || localStorage.getItem('userName') || 'ผู้ใช้งาน',
+          firstName: fetchedFirstName,
+          lastName: fetchedLastName,
+          phone: fetchedPhone,
           role: data.role === 'admin' ? 'ผู้ดูแลระบบ (Admin)' : 'นักเรียน (Student)',
           email: data.email || 'ยังไม่ระบุอีเมล',
-          // 🟢 ดึง path รูปมาจาก Backend ถ้ามี ให้เติม http... เข้าไปเพื่อให้แสดงผลได้
           profilePicture: data.profilePicture ? `http://localhost:3000${data.profilePicture}` : null
         });
         
-        setEditName(data.name || localStorage.getItem('userName'));
+        setEditData({
+          firstName: fetchedFirstName,
+          lastName: fetchedLastName,
+          phone: fetchedPhone
+        });
 
       } catch (error) {
         console.error('ดึงข้อมูลโปรไฟล์ล้มเหลว, ใช้ข้อมูลสำรอง', error);
@@ -60,17 +76,18 @@ export default function Profile() {
         
         setUserData(prev => ({
           ...prev,
-          name: storedName,
+          firstName: storedName,
+          lastName: '',
+          phone: '',
           role: storedRole === 'admin' ? 'ผู้ดูแลระบบ (Admin)' : 'นักเรียน (Student)'
         }));
-        setEditName(storedName);
+        setEditData({ firstName: storedName, lastName: '', phone: '' });
       }
     };
 
     fetchProfileData();
   }, []);
 
-  // 🟢 ฟังก์ชันสำหรับอัปโหลดรูปโปรไฟล์
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -80,7 +97,6 @@ export default function Profile() {
 
     try {
       const token = localStorage.getItem('token');
-      // แสดง Loading เล็กน้อย
       Swal.fire({ title: 'กำลังอัปโหลด...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
       const response = await axios.post('http://localhost:3000/users/upload-profile', formData, {
@@ -90,7 +106,6 @@ export default function Profile() {
         }
       });
 
-      // อัปเดตรูปในหน้าเว็บทันที
       const newPicUrl = `http://localhost:3000${response.data.profilePicture}`;
       setUserData(prev => ({ ...prev, profilePicture: newPicUrl }));
       
@@ -101,26 +116,42 @@ export default function Profile() {
     }
   };
 
-  // ฟังก์ชันบันทึกข้อมูลส่วนตัว (จำลอง)
+  // ฟังก์ชันบันทึกข้อมูลส่วนตัว (ยิง API จริง)
   const handleSaveProfile = async () => {
-    if (!editName.trim()) {
-      Swal.fire('แจ้งเตือน', 'กรุณากรอกชื่อของคุณ', 'warning');
+    if (!editData.firstName.trim() || !editData.lastName.trim()) {
+      Swal.fire('แจ้งเตือน', 'กรุณากรอกชื่อและนามสกุลให้ครบถ้วน', 'warning');
       return;
     }
 
     try {
-      // 💡 ตรงนี้สามารถเพิ่ม axios.patch() เพื่อส่งชื่อใหม่ไปอัปเดตที่ Backend ได้
-      localStorage.setItem('userName', editName);
-      setUserData({ ...userData, name: editName });
+      const token = localStorage.getItem('token');
+      
+      // ส่งข้อมูลไปอัปเดตที่ Backend
+      await axios.patch('http://localhost:3000/users/profile', {
+        firstName: editData.firstName,
+        lastName: editData.lastName,
+        phone: editData.phone
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // อัปเดตข้อมูลหน้าเว็บและ LocalStorage
+      localStorage.setItem('userName', `${editData.firstName} ${editData.lastName}`);
+      setUserData({ 
+        ...userData, 
+        firstName: editData.firstName, 
+        lastName: editData.lastName, 
+        phone: editData.phone 
+      });
       setIsEditing(false);
 
       Swal.fire({ icon: 'success', title: 'บันทึกข้อมูลสำเร็จ', showConfirmButton: false, timer: 1500 });
     } catch (error) {
-      Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้', 'error');
+      console.error('Save Profile Error:', error);
+      Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้ กรุณาตรวจสอบ Backend', 'error');
     }
   };
 
-  // ฟังก์ชันเปลี่ยนรหัสผ่าน
   const handleChangePassword = async (e) => {
     e.preventDefault();
     if (passwords.newPassword !== passwords.confirmPassword) {
@@ -171,10 +202,9 @@ export default function Profile() {
         {/* Header ส่วนหัวโปรไฟล์ */}
         <div style={{ background: '#003366', padding: '40px 20px', textAlign: 'center', color: '#fff', position: 'relative' }}>
           
-          {/* 🟢 ส่วนแสดงและอัปโหลดรูปภาพ */}
           <div 
             style={{ position: 'relative', display: 'inline-block', cursor: 'pointer', marginBottom: '15px' }} 
-            onClick={() => fileInputRef.current.click()} // กดแล้วไปทริกเกอร์ input file
+            onClick={() => fileInputRef.current.click()}
             title="คลิกเพื่อเปลี่ยนรูปโปรไฟล์"
           >
             {userData.profilePicture ? (
@@ -187,13 +217,11 @@ export default function Profile() {
               <FaUserCircle style={{ fontSize: '90px', color: '#F2984A', backgroundColor: '#fff', borderRadius: '50%', padding: '2px', border: '3px solid #fff' }} />
             )}
             
-            {/* ไอคอนกล้องเล็กๆ ทับอยู่มุมขวาล่าง */}
             <div style={{ position: 'absolute', bottom: '0px', right: '0px', background: '#fff', borderRadius: '50%', padding: '6px', color: '#003366', boxShadow: '0 2px 5px rgba(0,0,0,0.2)' }}>
               <FaCamera size={16} />
             </div>
           </div>
 
-          {/* 🟢 Input ไฟล์ที่ซ่อนไว้ */}
           <input 
             type="file" 
             accept="image/*" 
@@ -202,7 +230,8 @@ export default function Profile() {
             style={{ display: 'none' }} 
           />
 
-          <h1 style={{ margin: 0, fontSize: '24px' }}>{userData.name}</h1>
+          {/* แสดงชื่อและนามสกุล */}
+          <h1 style={{ margin: 0, fontSize: '24px' }}>{userData.firstName} {userData.lastName}</h1>
           <p style={{ margin: '5px 0 0 0', color: '#bbdefb', fontSize: '14px' }}><FaUserTag /> {userData.role}</p>
         </div>
 
@@ -216,19 +245,35 @@ export default function Profile() {
 
             {isEditing ? (
               <div style={{ background: '#f9f9f9', padding: '20px', borderRadius: '12px' }}>
-                <label style={labelStyle}>ชื่อ - นามสกุล (แสดงผล)</label>
+                <label style={labelStyle}>ชื่อจริง</label>
                 <input 
                   type="text" 
-                  value={editName} 
-                  onChange={(e) => setEditName(e.target.value)} 
+                  value={editData.firstName} 
+                  onChange={(e) => setEditData({...editData, firstName: e.target.value})} 
+                  style={inputStyle} 
+                />
+
+                <label style={labelStyle}>นามสกุล</label>
+                <input 
+                  type="text" 
+                  value={editData.lastName} 
+                  onChange={(e) => setEditData({...editData, lastName: e.target.value})} 
+                  style={inputStyle} 
+                />
+
+                <label style={labelStyle}>เบอร์โทรศัพท์</label>
+                <input 
+                  type="text" 
+                  value={editData.phone} 
+                  onChange={(e) => setEditData({...editData, phone: e.target.value})} 
                   style={inputStyle} 
                 />
                 
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                   <button onClick={handleSaveProfile} style={{ flex: 1, padding: '10px', background: '#28a745', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', gap: '5px' }}>
                     <FaSave /> บันทึก
                   </button>
-                  <button onClick={() => {setIsEditing(false); setEditName(userData.name);}} style={{ flex: 1, padding: '10px', background: '#ccc', color: '#333', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
+                  <button onClick={() => {setIsEditing(false); setEditData({firstName: userData.firstName, lastName: userData.lastName, phone: userData.phone});}} style={{ flex: 1, padding: '10px', background: '#ccc', color: '#333', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
                     ยกเลิก
                   </button>
                 </div>
@@ -237,7 +282,11 @@ export default function Profile() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 <div>
                   <div style={{ fontSize: '13px', color: '#888', marginBottom: '5px' }}>ชื่อ - นามสกุล</div>
-                  <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#333' }}>{userData.name}</div>
+                  <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#333' }}>{userData.firstName} {userData.lastName}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '13px', color: '#888', marginBottom: '5px' }}><FaPhone /> เบอร์โทรศัพท์</div>
+                  <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#333' }}>{userData.phone || '- ไม่ระบุ -'}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '13px', color: '#888', marginBottom: '5px' }}><FaEnvelope /> อีเมลบัญชีผู้ใช้</div>
@@ -254,7 +303,7 @@ export default function Profile() {
             )}
           </div>
 
-          {/* Section 2: เปลี่ยนรหัสผ่าน */}
+          {/* Section 2: เปลี่ยนรหัสผ่าน (เหมือนเดิม) */}
           <div>
             <h2 style={{ color: '#003366', fontSize: '20px', borderBottom: '2px solid #f0f0f0', paddingBottom: '10px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <FaKey color="#F2984A" /> เปลี่ยนรหัสผ่าน

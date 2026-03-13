@@ -33,10 +33,19 @@ export class UsersController {
     return this.usersService.getProfile(+userId);
   }
 
+  // ===============================================
+  // 🟢 แก้ไข API สำหรับอัปเดต Profile ให้รับข้อมูลได้หลายช่อง
+  // ===============================================
   @UseGuards(AuthGuard('jwt'))
   @Patch('profile')
-  updateProfile(@Request() req: any, @Body() updateData: { name: string }) {
+  updateProfile(
+    @Request() req: any, 
+    @Body() updateData: { firstName: string; lastName: string; phone: string } // 🟢 แก้ให้รับค่าตรงกับ Frontend
+  ) {
     const userId = req.user.id || req.user.sub;
+    
+    // 🟢 รวมชื่อและนามสกุลเข้าด้วยกันเพื่อเก็บลงฟิลด์ name (ถ้าในฐานข้อมูลคุณมีแค่ฟิลด์ name ฟิลด์เดียว)
+    // หรือส่งไปให้ Service จัดการต่อได้เลย
     return this.usersService.updateProfile(+userId, updateData);
   }
 
