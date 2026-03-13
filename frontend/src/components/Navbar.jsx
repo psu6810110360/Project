@@ -101,12 +101,15 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
         <div className={`nav-menu ${isMobileMenuOpen ? 'open' : ''}`}>
           <div className="nav-links">
 
-            <Link to="/our-students" onClick={() => setIsMobileMenuOpen(false)}>นักเรียนของเรา</Link>
-            <Link to="/contact" onClick={() => setIsMobileMenuOpen(false)}>
-              ติดต่อเรา
-            </Link>
+            {/* 🟢 จัดเรียงลำดับเมนูใหม่ตรงนี้ครับ */}
             <Link to="/courses" onClick={() => setIsMobileMenuOpen(false)}>
               คอร์สเรียน
+            </Link>
+            <Link to="/our-students" onClick={() => setIsMobileMenuOpen(false)}>
+              นักเรียนของเรา
+            </Link>
+            <Link to="/contact" onClick={() => setIsMobileMenuOpen(false)}>
+              ติดต่อเรา
             </Link>
 
             {/* 🔥 ADMIN MENU */}
@@ -210,7 +213,17 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
                     <Link 
                       to="/profile" 
                       onClick={() => { setIsProfileDropdownOpen(false); setIsMobileMenuOpen(false); }}
-                      style={{ padding: '12px 16px', color: '#003366', textDecoration: 'none', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}
+                      style={{ 
+                        fontFamily: '"Prompt", sans-serif',
+                        padding: '12px 16px', 
+                        color: '#003366', 
+                        textDecoration: 'none', 
+                        borderBottom: '1px solid #f0f0f0', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '8px', 
+                        fontWeight: 'bold' 
+                      }}
                       onMouseOver={(e) => e.target.style.backgroundColor = '#f9f9f9'}
                       onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
                     >
@@ -218,7 +231,20 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
                     </Link>
                     <button 
                       onClick={() => { setIsProfileDropdownOpen(false); handleLogout(); setIsMobileMenuOpen(false); }}
-                      style={{ padding: '12px 16px', color: '#dc3545', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', fontSize: '15px' }}
+                      style={{ 
+                        fontFamily: '"Prompt", sans-serif',
+                        padding: '12px 16px', 
+                        color: '#dc3545', 
+                        background: 'none', 
+                        border: 'none', 
+                        textAlign: 'left', 
+                        cursor: 'pointer', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '8px', 
+                        fontWeight: 'bold', 
+                        fontSize: '15px' 
+                      }}
                       onMouseOver={(e) => e.target.style.backgroundColor = '#fff5f5'}
                       onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
                     >

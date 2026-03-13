@@ -1,0 +1,210 @@
+/* src/pages/Admin/UserManagement.css */
+
+/* --- คอนเทนเนอร์หลัก --- */
+.user-management-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.manage-course-container {
+  max-width: 900px;
+  margin: 0 auto;
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* --- หัวข้อ (Header) --- */
+.page-title {
+  color: #003366;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.highlight-text {
+  color: #F2984A;
+}
+
+/* --- ส่วนของตารางและ Responsive --- */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px; /* บังคับไม่ให้ตารางหดเล็กเกินไปบนมือถือ */
+}
+
+.custom-table th {
+  background-color: #003366;
+  color: #fff;
+  text-align: left;
+  padding: 15px;
+  white-space: nowrap;
+}
+
+.custom-table td {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+/* --- ปุ่มต่างๆ --- */
+.btn-back {
+  background: none;
+  border: none;
+  color: #003366;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 20px;
+  padding: 0;
+}
+
+.btn-manage {
+  padding: 8px 15px;
+  background-color: #003366;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-delete {
+  padding: 8px 15px;
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.btn-add {
+  padding: 12px 25px;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* --- กล่องเพิ่มคอร์สเรียน --- */
+.add-course-box {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+.add-course-flex {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap; /* ทำให้ฟอร์มตกลงมาเรียงกันบนจอมือถือ */
+}
+
+.form-select, .form-input {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  min-width: 160px;
+}
+.form-select {
+  flex: 2;
+  min-width: 200px;
+}
+
+/* --- รายการคอร์สที่ครอบครอง --- */
+.course-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.course-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  background-color: #fff;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.course-item.expired {
+  border-color: #ffc107;
+  background-color: #fffbf0;
+}
+
+.course-title {
+  margin: 0;
+  color: #003366;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.badge-expired {
+  font-size: 12px;
+  background-color: #ffc107;
+  color: #333;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: normal;
+}
+
+.course-date {
+  margin: 4px 0 0 0;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* --- ปรับแต่งเพิ่มเติมสำหรับจอมือถือโดยเฉพาะ --- */
+@media screen and (max-width: 768px) {
+  .user-management-container, .manage-course-container {
+    padding: 15px;
+  }
+  
+  .btn-add {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .course-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .course-item .btn-delete {
+    width: 100%;
+    justify-content: center;
+    margin-top: 10px;
+  }
+}

@@ -1,7 +1,7 @@
 // OurStudentManagement.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import "./OurStudentManagement.css";
+import "./OurStudentManagement.css"; // 🟢 ดึงไฟล์ CSS มาใช้ตรงนี้
 
 function OurStudentManagement() {
   const [students, setStudents] = useState([]);
