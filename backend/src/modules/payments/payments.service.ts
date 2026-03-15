@@ -177,6 +177,19 @@ export class PaymentsService {
   }
 
   // ==========================================
+  // ✅ ให้แอดมิน ปฏิเสธ การขอต่ออายุคอร์ส
+  // ==========================================
+  async rejectRenewal(paymentId: number) {
+    const payment = await this.paymentRepo.findOneBy({ id: paymentId });
+    if (!payment) throw new NotFoundException('ไม่พบข้อมูล Payment');
+
+    payment.isRenewalRequested = false; // ยกเลิกสถานะคำขอ (แต่ไม่เพิ่มวันให้)
+    await this.paymentRepo.save(payment);
+
+    return { success: true, message: 'ปฏิเสธคำขอต่ออายุเรียบร้อยแล้ว' };
+  }
+
+  // ==========================================
   // 🔴 แก้ไข: ลบ enrollment คอร์สของ user ให้ลบจากตาราง UserCourse
   // ==========================================
   async deleteCourseEnrollment(userId: number, courseId: string) {

@@ -1,7 +1,10 @@
 // src/pages/Admin/UserManagement.jsx
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaTrash, FaPlus, FaArrowLeft, FaUserCog, FaClock, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
+import { 
+  FaTrash, FaPlus, FaArrowLeft, FaUserCog, 
+  FaClock, FaCheckCircle, FaExclamationCircle, FaTimesCircle // ✅ เพิ่มไอคอน FaTimesCircle
+} from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import './UserManagement.css'; 
 
@@ -47,7 +50,7 @@ export default function UserManagement() {
               paymentId: p.id,
               paymentStatus: 'approved',
               expiresAt: p.expiresAt || null,
-              isRenewalRequested: p.isRenewalRequested || false, // ✅ ดึงสถานะการขอต่ออายุมาด้วย
+              isRenewalRequested: p.isRenewalRequested || false,
             };
           })
           .filter(Boolean);
@@ -58,7 +61,6 @@ export default function UserManagement() {
         });
         const uniqueCourses = Array.from(courseMap.values());
 
-        // ✅ เช็คว่าผู้ใช้นี้มีคอร์สไหนที่ "รอการอนุมัติต่ออายุ" หรือไม่ (ถ้ามี = ให้แสดงจุดแจ้งเตือน)
         const hasRenewalRequest = uniqueCourses.some(c => c.isRenewalRequested);
 
         return { ...user, courses: uniqueCourses, hasRenewalRequest };
@@ -100,9 +102,7 @@ export default function UserManagement() {
     }
   };
 
-  // ==========================================
-  // ✅ ฟังก์ชันใหม่: ให้แอดมินอนุมัติการต่ออายุคอร์ส
-  // ==========================================
+  // ✅ ฟังก์ชันอนุมัติการต่ออายุ
   const handleApproveRenewal = async (courseTitle, paymentId) => {
     Swal.fire({
       title: `ต่ออายุคอร์ส`,
@@ -131,10 +131,41 @@ export default function UserManagement() {
           );
 
           Swal.fire('สำเร็จ!', `ต่ออายุเพิ่ม ${result.value} วัน เรียบร้อยแล้ว`, 'success');
-          await fetchInitialData(selectedUser.id); // โหลดข้อมูลใหม่
+          await fetchInitialData(selectedUser.id); 
         } catch (error) {
           console.error(error);
           Swal.fire('ผิดพลาด', 'ไม่สามารถต่ออายุได้', 'error');
+        }
+      }
+    });
+  };
+
+  // ✅ ฟังก์ชันใหม่: ปฏิเสธการต่ออายุ
+  const handleRejectRenewal = async (courseTitle, paymentId) => {
+    Swal.fire({
+      title: `ปฏิเสธการต่ออายุ?`,
+      text: `คุณต้องการปฏิเสธคำขอต่ออายุคอร์ส "${courseTitle}" ใช่หรือไม่?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#888',
+      confirmButtonText: 'ยืนยันการปฏิเสธ',
+      cancelButtonText: 'ยกเลิก',
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const token = localStorage.getItem('token');
+          await axios.post(
+            `http://localhost:3000/payments/admin/${paymentId}/reject-renewal`,
+            {},
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+
+          Swal.fire('ปฏิเสธแล้ว!', 'คำขอต่ออายุถูกยกเลิกแล้ว', 'success');
+          await fetchInitialData(selectedUser.id);
+        } catch (error) {
+          console.error(error);
+          Swal.fire('ผิดพลาด', 'ไม่สามารถปฏิเสธคำขอได้', 'error');
         }
       }
     });
@@ -254,7 +285,7 @@ export default function UserManagement() {
           )}
           {selectedUser.courses?.map((course) => {
             const expired = isExpired(course.expiresAt);
-            const needsRenewal = course.isRenewalRequested; // เช็คว่ามีการขอต่ออายุไหม
+            const needsRenewal = course.isRenewalRequested;
 
             return (
               <div key={course.id} className={`course-item ${expired ? 'expired' : ''}`} style={{ flexDirection: 'column', alignItems: 'stretch' }}>
@@ -281,18 +312,26 @@ export default function UserManagement() {
                   </button>
                 </div>
 
-                {/* ✅ ส่วนแจ้งเตือนและปุ่มอนุมัติการต่ออายุ (แสดงก็ต่อเมื่อ user กดขอมา) */}
+                {/* ✅ ส่วนแจ้งเตือน มีปุ่มอนุมัติ และ ปุ่มปฏิเสธ */}
                 {needsRenewal && (
-                  <div style={{ marginTop: '15px', backgroundColor: '#fff3cd', border: '1px solid #ffeeba', padding: '10px 15px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ marginTop: '15px', backgroundColor: '#fff3cd', border: '1px solid #ffeeba', padding: '10px 15px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
                     <div style={{ color: '#856404', fontSize: '14px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <FaExclamationCircle style={{ color: '#f59e0b' }}/> นักเรียนขอต่ออายุคอร์สนี้
                     </div>
-                    <button 
-                      onClick={() => handleApproveRenewal(course.title, course.paymentId)} 
-                      style={{ backgroundColor: '#28a745', color: '#fff', border: 'none', padding: '6px 15px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' }}
-                    >
-                      <FaCheckCircle /> อนุมัติต่ออายุ
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button 
+                        onClick={() => handleApproveRenewal(course.title, course.paymentId)} 
+                        style={{ backgroundColor: '#28a745', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px' }}
+                      >
+                        <FaCheckCircle /> อนุมัติ
+                      </button>
+                      <button 
+                        onClick={() => handleRejectRenewal(course.title, course.paymentId)} 
+                        style={{ backgroundColor: '#dc3545', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px' }}
+                      >
+                        <FaTimesCircle /> ปฏิเสธ
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -311,7 +350,6 @@ export default function UserManagement() {
         <FaUserCog /> ระบบจัดการผู้ใช้งาน
       </h2>
       
-      {/* ครอบตารางเพื่อให้เลื่อนได้บนจอมือถือ */}
       <div className="table-responsive">
         <table className="custom-table">
           <thead>
@@ -329,7 +367,6 @@ export default function UserManagement() {
                   {user.firstName || 'ไม่ระบุ'} {user.lastName || ''}{' '}
                   {user.role === 'admin' && '(Admin)'}
                   
-                  {/* ✅ แจ้งเตือนจุดแดง (ถ้ามีการขอต่ออายุ) */}
                   {user.hasRenewalRequest && (
                      <span style={{ marginLeft: '10px', backgroundColor: '#dc2626', color: '#fff', fontSize: '10px', padding: '3px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
                        ⚠️ มีคำขอต่ออายุ
@@ -344,11 +381,7 @@ export default function UserManagement() {
                 </td>
                 <td style={{ textAlign: 'center' }}>
                   <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                    <button 
-                      onClick={() => setSelectedUser(user)} 
-                      className="btn-manage"
-                      style={{ position: 'relative' }} // เผื่อทำจุดแดงทับปุ่ม
-                    >
+                    <button onClick={() => setSelectedUser(user)} className="btn-manage">
                       จัดการคอร์ส
                     </button>
                     {user.role !== 'admin' && (

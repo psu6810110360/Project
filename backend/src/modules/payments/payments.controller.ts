@@ -106,4 +106,9 @@ export class PaymentsController {
   ) {
     return this.paymentsService.approveRenewal(paymentId, days);
   }
+
+  @Post('admin/:paymentId/reject-renewal')
+  async rejectRenewal(@Param('paymentId') paymentId: number) {
+    return this.paymentsService.rejectRenewal(paymentId);
+  }
 }
