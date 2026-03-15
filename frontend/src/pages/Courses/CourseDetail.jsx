@@ -18,7 +18,7 @@ export default function CourseDetail() {
   const [isOwned, setIsOwned] = useState(false); 
   const [paymentStatus, setPaymentStatus] = useState(null); 
   const [isExpired, setIsExpired] = useState(false); 
-  const [isRenewalRequested, setIsRenewalRequested] = useState(false); // ✅ 1. เพิ่ม State เช็คว่ากดขอต่ออายุไปหรือยัง
+  const [isRenewalRequested, setIsRenewalRequested] = useState(false); 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,10 +41,23 @@ export default function CourseDetail() {
             });
 
             if (relatedPayments.length > 0) {
-              const approvedItem = relatedPayments.find(p => p.status && p.status.toLowerCase() === 'approved');
-              const pendingItem = relatedPayments.find(p => p.status && p.status.toLowerCase() === 'pending');
-              
-              const targetPayment = approvedItem || pendingItem || relatedPayments[0];
+              // ✅ จัดลำดับความสำคัญของบิลใหม่
+              const activeApprovedItem = relatedPayments.find(p => {
+                if (p.status?.toLowerCase() !== 'approved') return false;
+                if (!p.expiresAt) return true;
+                return new Date(p.expiresAt) >= new Date();
+              });
+
+              const pendingItem = relatedPayments.find(p => p.status?.toLowerCase() === 'pending');
+
+              const expiredApprovedItem = relatedPayments.find(p => {
+                if (p.status?.toLowerCase() !== 'approved') return false;
+                if (!p.expiresAt) return false;
+                return new Date(p.expiresAt) < new Date();
+              });
+
+              // 🟢 ลำดับ: ใช้งานได้ > รออนุมัติ > หมดอายุ > อื่นๆ
+              const targetPayment = activeApprovedItem || pendingItem || expiredApprovedItem || relatedPayments[0];
               const status = targetPayment.status ? targetPayment.status.toLowerCase() : 'pending';
               
               setPaymentStatus(status);
@@ -53,12 +66,15 @@ export default function CourseDetail() {
                 if (targetPayment.expiresAt && new Date(targetPayment.expiresAt) < new Date()) {
                   setIsExpired(true);
                   setIsOwned(false); 
-                  // ✅ 2. เช็คจาก Backend ว่าเคยกดขอต่ออายุคอร์สนี้ไปแล้วหรือยัง
                   setIsRenewalRequested(targetPayment.isRenewalRequested || false);
                 } else {
                   setIsOwned(true);
                   setIsExpired(false);
                 }
+              } else if (status === 'pending') {
+                // ✅ ถ้าเป็นบิลรออนุมัติ ให้ล้างค่าการหมดอายุทิ้ง
+                setIsExpired(false);
+                setIsOwned(false);
               }
             }
           } catch (err) {
@@ -112,7 +128,6 @@ export default function CourseDetail() {
     });
   };
 
-  // ✅ 3. ฟังก์ชันกดยิง API ไปขอต่ออายุ
   const requestRenewal = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -127,7 +142,7 @@ export default function CourseDetail() {
         confirmButtonColor: '#003366'
       });
       
-      setIsRenewalRequested(true); // เปลี่ยนปุ่มเป็นสถานะรออนุมัติทันที
+      setIsRenewalRequested(true);
     } catch (error) {
       console.error(error);
       Swal.fire('ผิดพลาด', 'ไม่สามารถส่งคำขอต่ออายุได้', 'error');
@@ -250,7 +265,6 @@ export default function CourseDetail() {
               </div>
             )}
 
-            {/* ✅ 4. โลจิกปุ่มกดแบบใหม่ */}
             {isOwned ? (
               <button className="btn-action btn-study" onClick={() => navigate('/my-classroom')}>
                 <FaUserGraduate /> เข้าสู่บทเรียนของคุณ

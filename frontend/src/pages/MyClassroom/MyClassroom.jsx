@@ -12,7 +12,7 @@ const MyClassroom = () => {
   const [loading, setLoading] = useState(true);
   const [showRevoked, setShowRevoked] = useState(false);
   const [showRejected, setShowRejected] = useState(false);  
-  const [showExpired, setShowExpired] = useState(false); // ✅ เพิ่ม State เปิด-ปิดคอร์สหมดอายุ
+  const [showExpired, setShowExpired] = useState(false); 
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -50,7 +50,6 @@ const MyClassroom = () => {
         const completedCount = payment.completedVideos ? payment.completedVideos.length : 0;
         const progressPercent = totalVideos > 0 ? Math.round((completedCount / totalVideos) * 100) : 0;
 
-        // ✅ เช็ควันหมดอายุ
         const expiresAt = payment.expiresAt ? new Date(payment.expiresAt) : null;
         const isExpired = expiresAt ? expiresAt < new Date() : false;
 
@@ -58,14 +57,34 @@ const MyClassroom = () => {
           ...payment.course,
           paymentStatus: payment.status ? payment.status.toLowerCase() : 'pending',
           progressPercent: progressPercent,
-          expiresAt: expiresAt, // ✅ เก็บวันหมดอายุ
-          isExpired: isExpired, // ✅ สถานะหมดอายุ
-          userCourseId: payment.id // เก็บ ID ไว้ใช้อ้างอิงตอนขอต่ออายุ
+          expiresAt: expiresAt, 
+          isExpired: isExpired, 
+          userCourseId: payment.id 
         };
       });
 
-      setMyCourses(coursesWithStatus);
-      localStorage.setItem('myCourses', JSON.stringify(coursesWithStatus));
+      // ✅ กรองให้เหลือแค่สถานะล่าสุดของคอร์สนั้นๆ ไม่ให้แสดงการ์ดซ้ำ
+      const uniqueCoursesMap = new Map();
+
+      coursesWithStatus.forEach(course => {
+        const existing = uniqueCoursesMap.get(course.id);
+        
+        const getPriority = (c) => {
+          if (c.paymentStatus === 'approved' && !c.isExpired) return 1; // ใช้งานได้
+          if (c.paymentStatus === 'pending') return 2; // รออนุมัติ
+          if (c.paymentStatus === 'approved' && c.isExpired) return 3; // หมดอายุ
+          return 4; // ระงับ/ปฏิเสธ
+        };
+
+        if (!existing || getPriority(course) < getPriority(existing)) {
+          uniqueCoursesMap.set(course.id, course);
+        }
+      });
+
+      const finalCourses = Array.from(uniqueCoursesMap.values());
+
+      setMyCourses(finalCourses);
+      localStorage.setItem('myCourses', JSON.stringify(finalCourses));
     } catch (error) {
       console.error('❌ โหลดข้อมูลห้องเรียนล้มเหลว:', error);
       setMyCourses([]);
@@ -74,32 +93,23 @@ const MyClassroom = () => {
     }
   };
 
-  // ===============================
-  // 🔎 แยกคอร์สตามสถานะแบบแม่นยำ (เพิ่มหมวดหมู่หมดอายุ)
-  // ===============================
   const pendingCourses = myCourses.filter(c => c.paymentStatus === 'pending');
-  // ✅ ถ้า approved แต่ isExpired = true จะไม่แสดงในช่องคอร์สของฉัน
   const approvedCourses = myCourses.filter(c => c.paymentStatus === 'approved' && !c.isExpired);
   const rejectedCourses = myCourses.filter(c => c.paymentStatus === 'rejected');
   const revokedCourses = myCourses.filter(c => ['revoked', 'suspended', 'canceled'].includes(c.paymentStatus));
-  // ✅ หมวดหมู่ใหม่: หมดอายุแล้ว
   const expiredCourses = myCourses.filter(c => c.paymentStatus === 'approved' && c.isExpired);
 
-  // ฟังก์ชันแปลงวันที่ให้สวยงาม
   const formatDate = (date) => {
     if (!date) return 'ตลอดชีพ';
     return date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
-  // ===============================
-  // 🎴 Course Card Component
-  // ===============================
   const CourseCard = ({ course }) => {
     const isApproved = course.paymentStatus === 'approved' && !course.isExpired;
     const isPending = course.paymentStatus === 'pending';
     const isRejected = course.paymentStatus === 'rejected';
     const isRevoked = ['revoked', 'suspended', 'canceled'].includes(course.paymentStatus);
-    const isExpired = course.isExpired; // ✅ เช็คว่าบัตรนี้หมดอายุไหม
+    const isExpired = course.isExpired; 
 
     return (
       <div className="course-card" style={{ position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
@@ -141,7 +151,6 @@ const MyClassroom = () => {
               </div>
             )}
 
-            {/* ✅ แสดงวันหมดอายุสำหรับคอร์สที่ยังเรียนได้ */}
             {isApproved && (
               <div style={{ background: '#eff6ff', color: '#1d4ed8', padding: '8px 10px', borderRadius: '6px', fontSize: '12px', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '5px' }}>
                 <FaCalendarAlt /> หมดอายุ: <strong>{formatDate(course.expiresAt)}</strong>
@@ -150,7 +159,6 @@ const MyClassroom = () => {
 
             {isApproved && (
               <div>
-                {/* 🟢 หลอด Progress Bar */}
                 <div style={{ marginBottom: '15px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#666', marginBottom: '5px' }}>
                     <span>ความคืบหน้า</span>
@@ -161,7 +169,6 @@ const MyClassroom = () => {
                   </div>
                 </div>
 
-                {/* 🔵 ปุ่มเข้าเรียน */}
                 <Link to={`/attend/${course.id}`} style={{ textDecoration: 'none', display: 'block' }}>
                   <button style={{ width: '100%', padding: '10px', backgroundColor: '#003366', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                     <FaPlayCircle /> เข้าเรียน
@@ -170,7 +177,6 @@ const MyClassroom = () => {
               </div>
             )}
 
-            {/* ✅ แสดงปุ่มต่ออายุสำหรับคอร์สที่หมดอายุแล้ว */}
             {isExpired && (
               <div>
                 <div style={{ background: '#fee2e2', color: '#dc2626', padding: '8px 10px', borderRadius: '6px', fontSize: '12px', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '5px', justifyContent: 'center' }}>
@@ -178,7 +184,7 @@ const MyClassroom = () => {
                 </div>
                 
                 <button 
-                  onClick={() => navigate(`/course/${course.id}`)} // กดแล้วพากลับไปหน้าซื้อคอร์ส
+                  onClick={() => navigate(`/course/${course.id}`)} 
                   style={{ width: '100%', padding: '10px', backgroundColor: '#ea580c', color: 'white', border: 'none', borderRadius: '8px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                 >
                   <FaHistory /> ต่ออายุคอร์สเรียน
@@ -231,7 +237,6 @@ const MyClassroom = () => {
             </div>
           )}
 
-          {/* ✅ หมวดหมู่ใหม่: หมดอายุ (พับเก็บได้) */}
           {expiredCourses.length > 0 && (
             <div style={{ marginTop: '20px', marginBottom: '20px' }}>
               <div 
@@ -254,7 +259,6 @@ const MyClassroom = () => {
             </div>
           )}
 
-          {/* ถูกระงับสิทธิ์ */}
           {revokedCourses.length > 0 && (
             <div style={{ marginTop: '20px', marginBottom: '20px' }}>
               <div 
@@ -277,7 +281,6 @@ const MyClassroom = () => {
             </div>
           )}
 
-          {/* ถูกปฏิเสธ */}
           {rejectedCourses.length > 0 && (
             <div style={{ marginTop: '20px', marginBottom: '20px' }}>
               <div 
