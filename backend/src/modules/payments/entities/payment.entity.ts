@@ -56,4 +56,7 @@ export class Payment {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @Column({ type: 'boolean', default: false })
+  isRenewalRequested: boolean;
 }

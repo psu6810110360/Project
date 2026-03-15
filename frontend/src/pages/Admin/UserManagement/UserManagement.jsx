@@ -1,9 +1,9 @@
 // src/pages/Admin/UserManagement.jsx
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaTrash, FaPlus, FaArrowLeft, FaUserCog, FaClock } from 'react-icons/fa';
+import { FaTrash, FaPlus, FaArrowLeft, FaUserCog, FaClock, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import Swal from 'sweetalert2';
-import './UserManagement.css'; // ดึงไฟล์ CSS มาใช้ตรงนี้
+import './UserManagement.css'; 
 
 export default function UserManagement() {
   const [users, setUsers] = useState([]);
@@ -47,6 +47,7 @@ export default function UserManagement() {
               paymentId: p.id,
               paymentStatus: 'approved',
               expiresAt: p.expiresAt || null,
+              isRenewalRequested: p.isRenewalRequested || false, // ✅ ดึงสถานะการขอต่ออายุมาด้วย
             };
           })
           .filter(Boolean);
@@ -57,7 +58,10 @@ export default function UserManagement() {
         });
         const uniqueCourses = Array.from(courseMap.values());
 
-        return { ...user, courses: uniqueCourses };
+        // ✅ เช็คว่าผู้ใช้นี้มีคอร์สไหนที่ "รอการอนุมัติต่ออายุ" หรือไม่ (ถ้ามี = ให้แสดงจุดแจ้งเตือน)
+        const hasRenewalRequest = uniqueCourses.some(c => c.isRenewalRequested);
+
+        return { ...user, courses: uniqueCourses, hasRenewalRequest };
       });
 
       setUsers(processedUsers);
@@ -94,6 +98,46 @@ export default function UserManagement() {
       const msg = error.response?.data?.message || 'ไม่สามารถเพิ่มคอร์สได้';
       Swal.fire('เกิดข้อผิดพลาด', msg, 'error');
     }
+  };
+
+  // ==========================================
+  // ✅ ฟังก์ชันใหม่: ให้แอดมินอนุมัติการต่ออายุคอร์ส
+  // ==========================================
+  const handleApproveRenewal = async (courseTitle, paymentId) => {
+    Swal.fire({
+      title: `ต่ออายุคอร์ส`,
+      text: `คุณต้องการต่ออายุให้คอร์ส "${courseTitle}" เป็นเวลากี่วัน?`,
+      input: 'number',
+      inputPlaceholder: 'ระบุจำนวนวัน (เช่น 30)',
+      icon: 'info',
+      showCancelButton: true,
+      confirmButtonColor: '#28a745',
+      cancelButtonColor: '#888',
+      confirmButtonText: 'ยืนยันการต่ออายุ',
+      cancelButtonText: 'ยกเลิก',
+      inputValidator: (value) => {
+        if (!value || value <= 0) {
+          return 'กรุณาระบุจำนวนวันที่มากกว่า 0 ครับ!';
+        }
+      }
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const token = localStorage.getItem('token');
+          await axios.post(
+            `http://localhost:3000/payments/admin/${paymentId}/approve-renewal`,
+            { days: parseInt(result.value) },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+
+          Swal.fire('สำเร็จ!', `ต่ออายุเพิ่ม ${result.value} วัน เรียบร้อยแล้ว`, 'success');
+          await fetchInitialData(selectedUser.id); // โหลดข้อมูลใหม่
+        } catch (error) {
+          console.error(error);
+          Swal.fire('ผิดพลาด', 'ไม่สามารถต่ออายุได้', 'error');
+        }
+      }
+    });
   };
 
   const handleDeleteCourse = (course) => {
@@ -210,26 +254,48 @@ export default function UserManagement() {
           )}
           {selectedUser.courses?.map((course) => {
             const expired = isExpired(course.expiresAt);
+            const needsRenewal = course.isRenewalRequested; // เช็คว่ามีการขอต่ออายุไหม
+
             return (
-              <div key={course.id} className={`course-item ${expired ? 'expired' : ''}`}>
-                <div>
-                  <h4 className="course-title">
-                    {course.title}
-                    {expired && <span className="badge-expired">⏰ หมดอายุแล้ว</span>}
-                  </h4>
-                  {course.expiresAt ? (
-                    <p className="course-date" style={{ color: expired ? '#e67e22' : '#888' }}>
-                      <FaClock size={12} />
-                      หมดอายุ: {new Date(course.expiresAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}
-                    </p>
-                  ) : (
-                    <p className="course-date" style={{ color: '#aaa' }}>ไม่มีวันหมดอายุ</p>
-                  )}
+              <div key={course.id} className={`course-item ${expired ? 'expired' : ''}`} style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+                
+                {/* ข้อมูลคอร์ส */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h4 className="course-title">
+                      {course.title}
+                      {expired && <span className="badge-expired">⏰ หมดอายุแล้ว</span>}
+                    </h4>
+                    {course.expiresAt ? (
+                      <p className="course-date" style={{ color: expired ? '#e67e22' : '#888' }}>
+                        <FaClock size={12} />
+                        หมดอายุ: {new Date(course.expiresAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}
+                      </p>
+                    ) : (
+                      <p className="course-date" style={{ color: '#aaa' }}>ไม่มีวันหมดอายุ</p>
+                    )}
+                  </div>
+
+                  <button onClick={() => handleDeleteCourse(course)} className="btn-delete">
+                    <FaTrash /> ลบคอร์ส
+                  </button>
                 </div>
 
-                <button onClick={() => handleDeleteCourse(course)} className="btn-delete">
-                  <FaTrash /> ลบคอร์ส
-                </button>
+                {/* ✅ ส่วนแจ้งเตือนและปุ่มอนุมัติการต่ออายุ (แสดงก็ต่อเมื่อ user กดขอมา) */}
+                {needsRenewal && (
+                  <div style={{ marginTop: '15px', backgroundColor: '#fff3cd', border: '1px solid #ffeeba', padding: '10px 15px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ color: '#856404', fontSize: '14px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <FaExclamationCircle style={{ color: '#f59e0b' }}/> นักเรียนขอต่ออายุคอร์สนี้
+                    </div>
+                    <button 
+                      onClick={() => handleApproveRenewal(course.title, course.paymentId)} 
+                      style={{ backgroundColor: '#28a745', color: '#fff', border: 'none', padding: '6px 15px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' }}
+                    >
+                      <FaCheckCircle /> อนุมัติต่ออายุ
+                    </button>
+                  </div>
+                )}
+
               </div>
             );
           })}
@@ -262,6 +328,13 @@ export default function UserManagement() {
                 <td style={{ whiteSpace: 'nowrap' }}>
                   {user.firstName || 'ไม่ระบุ'} {user.lastName || ''}{' '}
                   {user.role === 'admin' && '(Admin)'}
+                  
+                  {/* ✅ แจ้งเตือนจุดแดง (ถ้ามีการขอต่ออายุ) */}
+                  {user.hasRenewalRequest && (
+                     <span style={{ marginLeft: '10px', backgroundColor: '#dc2626', color: '#fff', fontSize: '10px', padding: '3px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
+                       ⚠️ มีคำขอต่ออายุ
+                     </span>
+                  )}
                 </td>
                 <td>{user.email}</td>
                 <td style={{ whiteSpace: 'nowrap' }}>
@@ -271,7 +344,11 @@ export default function UserManagement() {
                 </td>
                 <td style={{ textAlign: 'center' }}>
                   <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                    <button onClick={() => setSelectedUser(user)} className="btn-manage">
+                    <button 
+                      onClick={() => setSelectedUser(user)} 
+                      className="btn-manage"
+                      style={{ position: 'relative' }} // เผื่อทำจุดแดงทับปุ่ม
+                    >
                       จัดการคอร์ส
                     </button>
                     {user.role !== 'admin' && (

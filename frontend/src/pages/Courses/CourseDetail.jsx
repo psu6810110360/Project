@@ -5,7 +5,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { 
   FaClock, FaUserGraduate, FaChevronLeft, FaChevronRight, 
-  FaShoppingCart, FaArrowLeft, FaPlayCircle, FaCheckCircle 
+  FaShoppingCart, FaArrowLeft, FaPlayCircle, FaCheckCircle, FaHistory 
 } from 'react-icons/fa';
 import './CourseDetail.css'; 
 
@@ -17,7 +17,8 @@ export default function CourseDetail() {
   const [activeMedia, setActiveMedia] = useState(0); 
   const [isOwned, setIsOwned] = useState(false); 
   const [paymentStatus, setPaymentStatus] = useState(null); 
-  const [isExpired, setIsExpired] = useState(false); // ✅ 1. เพิ่ม State สำหรับเช็คคอร์สหมดอายุ
+  const [isExpired, setIsExpired] = useState(false); 
+  const [isRenewalRequested, setIsRenewalRequested] = useState(false); // ✅ 1. เพิ่ม State เช็คว่ากดขอต่ออายุไปหรือยัง
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,10 +50,11 @@ export default function CourseDetail() {
               setPaymentStatus(status);
               
               if (status === 'approved') {
-                // ✅ 2. เช็คว่าคอร์สหมดอายุหรือยัง (เอาเวลาปัจจุบัน เทียบกับ expiresAt)
                 if (targetPayment.expiresAt && new Date(targetPayment.expiresAt) < new Date()) {
                   setIsExpired(true);
-                  setIsOwned(false); // หมดอายุแล้ว ไม่ให้กดเข้าเรียน
+                  setIsOwned(false); 
+                  // ✅ 2. เช็คจาก Backend ว่าเคยกดขอต่ออายุคอร์สนี้ไปแล้วหรือยัง
+                  setIsRenewalRequested(targetPayment.isRenewalRequested || false);
                 } else {
                   setIsOwned(true);
                   setIsExpired(false);
@@ -108,6 +110,28 @@ export default function CourseDetail() {
       showConfirmButton: false,
       timer: 2000
     });
+  };
+
+  // ✅ 3. ฟังก์ชันกดยิง API ไปขอต่ออายุ
+  const requestRenewal = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`http://localhost:3000/payments/${id}/request-renewal`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      Swal.fire({
+        icon: 'success',
+        title: 'ส่งคำขอสำเร็จ!',
+        text: 'ระบบได้ส่งคำขอต่ออายุไปยังแอดมินแล้ว กรุณารอการอนุมัติ',
+        confirmButtonColor: '#003366'
+      });
+      
+      setIsRenewalRequested(true); // เปลี่ยนปุ่มเป็นสถานะรออนุมัติทันที
+    } catch (error) {
+      console.error(error);
+      Swal.fire('ผิดพลาด', 'ไม่สามารถส่งคำขอต่ออายุได้', 'error');
+    }
   };
 
   return (
@@ -193,7 +217,6 @@ export default function CourseDetail() {
               
               <div className="feature-item">
                 <FaCheckCircle style={{ color: '#28a745' }} /> 
-                {/* ✅ 3. แปลงค่าวินาที มาคำนวณโชว์สวยๆ */}
                 <span>
                   {(() => {
                     if (!course.accessDurationSeconds) return 'เข้าเรียนได้ตลอดชีพ';
@@ -214,10 +237,10 @@ export default function CourseDetail() {
               </div>
             </div>
 
-            {/* ✅ 4. โชว์กรอบแดงเตือนถ้าคอร์สหมดอายุ */}
             {(isRevoked || isExpired) && (
               <div className="alert-box alert-revoked" style={{ backgroundColor: '#fee2e2', color: '#dc2626', padding: '12px', borderRadius: '8px', marginBottom: '15px' }}>
-                <strong>🚫 คอร์สนี้หมดอายุ / หมดสิทธิ์เรียนแล้ว</strong><br/>คุณสามารถกดเพิ่มลงตะกร้าเพื่อสั่งซื้อใหม่ได้อีกครั้ง
+                <strong>🚫 คอร์สนี้หมดอายุ / หมดสิทธิ์เรียนแล้ว</strong><br/>
+                คุณสามารถกดสั่งซื้อใหม่ หรือขอต่ออายุ(หากแอดมินอนุญาต)
               </div>
             )}
 
@@ -227,6 +250,7 @@ export default function CourseDetail() {
               </div>
             )}
 
+            {/* ✅ 4. โลจิกปุ่มกดแบบใหม่ */}
             {isOwned ? (
               <button className="btn-action btn-study" onClick={() => navigate('/my-classroom')}>
                 <FaUserGraduate /> เข้าสู่บทเรียนของคุณ
@@ -235,9 +259,24 @@ export default function CourseDetail() {
               <button className="btn-action btn-pending" disabled>
                 <FaClock /> รอการอนุมัติ
               </button>
+            ) : isExpired ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {isRenewalRequested ? (
+                  <button className="btn-action" disabled style={{ backgroundColor: '#f59e0b', color: '#fff', cursor: 'not-allowed', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: 'bold' }}>
+                    <FaClock /> รอแอดมินอนุมัติการต่ออายุ
+                  </button>
+                ) : (
+                  <button className="btn-action" onClick={requestRenewal} style={{ backgroundColor: '#ea580c', color: '#fff', cursor: 'pointer', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
+                    <FaHistory /> ขอต่ออายุคอร์สเรียน
+                  </button>
+                )}
+                <button className="btn-action btn-add-cart" onClick={addToCart}>
+                  <FaShoppingCart /> ซื้อคอร์สนี้อีกครั้ง
+                </button>
+              </div>
             ) : (
               <button className="btn-action btn-add-cart" onClick={addToCart}>
-                <FaShoppingCart /> {(isRevoked || isExpired) ? 'ซื้อคอร์สนี้อีกครั้ง' : 'เพิ่มลงตะกร้าสินค้า'}
+                <FaShoppingCart /> {isRevoked ? 'ซื้อคอร์สนี้อีกครั้ง' : 'เพิ่มลงตะกร้าสินค้า'}
               </button>
             )}
           </div>

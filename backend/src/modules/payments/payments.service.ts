@@ -139,6 +139,44 @@ export class PaymentsService {
   }
 
   // ==========================================
+  // ✅ 1. ให้ผู้ใช้กดขอต่ออายุคอร์ส
+  // ==========================================
+  async requestRenewal(userId: number, courseId: string) {
+    const payment = await this.paymentRepo.findOne({
+      where: { user: { id: userId }, course: { id: courseId }, status: PaymentStatus.APPROVED }
+    });
+
+    if (!payment) throw new NotFoundException('ไม่พบประวัติการซื้อคอร์สนี้');
+
+    payment.isRenewalRequested = true;
+    await this.paymentRepo.save(payment);
+
+    return { success: true, message: 'ส่งคำขอต่ออายุเรียบร้อยแล้ว' };
+  }
+
+  // ==========================================
+  // ✅ 2. ให้แอดมินกดยืนยันต่ออายุ และเพิ่มจำนวนวัน
+  // ==========================================
+  async approveRenewal(paymentId: number, addDays: number) {
+    const payment = await this.paymentRepo.findOneBy({ id: paymentId });
+    if (!payment) throw new NotFoundException('ไม่พบข้อมูล Payment');
+
+    const now = new Date();
+    // ถ้าของเก่ายังไม่หมดเวลา ให้บวกเวลาเพิ่มจากของเดิม, ถ้าหมดไปแล้ว ให้เริ่มนับจากวันนี้
+    const baseDate = (payment.expiresAt && payment.expiresAt > now) ? payment.expiresAt : now;
+    
+    // แปลงวันเป็นมิลลิวินาที (1 วัน = 86400000 ms)
+    const newExpiresAt = new Date(baseDate.getTime() + (addDays * 86400 * 1000));
+
+    payment.expiresAt = newExpiresAt;
+    payment.isRenewalRequested = false; // รีเซ็ตสถานะคำขอ
+    
+    await this.paymentRepo.save(payment);
+
+    return { success: true, message: `ต่ออายุเพิ่ม ${addDays} วัน สำเร็จ!`, newExpiresAt };
+  }
+
+  // ==========================================
   // 🔴 แก้ไข: ลบ enrollment คอร์สของ user ให้ลบจากตาราง UserCourse
   // ==========================================
   async deleteCourseEnrollment(userId: number, courseId: string) {

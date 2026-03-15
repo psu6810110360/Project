@@ -91,4 +91,19 @@ export class PaymentsController {
   ) {
     return this.paymentsService.markVideoAsCompleted(req.user.id, body.courseId, body.videoId);
   }
+
+  @Post(':courseId/request-renewal')
+  @UseGuards(JwtAuthGuard)
+  async requestRenewal(@Req() req, @Param('courseId') courseId: string) {
+    return this.paymentsService.requestRenewal(req.user.id, courseId);
+  }
+
+  @Post('admin/:paymentId/approve-renewal')
+  // @UseGuards(JwtAuthGuard, RolesGuard) // ใช้ Guard ของแอดมินถ้ามี
+  async approveRenewal(
+    @Param('paymentId') paymentId: number, 
+    @Body('days') days: number
+  ) {
+    return this.paymentsService.approveRenewal(paymentId, days);
+  }
 }
