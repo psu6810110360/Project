@@ -96,9 +96,9 @@ export class PaymentsService {
 
     // 1. คำนวณวันหมดอายุ (ดึงค่าจาก Course ถ้าไม่ได้ส่งมา)
     let finalExpiresAt = customExpiresAt || null;
-    if (!finalExpiresAt && payment.course.accessDurationDays && payment.course.accessDurationDays > 0) {
+    if (!finalExpiresAt && payment.course.accessDurationSeconds && payment.course.accessDurationSeconds > 0) {
       finalExpiresAt = new Date();
-      finalExpiresAt.setDate(finalExpiresAt.getDate() + payment.course.accessDurationDays);
+      finalExpiresAt.setSeconds(finalExpiresAt.getSeconds() + payment.course.accessDurationSeconds);
     }
 
     // 2. อัปเดตสถานะ Payment

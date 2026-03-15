@@ -136,9 +136,10 @@ export class UsersService implements OnModuleInit {
     
     // ✅ คำนวณวันหมดอายุ (เปลี่ยนชื่อตัวแปรเพื่อไม่ให้ซ้ำกับ param ด้านบน)
     let finalExpiresAt = customExpiresAt || null;
-    if (!finalExpiresAt && course.accessDurationDays && course.accessDurationDays > 0) {
+    if (!finalExpiresAt && course.accessDurationSeconds && course.accessDurationSeconds > 0) {
       finalExpiresAt = new Date();
-      finalExpiresAt.setDate(finalExpiresAt.getDate() + course.accessDurationDays);
+      // ใช้ setSeconds แทน setDate
+      finalExpiresAt.setSeconds(finalExpiresAt.getSeconds() + course.accessDurationSeconds);
     }
 
     // ✅ สร้าง Record ในตารางเชื่อมใหม่ (UserCourse)

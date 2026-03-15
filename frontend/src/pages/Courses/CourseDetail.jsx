@@ -190,10 +190,27 @@ export default function CourseDetail() {
               <div className="feature-item">
                 <FaClock style={{ color: '#F2984A' }} /> <span>เวลาเรียนทั้งหมด: {course.classTime || 'ไม่จำกัด'}</span>
               </div>
+              
               <div className="feature-item">
                 <FaCheckCircle style={{ color: '#28a745' }} /> 
-                {/* ✅ 3. เปลี่ยนให้ดึงข้อมูล accessDurationDays มาโชว์ */}
-                <span>{course.accessDurationDays ? `เข้าเรียนได้ ${course.accessDurationDays} วัน` : 'เข้าเรียนได้ตลอดชีพ'}</span>
+                {/* ✅ 3. แปลงค่าวินาที มาคำนวณโชว์สวยๆ */}
+                <span>
+                  {(() => {
+                    if (!course.accessDurationSeconds) return 'เข้าเรียนได้ตลอดชีพ';
+                    const d = Math.floor(course.accessDurationSeconds / 86400);
+                    const h = Math.floor((course.accessDurationSeconds % 86400) / 3600);
+                    const m = Math.floor((course.accessDurationSeconds % 3600) / 60);
+                    const s = course.accessDurationSeconds % 60;
+                    
+                    let timeText = 'เข้าเรียนได้ ';
+                    if (d > 0) timeText += `${d} วัน `;
+                    if (h > 0) timeText += `${h} ชั่วโมง `;
+                    if (m > 0) timeText += `${m} นาที `;
+                    if (s > 0) timeText += `${s} วินาที`;
+                    
+                    return timeText.trim();
+                  })()}
+                </span>
               </div>
             </div>
 

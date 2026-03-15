@@ -62,7 +62,7 @@ export class Course {
   userCourses: UserCourse[];
 
   @Column({ type: 'int', nullable: true })
-  accessDurationDays: number;
+  accessDurationSeconds: number;
 
   
   

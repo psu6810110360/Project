@@ -14,12 +14,20 @@ export default function CourseForm() {
   const [activeTab, setActiveTab] = useState(0);
 
   // ==========================================
-  // 📌 State (✅ เพิ่ม accessDurationDays)
+  // 📌 State 
   // ==========================================
   const [formData, setFormData] = useState({
     title: '', shortDescription: '', isActive: true, originalPrice: '', salePrice: '',
-    suitableFor: '', classTime: '', accessDurationDays: '', 
+    suitableFor: '', classTime: ''
   });
+
+  // ✅ State สำหรับเก็บ วัน, ชม., นาที, วิ. แยกกัน
+  const [duration, setDuration] = useState({ days: '', hours: '', minutes: '', seconds: '' });
+  
+  // ✅ ฟังก์ชันรับค่าเปลี่ยนเวลา
+  const handleDurationChange = (e) => {
+    setDuration({ ...duration, [e.target.name]: e.target.value });
+  };
 
   const [courseContents, setCourseContents] = useState([{ title: '', lessons: '', problems: '' }]);
   const [coverImage, setCoverImage] = useState(null);
@@ -50,9 +58,7 @@ export default function CourseForm() {
           originalPrice: course.originalPrice || '',
           salePrice: course.salePrice || '',
           suitableFor: course.suitableFor || '',
-          classTime: course.classTime || '',
-          // ✅ ดึงข้อมูลจำนวนวันหมดอายุมาแสดง (ถ้ามี)
-          accessDurationDays: course.accessDurationDays || '', 
+          classTime: course.classTime || ''
         });
 
         if (course.courseContents) {
@@ -66,6 +72,21 @@ export default function CourseForm() {
             image: null,
             previewUrl: inst.imageUrl ? `http://localhost:3000${inst.imageUrl}` : ''
           })));
+        }
+
+        // ✅ ดึงค่าวินาทีจากฐานข้อมูลมาแยกใส่ช่อง วัน, ชม., นาที, วิ.
+        if (course.accessDurationSeconds) {
+          const totalSecs = parseInt(course.accessDurationSeconds, 10);
+          const d = Math.floor(totalSecs / 86400);
+          const h = Math.floor((totalSecs % 86400) / 3600);
+          const m = Math.floor((totalSecs % 3600) / 60);
+          const s = totalSecs % 60;
+          setDuration({
+            days: d > 0 ? d : '',
+            hours: h > 0 ? h : '',
+            minutes: m > 0 ? m : '',
+            seconds: s > 0 ? s : ''
+          });
         }
 
         if (course.videos) {
@@ -90,22 +111,32 @@ export default function CourseForm() {
   };
 
   const handleSubmitDetails = async (e) => {
-    e.preventDefault();
-    const data = new FormData();
-    
-    // ✅ จัดการส่งข้อมูลเข้า Backend (แยกเช็ค accessDurationDays ป้องกัน error ถ้าไม่ได้กรอก)
+    e.preventDefault(); // ✅ ป้องกันหน้าเว็บรีเฟรช
+    const data = new FormData(); // ✅ สร้าง FormData สำหรับส่งไฟล์
+
+    // จัดการข้อมูล Text ปกติ
     Object.keys(formData).forEach(key => {
       if (key === 'isActive') {
         data.append(key, formData.isActive ? 'true' : 'false');
-      } else if (key === 'accessDurationDays') {
-        if (formData[key]) {
-          data.append(key, formData[key]);
-        }
-      } else {
+      } else { 
         data.append(key, formData[key]);
       }
     });
 
+    // ✅ รวบยอดเวลาที่กรอกทั้งหมดให้กลายเป็น "วินาทีรวม" ก่อนส่ง
+    const totalSeconds = 
+      (parseInt(duration.days || 0) * 86400) + 
+      (parseInt(duration.hours || 0) * 3600) + 
+      (parseInt(duration.minutes || 0) * 60) + 
+      parseInt(duration.seconds || 0);
+
+    if (totalSeconds > 0) {
+      data.append('accessDurationSeconds', totalSeconds);
+    } else {
+      data.append('accessDurationSeconds', '');
+    }
+
+    // ✅ แนบข้อมูลอื่นๆ (คอร์สย่อย, รูปภาพปก, วิดีโอตัวอย่าง, และครูผู้สอน)
     data.append('courseContents', JSON.stringify(courseContents));
     if (coverImage) data.append('coverImage', coverImage);
     if (sampleVideo) data.append('sampleVideo', sampleVideo);
@@ -311,27 +342,28 @@ export default function CourseForm() {
 
           <hr className="divider" />
 
-          {/* ✅ แถวใหม่ที่เพิ่มช่อง "ระยะเวลาเรียน (วัน)" */}
+          {/* ✅ แถวใหม่ที่ปรับช่องกรอกเวลาเป็น 4 ช่อง */}
           <div className="form-row">
-            <div className="form-col">
+            <div className="form-col" style={{ flex: 1 }}>
               <label className="form-label">เหมาะสำหรับ:</label>
               <input type="text" name="suitableFor" value={formData.suitableFor} onChange={handleChange} placeholder="เช่น นักเรียน ม.4-6" className="form-input" />
             </div>
-            <div className="form-col">
+            <div className="form-col" style={{ flex: 1 }}>
               <label className="form-label"> เวลาเรียน:</label>
               <input type="text" name="classTime" value={formData.classTime} onChange={handleChange} placeholder="เช่น เสาร์-อาทิตย์ 09:00-12:00" className="form-input" />
             </div>
-            <div className="form-col">
-              <label className="form-label" style={{ color: 'var(--accent-color)' }}>⏳ ระยะเวลาคอร์ส (วัน):</label>
-              <input 
-                type="number" 
-                name="accessDurationDays" 
-                value={formData.accessDurationDays} 
-                onChange={handleChange} 
-                placeholder="เช่น 30, 90 (เว้นว่าง = ตลอดชีพ)" 
-                className="form-input" 
-                min="1"
-              />
+          </div>
+
+          {/* ✅ ช่องกรอกเวลาแบบแบ่ง 4 ช่อง */}
+          <div className="form-row">
+            <div className="form-col" style={{ width: '100%' }}>
+              <label className="form-label" style={{ color: 'var(--accent-color)' }}>⏳ ระยะเวลาคอร์ส (เว้นว่างทั้งหมด = เรียนได้ตลอดชีพ):</label>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <input type="number" name="days" value={duration.days} onChange={handleDurationChange} placeholder="วัน" className="form-input" min="0" />
+                <input type="number" name="hours" value={duration.hours} onChange={handleDurationChange} placeholder="ชั่วโมง" className="form-input" min="0" max="23" />
+                <input type="number" name="minutes" value={duration.minutes} onChange={handleDurationChange} placeholder="นาที" className="form-input" min="0" max="59" />
+                <input type="number" name="seconds" value={duration.seconds} onChange={handleDurationChange} placeholder="วินาที" className="form-input" min="0" max="59" />
+              </div>
             </div>
           </div>
 
@@ -495,4 +527,4 @@ export default function CourseForm() {
 
     </div>
   );
-}ไ
+}
