@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { FaVideo, FaEdit, FaTrash, FaUpload, FaList, FaSave, FaTimes } from 'react-icons/fa';
-import './CourseForm.css'; // ✅ Import CSS
+import './CourseForm.css'; 
 
 export default function CourseForm() {
   const navigate = useNavigate();
@@ -14,11 +14,11 @@ export default function CourseForm() {
   const [activeTab, setActiveTab] = useState(0);
 
   // ==========================================
-  // 📌 State
+  // 📌 State (✅ เพิ่ม accessDurationDays)
   // ==========================================
   const [formData, setFormData] = useState({
     title: '', shortDescription: '', isActive: true, originalPrice: '', salePrice: '',
-    suitableFor: '', classTime: '',
+    suitableFor: '', classTime: '', accessDurationDays: '', 
   });
 
   const [courseContents, setCourseContents] = useState([{ title: '', lessons: '', problems: '' }]);
@@ -51,6 +51,8 @@ export default function CourseForm() {
           salePrice: course.salePrice || '',
           suitableFor: course.suitableFor || '',
           classTime: course.classTime || '',
+          // ✅ ดึงข้อมูลจำนวนวันหมดอายุมาแสดง (ถ้ามี)
+          accessDurationDays: course.accessDurationDays || '', 
         });
 
         if (course.courseContents) {
@@ -90,7 +92,20 @@ export default function CourseForm() {
   const handleSubmitDetails = async (e) => {
     e.preventDefault();
     const data = new FormData();
-    Object.keys(formData).forEach(key => data.append(key, key === 'isActive' ? (formData.isActive ? 'true' : 'false') : formData[key]));
+    
+    // ✅ จัดการส่งข้อมูลเข้า Backend (แยกเช็ค accessDurationDays ป้องกัน error ถ้าไม่ได้กรอก)
+    Object.keys(formData).forEach(key => {
+      if (key === 'isActive') {
+        data.append(key, formData.isActive ? 'true' : 'false');
+      } else if (key === 'accessDurationDays') {
+        if (formData[key]) {
+          data.append(key, formData[key]);
+        }
+      } else {
+        data.append(key, formData[key]);
+      }
+    });
+
     data.append('courseContents', JSON.stringify(courseContents));
     if (coverImage) data.append('coverImage', coverImage);
     if (sampleVideo) data.append('sampleVideo', sampleVideo);
@@ -296,6 +311,7 @@ export default function CourseForm() {
 
           <hr className="divider" />
 
+          {/* ✅ แถวใหม่ที่เพิ่มช่อง "ระยะเวลาเรียน (วัน)" */}
           <div className="form-row">
             <div className="form-col">
               <label className="form-label">เหมาะสำหรับ:</label>
@@ -304,6 +320,18 @@ export default function CourseForm() {
             <div className="form-col">
               <label className="form-label"> เวลาเรียน:</label>
               <input type="text" name="classTime" value={formData.classTime} onChange={handleChange} placeholder="เช่น เสาร์-อาทิตย์ 09:00-12:00" className="form-input" />
+            </div>
+            <div className="form-col">
+              <label className="form-label" style={{ color: 'var(--accent-color)' }}>⏳ ระยะเวลาคอร์ส (วัน):</label>
+              <input 
+                type="number" 
+                name="accessDurationDays" 
+                value={formData.accessDurationDays} 
+                onChange={handleChange} 
+                placeholder="เช่น 30, 90 (เว้นว่าง = ตลอดชีพ)" 
+                className="form-input" 
+                min="1"
+              />
             </div>
           </div>
 
@@ -467,4 +495,4 @@ export default function CourseForm() {
 
     </div>
   );
-}
+}ไ

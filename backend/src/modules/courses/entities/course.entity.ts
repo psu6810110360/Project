@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany, OneToMany } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { UserCourse } from '../../users/entities/user_course.entity';
 
 
 @Entity('courses')
@@ -57,8 +58,11 @@ export class Course {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToMany(() => User, (user) => user.courses)
-  users: User[];
+  @OneToMany(() => UserCourse, userCourse => userCourse.course)
+  userCourses: UserCourse[];
+
+  @Column({ type: 'int', nullable: true })
+  accessDurationDays: number;
 
   
   

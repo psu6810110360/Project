@@ -6,6 +6,8 @@ import { Repository } from 'typeorm';
 import { Payment, PaymentStatus } from './entities/payment.entity';
 import { User } from '../users/entities/user.entity';
 import { Course } from '../courses/entities/course.entity';
+// ✅ นำเข้าตารางเชื่อมใหม่
+import { UserCourse } from '../users/entities/user_course.entity'; 
 import { CreatePaymentDto } from './dto/create-payment.dto';
 
 @Injectable()
@@ -19,6 +21,10 @@ export class PaymentsService {
 
     @InjectRepository(Course)
     private courseRepo: Repository<Course>,
+
+    // ✅ ฉีด Repository ของ UserCourse เข้ามา
+    @InjectRepository(UserCourse)
+    private userCourseRepo: Repository<UserCourse>, 
   ) {}
 
   async create(userId: number, dto: CreatePaymentDto) {
@@ -37,13 +43,12 @@ export class PaymentsService {
         throw new NotFoundException(`Course ${courseId} not found`);
       }
 
-      // ✅ แก้ไขตรงนี้: ดึงราคาจาก salePrice เป็นหลัก ถ้าไม่มีให้ใช้ originalPrice
       const actualPrice = Number(course.salePrice) || Number(course.originalPrice) || 0;
 
       const payment = this.paymentRepo.create({
         user,
         course,
-        price: actualPrice, // 👈 ใช้ราคาที่คำนวณได้แล้ว
+        price: actualPrice,
         slipUrl: dto.slipUrl,
         status: PaymentStatus.PENDING,
       });
@@ -77,7 +82,10 @@ export class PaymentsService {
     });
   }
 
-  async approve(id: number, expiresAt?: Date | null) {
+  // ==========================================
+  // 🟢 แก้ไข: อนุมัติสลิปและเพิ่มคอร์สลงตาราง UserCourse พร้อมคำนวณวันหมดอายุ
+  // ==========================================
+  async approve(id: number, customExpiresAt?: Date | null) {
     const payment = await this.paymentRepo.findOne({
       where: { id },
       relations: ['user', 'course'],
@@ -86,27 +94,37 @@ export class PaymentsService {
     if (!payment) throw new NotFoundException('Payment not found');
     if (payment.status === PaymentStatus.APPROVED) return payment;
 
-    payment.status = PaymentStatus.APPROVED;
-    if (expiresAt !== undefined) {
-      payment.expiresAt = expiresAt;
+    // 1. คำนวณวันหมดอายุ (ดึงค่าจาก Course ถ้าไม่ได้ส่งมา)
+    let finalExpiresAt = customExpiresAt || null;
+    if (!finalExpiresAt && payment.course.accessDurationDays && payment.course.accessDurationDays > 0) {
+      finalExpiresAt = new Date();
+      finalExpiresAt.setDate(finalExpiresAt.getDate() + payment.course.accessDurationDays);
     }
+
+    // 2. อัปเดตสถานะ Payment
+    payment.status = PaymentStatus.APPROVED;
+    payment.expiresAt = finalExpiresAt;
     await this.paymentRepo.save(payment);
 
-    const user = await this.userRepo.findOne({
-      where: { id: payment.user.id },
-      relations: ['courses'],
+    // 3. เช็คว่ามีในตาราง UserCourse หรือยัง
+    const existingRecord = await this.userCourseRepo.findOne({
+      where: { user: { id: payment.user.id }, course: { id: payment.course.id } }
     });
 
-    if (!user) throw new NotFoundException('User not found');
-    if (!user.courses) user.courses = [];
-
-    const exists = user.courses.some(
-      (c) => String(c.id) === String(payment.course.id),
-    );
-
-    if (!exists) {
-      user.courses.push(payment.course);
-      await this.userRepo.save(user);
+    // 4. ถ้ายังไม่มี ให้สร้างขึ้นมาใหม่ (แทรกคอร์สให้นักเรียน)
+    if (!existingRecord) {
+      const newUserCourse = this.userCourseRepo.create({
+        user: payment.user,
+        course: payment.course,
+        expiresAt: finalExpiresAt,
+        isExtensionRequested: false
+      });
+      await this.userCourseRepo.save(newUserCourse);
+    } else {
+      // ถ้ามีอยู่แล้วแต่ของเก่าหมดอายุ ก็อัปเดตวันหมดอายุให้ใหม่
+      existingRecord.expiresAt = finalExpiresAt;
+      existingRecord.isExtensionRequested = false;
+      await this.userCourseRepo.save(existingRecord);
     }
 
     return payment;
@@ -121,8 +139,7 @@ export class PaymentsService {
   }
 
   // ==========================================
-  // ✅ ลบ enrollment คอร์สของ user ออกทั้งหมด
-  //    (ลบจาก user_courses + ลบ payment records)
+  // 🔴 แก้ไข: ลบ enrollment คอร์สของ user ให้ลบจากตาราง UserCourse
   // ==========================================
   async deleteCourseEnrollment(userId: number, courseId: string) {
     // 1. ลบ payment records ของคอร์สนี้ออกทั้งหมด
@@ -135,22 +152,20 @@ export class PaymentsService {
       await this.paymentRepo.remove(payments);
     }
 
-    // 2. ลบสิทธิ์คอร์สออกจากตาราง user_courses
-    const user = await this.userRepo.findOne({
-      where: { id: userId },
-      relations: ['courses'],
+    // 2. ลบสิทธิ์คอร์สออกจากตาราง user_courses แทน
+    const userCourseRecord = await this.userCourseRepo.findOne({
+      where: { user: { id: userId }, course: { id: courseId } }
     });
 
-    if (user && user.courses) {
-      user.courses = user.courses.filter((c) => String(c.id) !== String(courseId));
-      await this.userRepo.save(user);
+    if (userCourseRecord) {
+      await this.userCourseRepo.remove(userCourseRecord);
     }
 
     return { success: true, message: 'ลบคอร์สออกจากผู้เรียนเรียบร้อยแล้ว' };
   }
 
   // ==========================================
-  // ✅ บันทึกความคืบหน้าว่าดูวิดีโอจบแล้ว
+  // ✅ บันทึกความคืบหน้าว่าดูวิดีโอจบแล้ว (เหมือนเดิม)
   // ==========================================
   async markVideoAsCompleted(userId: number, courseId: string, videoId: string) {
     const payment = await this.paymentRepo.findOne({

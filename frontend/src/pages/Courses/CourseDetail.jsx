@@ -7,7 +7,7 @@ import {
   FaClock, FaUserGraduate, FaChevronLeft, FaChevronRight, 
   FaShoppingCart, FaArrowLeft, FaPlayCircle, FaCheckCircle 
 } from 'react-icons/fa';
-import './CourseDetail.css'; // ✅ Import CSS ที่แยกไว้
+import './CourseDetail.css'; 
 
 export default function CourseDetail() {
   const { id } = useParams();
@@ -17,6 +17,7 @@ export default function CourseDetail() {
   const [activeMedia, setActiveMedia] = useState(0); 
   const [isOwned, setIsOwned] = useState(false); 
   const [paymentStatus, setPaymentStatus] = useState(null); 
+  const [isExpired, setIsExpired] = useState(false); // ✅ 1. เพิ่ม State สำหรับเช็คคอร์สหมดอายุ
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,7 +49,14 @@ export default function CourseDetail() {
               setPaymentStatus(status);
               
               if (status === 'approved') {
-                setIsOwned(true);
+                // ✅ 2. เช็คว่าคอร์สหมดอายุหรือยัง (เอาเวลาปัจจุบัน เทียบกับ expiresAt)
+                if (targetPayment.expiresAt && new Date(targetPayment.expiresAt) < new Date()) {
+                  setIsExpired(true);
+                  setIsOwned(false); // หมดอายุแล้ว ไม่ให้กดเข้าเรียน
+                } else {
+                  setIsOwned(true);
+                  setIsExpired(false);
+                }
               }
             }
           } catch (err) {
@@ -183,13 +191,16 @@ export default function CourseDetail() {
                 <FaClock style={{ color: '#F2984A' }} /> <span>เวลาเรียนทั้งหมด: {course.classTime || 'ไม่จำกัด'}</span>
               </div>
               <div className="feature-item">
-                <FaCheckCircle style={{ color: '#28a745' }} /> <span>เข้าเรียนได้ตลอดชีพ</span>
+                <FaCheckCircle style={{ color: '#28a745' }} /> 
+                {/* ✅ 3. เปลี่ยนให้ดึงข้อมูล accessDurationDays มาโชว์ */}
+                <span>{course.accessDurationDays ? `เข้าเรียนได้ ${course.accessDurationDays} วัน` : 'เข้าเรียนได้ตลอดชีพ'}</span>
               </div>
             </div>
 
-            {isRevoked && (
-              <div className="alert-box alert-revoked">
-                <strong>🚫 ท่านหมดสิทธิ์ในการเรียนคอร์สนี้แล้ว</strong><br/>สามารถกดเพิ่มลงตะกร้าเพื่อสั่งซื้อใหม่ได้
+            {/* ✅ 4. โชว์กรอบแดงเตือนถ้าคอร์สหมดอายุ */}
+            {(isRevoked || isExpired) && (
+              <div className="alert-box alert-revoked" style={{ backgroundColor: '#fee2e2', color: '#dc2626', padding: '12px', borderRadius: '8px', marginBottom: '15px' }}>
+                <strong>🚫 คอร์สนี้หมดอายุ / หมดสิทธิ์เรียนแล้ว</strong><br/>คุณสามารถกดเพิ่มลงตะกร้าเพื่อสั่งซื้อใหม่ได้อีกครั้ง
               </div>
             )}
 
@@ -209,7 +220,7 @@ export default function CourseDetail() {
               </button>
             ) : (
               <button className="btn-action btn-add-cart" onClick={addToCart}>
-                <FaShoppingCart /> เพิ่มลงตะกร้าสินค้า
+                <FaShoppingCart /> {(isRevoked || isExpired) ? 'ซื้อคอร์สนี้อีกครั้ง' : 'เพิ่มลงตะกร้าสินค้า'}
               </button>
             )}
           </div>

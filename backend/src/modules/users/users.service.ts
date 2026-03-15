@@ -8,6 +8,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+import { UserCourse } from './entities/user_course.entity';
 import { Payment, PaymentStatus } from '../payments/entities/payment.entity';
 import { Course } from '../courses/entities/course.entity';
 import * as bcrypt from 'bcrypt';
@@ -18,6 +19,9 @@ export class UsersService implements OnModuleInit {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+
+    @InjectRepository(UserCourse)
+    private userCourseRepository: Repository<UserCourse>,
 
     @InjectRepository(Payment)
     private paymentRepository: Repository<Payment>,
@@ -111,10 +115,10 @@ export class UsersService implements OnModuleInit {
   // =========================
   // 6. ADD COURSE TO USER (manual) + บันทึก expiresAt ใน payment
   // =========================
-  async addCourseToUser(userId: number, courseId: string, expiresAt?: Date | null) {
+  async addCourseToUser(userId: number, courseId: string, customExpiresAt?: Date | null) {
     const user = await this.usersRepository.findOne({
       where: { id: userId },
-      relations: ['courses'],
+      // ❌ ลบ relations: ['courses'] ออกแล้ว
     });
 
     if (!user) throw new NotFoundException('ไม่พบผู้ใช้งาน');
@@ -122,17 +126,31 @@ export class UsersService implements OnModuleInit {
     const course = await this.courseRepository.findOneBy({ id: courseId });
     if (!course) throw new NotFoundException('ไม่พบคอร์ส');
 
-    if (!user.courses) user.courses = [];
-
-    // ป้องกันการแอดคอร์สซ้ำ
-    const exists = user.courses.some(c => String(c.id) === String(courseId));
-    if (!exists) {
-      user.courses.push(course);
-      await this.usersRepository.save(user);
+    // ✅ ตรวจสอบว่ามีคอร์สนี้อยู่แล้วหรือยัง ผ่านตาราง UserCourse แทนการ push array แบบเดิม
+    const existingRecord = await this.userCourseRepository.findOne({
+      where: { user: { id: userId }, course: { id: courseId } }
+    });
+    if (existingRecord) {
+      throw new ConflictException('ผู้ใช้นี้มีคอร์สนี้อยู่แล้ว');
+    }
+    
+    // ✅ คำนวณวันหมดอายุ (เปลี่ยนชื่อตัวแปรเพื่อไม่ให้ซ้ำกับ param ด้านบน)
+    let finalExpiresAt = customExpiresAt || null;
+    if (!finalExpiresAt && course.accessDurationDays && course.accessDurationDays > 0) {
+      finalExpiresAt = new Date();
+      finalExpiresAt.setDate(finalExpiresAt.getDate() + course.accessDurationDays);
     }
 
-    // สร้าง payment record แบบ manual (approved ทันที) พร้อม expiresAt
-    // ตรวจสอบก่อนว่ามี manual payment อยู่แล้วหรือยัง
+    // ✅ สร้าง Record ในตารางเชื่อมใหม่ (UserCourse)
+    const newUserCourse = this.userCourseRepository.create({
+      user: user,
+      course: course,
+      expiresAt: finalExpiresAt,
+      isExtensionRequested: false
+    });
+    await this.userCourseRepository.save(newUserCourse);
+
+    // สร้าง payment record แบบ manual (approved ทันที) พร้อม expiresAt (ลอจิกเดิมของคุณ)
     const existingPayment = await this.paymentRepository.findOne({
       where: {
         user: { id: userId },
@@ -142,19 +160,17 @@ export class UsersService implements OnModuleInit {
     });
 
     if (!existingPayment) {
-      // สร้าง manual payment record ใหม่
       const manualPayment = this.paymentRepository.create({
         user,
         course,
         price: 0,
         slipUrl: null,
         status: PaymentStatus.APPROVED,
-        expiresAt: expiresAt || null,
-      });
+        expiresAt: finalExpiresAt || null,
+      } as any); // ใส่ as any กันเหนียวกรณี Payment entity มองไม่เห็น expiresAt
       await this.paymentRepository.save(manualPayment);
-    } else if (expiresAt !== undefined) {
-      // อัปเดต expiresAt ถ้ามี payment อยู่แล้ว
-      existingPayment.expiresAt = expiresAt;
+    } else if (finalExpiresAt !== undefined && finalExpiresAt !== null) {
+      (existingPayment as any).expiresAt = finalExpiresAt;
       await this.paymentRepository.save(existingPayment);
     }
 
@@ -167,8 +183,6 @@ export class UsersService implements OnModuleInit {
   async getProfile(userId: number) {
     const user = await this.findOne(userId);
     const { password, ...result } = user as any;
-    
-    // ไม่ต้องจับมัดรวมกันแล้ว ส่งข้อมูลแยกช่องกลับไปให้ Frontend ใช้งานได้เลย
     return result; 
   }
 
@@ -178,7 +192,6 @@ export class UsersService implements OnModuleInit {
   async updateProfile(userId: number, updateData: { firstName?: string; lastName?: string; phone?: string }) {
     const user = await this.findOne(userId);
     
-    // อัปเดตข้อมูลทีละช่อง (ตรวจสอบก่อนว่ามีส่งค่ามาไหม จะได้ไม่ทับของเก่าด้วยค่าว่าง)
     if (updateData.firstName !== undefined) {
       user.firstName = updateData.firstName;
     }
@@ -198,11 +211,7 @@ export class UsersService implements OnModuleInit {
   // =========================
   async updateProfilePicture(userId: number, filePath: string) {
     const user = await this.findOne(userId);
-    
-    // บันทึก path ของรูปลงไปใน Entity
-    // หมายเหตุ: อย่าลืมไปเพิ่มคอลัมน์ profilePicture ใน user.entity.ts ด้วยนะครับ
     (user as any).profilePicture = filePath; 
-    
     await this.usersRepository.save(user);
     
     return { 
@@ -217,13 +226,11 @@ export class UsersService implements OnModuleInit {
   async changePassword(userId: number, passwords: { oldPassword: string; newPassword: string }) {
     const user = await this.findOne(userId);
     
-    // 1. นำรหัสผ่านเดิมมาเช็กกับในฐานข้อมูล
     const isMatch = await bcrypt.compare(passwords.oldPassword, user.password);
     if (!isMatch) {
       throw new BadRequestException('รหัสผ่านเดิมไม่ถูกต้อง');
     }
     
-    // 2. ถ้ารหัสผ่านเดิมถูก ให้นำรหัสผ่านใหม่ไป Hash และบันทึกลงฐานข้อมูล
     user.password = await bcrypt.hash(passwords.newPassword, 10);
     await this.usersRepository.save(user);
     
@@ -234,19 +241,17 @@ export class UsersService implements OnModuleInit {
   // 7. REMOVE COURSE FROM USER
   // =========================
   async removeCourseFromUser(userId: number, courseId: string) {
-    const user = await this.usersRepository.findOne({
-      where: { id: userId },
-      relations: ['courses'],
+    // ✅ หาข้อมูลจากตารางเชื่อม (แทนการดึง user.courses เดิม)
+    const userCourse = await this.userCourseRepository.findOne({
+      where: { user: { id: userId }, course: { id: courseId } }
     });
 
-    if (!user) throw new NotFoundException('ไม่พบผู้ใช้งาน');
+    if (!userCourse) throw new NotFoundException('ไม่พบข้อมูลคอร์สเรียนของผู้ใช้นี้');
 
-    if (user.courses) {
-      user.courses = user.courses.filter(c => String(c.id) !== String(courseId));
-      await this.usersRepository.save(user);
-    }
+    // ลบทิ้งออกจากตารางเชื่อม
+    await this.userCourseRepository.remove(userCourse);
 
-    return user;
+    return this.findOne(userId);
   }
 
   // =========================
@@ -254,10 +259,7 @@ export class UsersService implements OnModuleInit {
   // =========================
   async removeUser(id: number) {
     const user = await this.findOne(id);
-
-    // ✅ ลบ payments ของ user ก่อน เพื่อหลีกเลี่ยง FK constraint error
     await this.paymentRepository.delete({ user: { id } });
-
     return this.usersRepository.remove(user);
   }
 }

@@ -9,6 +9,8 @@ import {
 
 import { Course } from '../../courses/entities/course.entity';
 import { Payment } from '../../payments/entities/payment.entity';
+import { UserCourse } from './user_course.entity';
+
 
 @Entity('users')
 export class User {
@@ -33,9 +35,11 @@ export class User {
   @Column({ nullable: true })
   phone: string;
 
-  @ManyToMany(() => Course, (course) => course.users)
-  @JoinTable({ name: 'user_courses' })
-  courses: Course[];
+  @Column({ type: 'int', nullable: true })
+  accessDurationDays: number;
+
+  @OneToMany(() => UserCourse, userCourse => userCourse.user)
+  userCourses: UserCourse[];
 
   @OneToMany(() => Payment, (payment) => payment.user)
   payments: Payment[];

@@ -4,12 +4,13 @@ import { JwtModule } from '@nestjs/jwt';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { User } from './entities/user.entity';
+import { UserCourse } from './entities/user_course.entity';
 import { Course } from '../courses/entities/course.entity';
 import { Payment } from '../payments/entities/payment.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Course, Payment]),
+    TypeOrmModule.forFeature([User, UserCourse, Course, Payment]), 
     JwtModule.register({
       global: true,
       secret: 'MY_SECRET_KEY',
