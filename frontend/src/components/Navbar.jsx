@@ -14,6 +14,9 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
   const [cartCount, setCartCount] = useState(0); 
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
+  // ✅ 1. เพิ่ม State สำหรับเก็บรูปโปรไฟล์
+  const [profilePic, setProfilePic] = useState(null);
+
   // สลับเมนูมือถือ
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -25,10 +28,33 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
     setCartCount(cart.length);
   };
 
+  // ✅ 2. ฟังก์ชันดึงรูปโปรไฟล์จาก localStorage
+  const loadProfilePic = () => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const userData = JSON.parse(userStr);
+        setProfilePic(userData.profilePicture || null);
+      } catch (error) {
+        console.error("Parse user data error:", error);
+      }
+    } else {
+      setProfilePic(null);
+    }
+  };
+
   useEffect(() => {
     updateCartCount();
+    loadProfilePic(); // โหลดรูปตอนเปิดเว็บครั้งแรก
+
     window.addEventListener('cartUpdated', updateCartCount);
-    return () => window.removeEventListener('cartUpdated', updateCartCount);
+    // ✅ 3. ดักฟัง Event 'profileUpdated' เพื่อรีเฟรชรูปทันที
+    window.addEventListener('profileUpdated', loadProfilePic);
+
+    return () => {
+      window.removeEventListener('cartUpdated', updateCartCount);
+      window.removeEventListener('profileUpdated', loadProfilePic);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -63,8 +89,10 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
         localStorage.removeItem('myCourses');
         localStorage.removeItem('userName');
         localStorage.removeItem('cart');
+        localStorage.removeItem('user'); // ✅ ล้างข้อมูล user ด้วยเพื่อความชัวร์ตอนสลับไอดี
 
         setCartCount(0);
+        setProfilePic(null); // ✅ เคลียร์รูปโปรไฟล์
         window.dispatchEvent(new Event('cartUpdated'));
         setIsLoggedIn(false);
 
@@ -190,7 +218,21 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
                     cursor: 'pointer'
                   }}
                 >
-                  <FaUserCircle size={22} color="#F2984A" /> 
+                  {/* ✅ 4. เช็คว่ามี profilePic ไหม ถ้ามีให้โชว์รูป ถ้าไม่มีให้โชว์ไอคอนเดิม */}
+                  {profilePic ? (
+                    <img 
+                      src={profilePic.startsWith('http') ? profilePic : `http://localhost:3000${profilePic}`} 
+                      alt="Profile" 
+                      style={{ 
+                        width: '24px', 
+                        height: '24px', 
+                        borderRadius: '50%', 
+                        objectFit: 'cover' 
+                      }} 
+                    />
+                  ) : (
+                    <FaUserCircle size={22} color="#F2984A" /> 
+                  )}
                   {userName}
                 </button>
 

@@ -107,6 +107,11 @@ export default function Profile() {
 
       const newPicUrl = `http://localhost:3000${response.data.profilePicture}`;
       setUserData(prev => ({ ...prev, profilePicture: newPicUrl }));
+
+      const currentUser = JSON.parse(localStorage.getItem('user')) || {};
+      currentUser.profilePicture = response.data.profilePicture;
+      localStorage.setItem('user', JSON.stringify(currentUser));
+      window.dispatchEvent(new Event('profileUpdated')); // ตะโกนบอก Navbar!
       
       Swal.fire({ icon: 'success', title: 'เปลี่ยนรูปโปรไฟล์สำเร็จ', timer: 1500, showConfirmButton: false });
     } catch (error) {
@@ -133,6 +138,13 @@ export default function Profile() {
       });
 
       localStorage.setItem('userName', `${editData.firstName} ${editData.lastName}`);
+
+      const currentUser = JSON.parse(localStorage.getItem('user')) || {};
+      currentUser.firstName = editData.firstName;
+      currentUser.lastName = editData.lastName;
+      localStorage.setItem('user', JSON.stringify(currentUser));
+      window.dispatchEvent(new Event('profileUpdated')); // ตะโกนบอก Navbar ให้เปลี่ยนชื่อด้วย!
+      
       setUserData({ 
         ...userData, 
         firstName: editData.firstName, 
