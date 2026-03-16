@@ -145,7 +145,6 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
               <>
                 <Link 
                   to="/manage-users" 
-                  style={{ color: '#F2984A', fontWeight: 'bold' }} 
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   จัดการผู้ใช้
@@ -153,7 +152,6 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
 
                 <Link 
                   to="/manage-students" 
-                  style={{ color: '#F2984A', fontWeight: 'bold' }} 
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   จัดการรีวิวนักเรียน
@@ -161,7 +159,6 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
 
                 <Link
                   to="/admin/payments"
-                  style={{ color: '#F2984A', fontWeight: 'bold' }}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   ตรวจสอบสลิป
@@ -177,10 +174,11 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
             {/* ตะกร้าสินค้า */}
             <Link 
               to="/cart" 
+              className="cart-link"
               onClick={() => setIsMobileMenuOpen(false)} 
               style={{ position: 'relative', display: 'flex', alignItems: 'center', marginLeft: '10px' }}
             >
-              <FaShoppingCart size={24} color="#003366" />
+              <FaShoppingCart size={24} />
               {cartCount > 0 && (
                 <span
                   style={{

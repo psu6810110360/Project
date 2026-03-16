@@ -48,6 +48,7 @@
   font-size: 15px;
   font-weight: 500;
   color: #333333;
+  align-items: center;
 }
 
 .nav-links span, .nav-links a {
@@ -156,4 +157,15 @@
   border: 2px solid #e0e0e0; /* ใส่ขอบนิดนึงให้ดูพรีเมียม (เอาออกได้) */
   cursor: pointer;
   } 
+
+  /* --- โค้ดสำหรับไอคอนตะกร้าสินค้า --- */
+  .cart-link {
+  color: #003366; /* สีตั้งต้น (น้ำเงินเข้ม) */
+  transition: color 0.3s ease, transform 0.2s ease; /* ทำให้ตอนเปลี่ยนสีดูนุ่มนวลขึ้น */
+  }
+
+  /* ตอนเอาเมาส์ชี้ ให้เปลี่ยนเป็นสีส้ม */
+  .cart-link:hover {
+  color: #F2984A; 
+  }
 }
