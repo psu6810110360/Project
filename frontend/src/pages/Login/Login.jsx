@@ -77,6 +77,10 @@ function Login({ setIsLoggedIn }) {
             localStorage.setItem('userId', userId);
             localStorage.setItem('isLoggedIn', 'true');
 
+            if (data.user) {
+              localStorage.setItem('user', JSON.stringify(data.user));
+            }
+
             // --- ส่วนกู้คืนตะกร้าสินค้า ---
             const savedCart = localStorage.getItem(`cart_user_${userId}`);
             if (savedCart) {

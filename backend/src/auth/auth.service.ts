@@ -38,7 +38,15 @@ export class AuthService {
     return {
       message: 'Login successful',
       token: this.jwtService.sign(payload),
-      userId: user.id, // 👈 จุดสำคัญที่เพิ่มเข้ามา! (ส่งไอดีกลับไปให้หน้าเว็บ)
+      userId: user.id, 
+      // 👇 สิ่งที่ต้องเพิ่มเข้าไป! ส่งก้อนข้อมูล user ไปให้หน้าเว็บเก็บลง localStorage
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        firstname: user.firstName, // (เช็คตัวพิมพ์เล็ก/ใหญ่ให้ตรงกับในฐานข้อมูลด้วยนะครับ)
+        lastname: user.lastName    // (บางทีอาจจะเป็น firstName / lastName)
+      }
     };
   }
 }

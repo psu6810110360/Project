@@ -1,11 +1,19 @@
 // src/pages/MyClassroom/MyClassroom.jsx
-import React, { useState, useEffect } from 'react';
-import { FaUser, FaRegClock, FaCheckCircle, FaPlayCircle, FaChevronDown, FaChevronRight, FaCalendarAlt, FaHistory} from 'react-icons/fa';
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  FaUser, FaRegClock, FaCheckCircle, FaPlayCircle, 
+  FaChevronDown, FaChevronRight, FaCalendarAlt, FaHistory, FaAward 
+} from 'react-icons/fa';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import './MyClassroom.css';
 import EmptyCourseState from './EmptyCourseState';
 import { Link, useNavigate } from 'react-router-dom';
+
+// นำเข้าไลบรารีสำหรับสร้าง PDF
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import Certificate from '../../components/Certificate.jsx';
 
 const MyClassroom = () => {
   const [myCourses, setMyCourses] = useState([]);
@@ -14,6 +22,30 @@ const MyClassroom = () => {
   const [showRejected, setShowRejected] = useState(false);  
   const [showExpired, setShowExpired] = useState(false); 
   const navigate = useNavigate();
+
+  // ✅ State & Refs สำหรับใบประกาศนียบัตร
+  const certificateRef = useRef();
+  const [downloadingCert, setDownloadingCert] = useState(false);
+  const [certData, setCertData] = useState({ courseName: '', date: '' });
+  
+  // ดึงชื่อผู้ใช้จาก localStorage (ถ้ามี) ถ้าไม่มีให้ใช้ค่าเริ่มต้น
+  let studentName = 'ไม่พบชื่อผู้ใช้งาน';
+  const userStr = localStorage.getItem('user'); // ลองดึงจาก key 'user' 
+  
+  if (userStr) {
+    try {
+      const userData = JSON.parse(userStr);
+
+      const fName = userData.firstName || userData.firstname || '';
+      const lName = userData.lastName || userData.lastname || '';
+      // รวมชื่อและนามสกุล (ถ้ามี firstName/lastName)
+      if (fName || lName) {
+        studentName = `${fName} ${lName}`.trim();
+      } 
+    } catch (e) {
+      console.error("Parse user data error:", e);
+    }
+  }
 
   useEffect(() => {
     fetchMyCoursesFromBackend();
@@ -63,17 +95,16 @@ const MyClassroom = () => {
         };
       });
 
-      // ✅ กรองให้เหลือแค่สถานะล่าสุดของคอร์สนั้นๆ ไม่ให้แสดงการ์ดซ้ำ
       const uniqueCoursesMap = new Map();
 
       coursesWithStatus.forEach(course => {
         const existing = uniqueCoursesMap.get(course.id);
         
         const getPriority = (c) => {
-          if (c.paymentStatus === 'approved' && !c.isExpired) return 1; // ใช้งานได้
-          if (c.paymentStatus === 'pending') return 2; // รออนุมัติ
-          if (c.paymentStatus === 'approved' && c.isExpired) return 3; // หมดอายุ
-          return 4; // ระงับ/ปฏิเสธ
+          if (c.paymentStatus === 'approved' && !c.isExpired) return 1; 
+          if (c.paymentStatus === 'pending') return 2; 
+          if (c.paymentStatus === 'approved' && c.isExpired) return 3; 
+          return 4; 
         };
 
         if (!existing || getPriority(course) < getPriority(existing)) {
@@ -90,6 +121,35 @@ const MyClassroom = () => {
       setMyCourses([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // ✅ ฟังก์ชันดาวน์โหลดใบประกาศ
+  const handleDownloadCertificate = async (courseName) => {
+    setDownloadingCert(true);
+    
+    const today = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+    setCertData({ courseName, date: today });
+
+    try {
+      await new Promise(resolve => setTimeout(resolve, 300)); // รอให้ React อัปเดตข้อมูลลงคอมโพเนนต์
+
+      const element = certificateRef.current;
+      if (!element) throw new Error("ไม่พบคอมโพเนนต์ Certificate");
+
+      const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+      const dataUrl = canvas.toDataURL('image/png');
+
+      const pdf = new jsPDF('landscape', 'px', [800, 600]);
+      pdf.addImage(dataUrl, 'PNG', 0, 0, 800, 600);
+      pdf.save(`Certificate_${courseName}.pdf`);
+      
+      Swal.fire('สำเร็จ!', 'ดาวน์โหลดใบประกาศนียบัตรเรียบร้อยแล้ว 🎓', 'success');
+    } catch (error) {
+      console.error('Error generating certificate', error);
+      Swal.fire('ผิดพลาด', 'ไม่สามารถสร้างใบประกาศได้', 'error');
+    } finally {
+      setDownloadingCert(false);
     }
   };
 
@@ -120,7 +180,9 @@ const MyClassroom = () => {
           style={{ width: '100%', height: '180px', objectFit: 'cover', opacity: (isRevoked || isExpired) ? 0.6 : 1, filter: (isRevoked || isExpired) ? 'grayscale(80%)' : 'none' }}
         />
 
-        {isApproved && <FaCheckCircle className="completed-icon" style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '24px', color: '#28a745', background: 'white', borderRadius: '50%' }} />}
+        {isApproved && course.progressPercent === 100 && (
+          <FaCheckCircle className="completed-icon" style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '24px', color: '#28a745', background: 'white', borderRadius: '50%' }} />
+        )}
 
         <div style={{ padding: '15px', flex: 1, display: 'flex', flexDirection: 'column' }}>
           <h3 className="course-card-title" style={{ marginTop: '0px', color: (isRevoked || isExpired) ? '#7f8c8d' : '#003366', fontSize: '18px', marginBottom: '10px' }}>{course.title}</h3>
@@ -169,11 +231,30 @@ const MyClassroom = () => {
                   </div>
                 </div>
 
-                <Link to={`/attend/${course.id}`} style={{ textDecoration: 'none', display: 'block' }}>
-                  <button style={{ width: '100%', padding: '10px', backgroundColor: '#003366', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    <FaPlayCircle /> เข้าเรียน
-                  </button>
-                </Link>
+                <div style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
+                  <Link to={`/attend/${course.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+                    <button style={{ width: '100%', padding: '10px', backgroundColor: '#003366', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                      <FaPlayCircle /> เข้าเรียน
+                    </button>
+                  </Link>
+
+                  {/* ✅ โชว์ปุ่มรับใบประกาศเฉพาะคอร์สที่ความคืบหน้า 100% */}
+                  {course.progressPercent === 100 && (
+                    <button 
+                      onClick={() => handleDownloadCertificate(course.title)}
+                      disabled={downloadingCert}
+                      style={{ 
+                        width: '100%', padding: '10px', backgroundColor: '#F2984A', 
+                        color: 'white', border: 'none', borderRadius: '8px', 
+                        fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                        gap: '8px', opacity: downloadingCert ? 0.7 : 1 
+                      }}
+                    >
+                      <FaAward /> {downloadingCert ? 'กำลังสร้างไฟล์...' : 'ดาวน์โหลดใบประกาศ'}
+                    </button>
+                  )}
+                </div>
               </div>
             )}
 
@@ -203,7 +284,7 @@ const MyClassroom = () => {
   }
 
   return (
-    <div className="classroom-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
+    <div className="classroom-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px', position: 'relative' }}>
       
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '40px' }}>
         <h1 className="classroom-title" style={{ margin: '0', color: '#003366', display: 'inline-block' }}>
@@ -304,6 +385,15 @@ const MyClassroom = () => {
           )}
         </>
       )}
+      
+      {/* ✅ คอมโพเนนต์ใบประกาศที่ถูกซ่อนไว้สำหรับให้ html2canvas ดึงไปทำ PDF */}
+      <Certificate 
+        ref={certificateRef} 
+        studentName={studentName} 
+        courseName={certData.courseName} 
+        date={certData.date} 
+      />
+
     </div>
   );
 };
