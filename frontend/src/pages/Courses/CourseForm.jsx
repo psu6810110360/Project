@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { FaVideo, FaEdit, FaTrash, FaUpload, FaList, FaSave, FaTimes } from 'react-icons/fa';
-import './CourseForm.css'; 
+import './CourseForm.css';
 
 export default function CourseForm() {
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ export default function CourseForm() {
 
   // ✅ State สำหรับเก็บ วัน, ชม., นาที, วิ. แยกกัน
   const [duration, setDuration] = useState({ days: '', hours: '', minutes: '', seconds: '' });
-  
+
   // ✅ ฟังก์ชันรับค่าเปลี่ยนเวลา
   const handleDurationChange = (e) => {
     setDuration({ ...duration, [e.target.name]: e.target.value });
@@ -35,10 +35,10 @@ export default function CourseForm() {
   const [sampleVideo, setSampleVideo] = useState(null);
   const [instructors, setInstructors] = useState([{ name: '', image: null, previewUrl: '' }]);
 
-  const [videos, setVideos] = useState([]); 
-  const [newVideoTitle, setNewVideoTitle] = useState(''); 
-  const [newVideoFile, setNewVideoFile] = useState(null); 
-  const [isUploading, setIsUploading] = useState(false); 
+  const [videos, setVideos] = useState([]);
+  const [newVideoTitle, setNewVideoTitle] = useState('');
+  const [newVideoFile, setNewVideoFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const [editingVideoId, setEditingVideoId] = useState(null);
   const [editVideoTitle, setEditVideoTitle] = useState('');
@@ -52,7 +52,7 @@ export default function CourseForm() {
     if (isEditMode) {
       axios.get(`http://localhost:3000/courses/${id}`).then((res) => {
         const course = res.data;
-        
+
         // ✅ แปลงค่าเหมาะสำหรับ (suitableFor) จาก String กลับเป็น Array
         let parsedSuitableFor = [];
         if (course.suitableFor) {
@@ -62,7 +62,7 @@ export default function CourseForm() {
         // ✅ ดึงเฉพาะตัวเลขจาก classTime (เผื่อใน DB มีคำว่า " ชั่วโมง" ติดมา)
         let parsedClassTime = '';
         if (course.classTime) {
-          parsedClassTime = course.classTime.replace(/\D/g, ''); 
+          parsedClassTime = course.classTime.replace(/\D/g, '');
         }
 
         setFormData({
@@ -104,14 +104,14 @@ export default function CourseForm() {
         }
 
         if (course.videos) {
-            const parsedVideos = typeof course.videos === 'string' ? JSON.parse(course.videos) : course.videos;
-            setVideos(parsedVideos || []); 
+          const parsedVideos = typeof course.videos === 'string' ? JSON.parse(course.videos) : course.videos;
+          setVideos(parsedVideos || []);
         } else {
           setVideos([]);
         }
 
       }).catch(err => {
-          console.error("Failed to fetch course data", err);
+        console.error("Failed to fetch course data", err);
       });
     }
   }, [id, isEditMode]);
@@ -130,18 +130,18 @@ export default function CourseForm() {
       const newSuitableFor = prev.suitableFor.includes(level)
         ? prev.suitableFor.filter(item => item !== level)
         : [...prev.suitableFor, level];
-      
+
       // จัดเรียงลำดับ ม.4 -> ม.5 -> ม.6 ให้สวยงาม
       const order = ['ม.4', 'ม.5', 'ม.6'];
       newSuitableFor.sort((a, b) => order.indexOf(a) - order.indexOf(b));
-      
+
       return { ...prev, suitableFor: newSuitableFor };
     });
   };
 
   const handleSubmitDetails = async (e) => {
-    e.preventDefault(); 
-    const data = new FormData(); 
+    e.preventDefault();
+    const data = new FormData();
 
     // จัดการข้อมูล Text ปกติ
     Object.keys(formData).forEach(key => {
@@ -156,16 +156,16 @@ export default function CourseForm() {
       } else if (key === 'classTime') {
         // ✅ เติมคำว่า " ชั่วโมง" ให้ตอนส่งเข้า Database
         data.append(key, formData.classTime ? `${formData.classTime} ชั่วโมง` : '');
-      } else { 
+      } else {
         data.append(key, formData[key]);
       }
     });
 
     // ✅ รวบยอดเวลาที่กรอกทั้งหมดให้กลายเป็น "วินาทีรวม" ก่อนส่ง
-    const totalSeconds = 
-      (parseInt(duration.days || 0) * 86400) + 
-      (parseInt(duration.hours || 0) * 3600) + 
-      (parseInt(duration.minutes || 0) * 60) + 
+    const totalSeconds =
+      (parseInt(duration.days || 0) * 86400) +
+      (parseInt(duration.hours || 0) * 3600) +
+      (parseInt(duration.minutes || 0) * 60) +
       parseInt(duration.seconds || 0);
 
     if (totalSeconds > 0) {
@@ -179,17 +179,17 @@ export default function CourseForm() {
     if (coverImage) data.append('coverImage', coverImage);
     if (sampleVideo) data.append('sampleVideo', sampleVideo);
     instructors.forEach((inst) => {
-      data.append('instructorNames', inst.name); 
-      if (inst.image) data.append('instructorImages', inst.image); 
+      data.append('instructorNames', inst.name);
+      if (inst.image) data.append('instructorImages', inst.image);
     });
 
     try {
       if (isEditMode) {
         await axios.patch(`http://localhost:3000/courses/${id}`, data);
-        Swal.fire('สำเร็จ', 'บันทึกรายละเอียดคอร์สเรียบร้อย', 'success');
+        Swal.fire('สำเร็จ', 'บันทึกรายละเอียดคอร์สเรียบร้อย', 'success').then(() => navigate('/courses'));
       } else {
         await axios.post('http://localhost:3000/courses', data);
-        Swal.fire('สำเร็จ', 'สร้างคอร์สใหม่เรียบร้อย', 'success').then(() => navigate('/'));
+        Swal.fire('สำเร็จ', 'สร้างคอร์สใหม่เรียบร้อย', 'success').then(() => navigate('/courses'));
       }
     } catch (error) {
       console.error('บันทึกข้อมูลไม่สำเร็จ', error);
@@ -205,17 +205,17 @@ export default function CourseForm() {
 
     setIsUploading(true);
     const videoData = new FormData();
-    videoData.append('file', newVideoFile); 
-    
+    videoData.append('file', newVideoFile);
+
     try {
       const uploadRes = await axios.post('http://localhost:3000/courses/upload-video', videoData);
-      const realVideoUrl = uploadRes.data.url; 
+      const realVideoUrl = uploadRes.data.url;
 
       const newVideoObj = {
-        id: Date.now().toString(), 
+        id: Date.now().toString(),
         title: newVideoTitle,
-        url: realVideoUrl, 
-        order: videos.length + 1 
+        url: realVideoUrl,
+        order: videos.length + 1
       };
 
       const updatedVideos = [...videos, newVideoObj];
@@ -235,25 +235,25 @@ export default function CourseForm() {
 
   const handleDeleteVideo = async (videoId) => {
     Swal.fire({
-        title: 'ยืนยันการลบวิดีโอ?',
-        text: "คุณไม่สามารถกู้คืนได้!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'ใช่, ลบเลย!'
-      }).then(async (result) => {
-        if (result.isConfirmed) {
-            const updatedVideos = videos.filter(v => v.id !== videoId);
-            setVideos(updatedVideos);
-            try {
-              await axios.patch(`http://localhost:3000/courses/${id}/videos`, { videos: updatedVideos });
-              Swal.fire('สำเร็จ', 'ลบวิดีโอแล้ว', 'success');
-            } catch (error) {
-              Swal.fire('ผิดพลาด', 'ไม่สามารถลบวิดีโอได้', 'error');
-            }
+      title: 'ยืนยันการลบวิดีโอ?',
+      text: "คุณไม่สามารถกู้คืนได้!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'ใช่, ลบเลย!'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const updatedVideos = videos.filter(v => v.id !== videoId);
+        setVideos(updatedVideos);
+        try {
+          await axios.patch(`http://localhost:3000/courses/${id}/videos`, { videos: updatedVideos });
+          Swal.fire('สำเร็จ', 'ลบวิดีโอแล้ว', 'success');
+        } catch (error) {
+          Swal.fire('ผิดพลาด', 'ไม่สามารถลบวิดีโอได้', 'error');
         }
-      });
+      }
+    });
   };
 
   const handleSaveEditVideo = async (videoId) => {
@@ -281,7 +281,7 @@ export default function CourseForm() {
       });
 
       await axios.patch(`http://localhost:3000/courses/${id}/videos`, { videos: updatedVideos });
-      
+
       setVideos(updatedVideos);
       setEditingVideoId(null);
       setEditVideoFile(null);
@@ -303,15 +303,15 @@ export default function CourseForm() {
 
       {/* ✅ แถบเมนู Tab */}
       <div className="tab-container">
-        <button 
+        <button
           onClick={() => setActiveTab(0)}
           className={`tab-btn ${activeTab === 0 ? 'active' : ''}`}
         >
           <FaEdit /> รายละเอียดคอร์ส
         </button>
-        
+
         {isEditMode ? (
-          <button 
+          <button
             onClick={() => setActiveTab(1)}
             className={`tab-btn ${activeTab === 1 ? 'active' : ''}`}
           >
@@ -329,7 +329,7 @@ export default function CourseForm() {
       {/* ===================================== */}
       {activeTab === 0 && (
         <form onSubmit={handleSubmitDetails} className="form-layout">
-          
+
           <div>
             <label className="form-label">ชื่อคอร์ส: <span className="required-star">*</span></label>
             <input type="text" name="title" value={formData.title} onChange={handleChange} required className="form-input" />
@@ -338,7 +338,7 @@ export default function CourseForm() {
             <label className="form-label">รายละเอียดสั้น:</label>
             <textarea name="shortDescription" value={formData.shortDescription} onChange={handleChange} className="form-textarea" />
           </div>
-          
+
           <div className="form-row">
             <div className="form-col">
               <label className="form-label">ราคาเดิม: <span className="required-star">*</span></label>
@@ -362,7 +362,7 @@ export default function CourseForm() {
           </div>
 
           <hr className="divider" />
-          
+
           <div>
             <label className="form-label">รายชื่อครูผู้สอน: <span className="required-star">*</span></label>
             {instructors.map((inst, index) => (
@@ -388,8 +388,8 @@ export default function CourseForm() {
               <div className="checkbox-group">
                 {['ม.4', 'ม.5', 'ม.6'].map(level => (
                   <label key={level} className="checkbox-label">
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       checked={formData.suitableFor.includes(level)}
                       onChange={() => handleSuitableForChange(level)}
                     />
@@ -402,13 +402,13 @@ export default function CourseForm() {
               <label className="form-label">เวลาเรียน:</label>
               {/* ✅ เปลี่ยน Type เป็น Number และใส่หน่วยชั่วโมง */}
               <div className="input-with-unit">
-                <input 
-                  type="number" 
-                  name="classTime" 
-                  value={formData.classTime} 
-                  onChange={handleChange} 
-                  placeholder="เช่น 30" 
-                  className="form-input" 
+                <input
+                  type="number"
+                  name="classTime"
+                  value={formData.classTime}
+                  onChange={handleChange}
+                  placeholder="เช่น 30"
+                  className="form-input"
                   min="0"
                 />
                 <span className="unit-text">ชั่วโมง</span>
@@ -473,9 +473,9 @@ export default function CourseForm() {
               <div className="upload-row">
                 <div className="upload-col">
                   <label className="form-label">ชื่อตอน/หัวข้อ:</label>
-                  <input 
-                    type="text" 
-                    placeholder="เช่น: EP.1 บทนำ" 
+                  <input
+                    type="text"
+                    placeholder="เช่น: EP.1 บทนำ"
                     value={newVideoTitle}
                     onChange={(e) => setNewVideoTitle(e.target.value)}
                     className="form-input"
@@ -483,8 +483,8 @@ export default function CourseForm() {
                 </div>
                 <div className="upload-col">
                   <label className="form-label">ไฟล์วิดีโอ (.mp4):</label>
-                  <input 
-                    type="file" 
+                  <input
+                    type="file"
                     accept="video/mp4,video/x-m4v,video/*"
                     onChange={(e) => setNewVideoFile(e.target.files[0])}
                     style={{ width: '100%', padding: '7px' }}
@@ -503,7 +503,7 @@ export default function CourseForm() {
           <h3 className="section-title bordered">
             <FaList /> รายการวิดีโอในคอร์ส ({videos.length})
           </h3>
-          
+
           {videos.length === 0 ? (
             <div className="empty-state">
               ยังไม่มีวิดีโอในคอร์สนี้ กรุณาเพิ่มวิดีโอด้านบน
@@ -512,19 +512,19 @@ export default function CourseForm() {
             <div className="video-list">
               {videos.map((video, index) => (
                 <div key={video.id} className={`video-item ${editingVideoId === video.id ? 'editing' : ''}`}>
-                  
+
                   {editingVideoId === video.id ? (
                     // --- โหมดแก้ไข ---
                     <div className="video-edit-layout">
                       <div className="upload-row">
                         <div className="upload-col">
                           <label className="form-label" style={{ fontSize: '13px' }}>ชื่อตอน/หัวข้อ:</label>
-                          <input 
-                            type="text" 
-                            value={editVideoTitle} 
-                            onChange={(e) => setEditVideoTitle(e.target.value)} 
-                            className="form-input" 
-                            style={{ padding: '8px' }} 
+                          <input
+                            type="text"
+                            value={editVideoTitle}
+                            onChange={(e) => setEditVideoTitle(e.target.value)}
+                            className="form-input"
+                            style={{ padding: '8px' }}
                           />
                         </div>
                         <div className="upload-col">
@@ -533,22 +533,22 @@ export default function CourseForm() {
                             <FaVideo style={{ color: '#94a3b8' }} /> {video.url.split('/').pop()}
                           </div>
                           <label className="form-label" style={{ fontSize: '13px', marginTop: '10px' }}>อัปโหลดไฟล์ใหม่ (ถ้าต้องการเปลี่ยน):</label>
-                          <input 
-                            type="file" 
+                          <input
+                            type="file"
                             accept="video/mp4,video/x-m4v,video/*"
-                            onChange={(e) => setEditVideoFile(e.target.files[0])} 
-                            style={{ width: '100%', fontSize: '13px', paddingTop: '5px' }} 
+                            onChange={(e) => setEditVideoFile(e.target.files[0])}
+                            style={{ width: '100%', fontSize: '13px', paddingTop: '5px' }}
                           />
                         </div>
                       </div>
-                      
+
                       <div className="btn-group-right">
-                         <button onClick={() => setEditingVideoId(null)} className="btn-cancel">
-                           <FaTimes /> ยกเลิก
-                         </button>
-                         <button onClick={() => handleSaveEditVideo(video.id)} disabled={isSavingEdit} className="btn-save-edit">
-                           {isSavingEdit ? 'กำลังบันทึก...' : <><FaSave /> บันทึกการแก้ไข</>}
-                         </button>
+                        <button onClick={() => setEditingVideoId(null)} className="btn-cancel">
+                          <FaTimes /> ยกเลิก
+                        </button>
+                        <button onClick={() => handleSaveEditVideo(video.id)} disabled={isSavingEdit} className="btn-save-edit">
+                          {isSavingEdit ? 'กำลังบันทึก...' : <><FaSave /> บันทึกการแก้ไข</>}
+                        </button>
                       </div>
                     </div>
                   ) : (
@@ -564,15 +564,15 @@ export default function CourseForm() {
                         </div>
                       </div>
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <button 
+                        <button
                           onClick={() => {
                             setEditingVideoId(video.id);
                             setEditVideoTitle(video.title);
                             setEditVideoFile(null);
-                          }} 
+                          }}
                           className="btn-action-small btn-edit"
                         >
-                           <FaEdit /> แก้ไข
+                          <FaEdit /> แก้ไข
                         </button>
                         <button onClick={() => handleDeleteVideo(video.id)} className="btn-action-small btn-delete">
                           <FaTrash /> ลบ

@@ -1,21 +1,21 @@
 // CourseList.jsx
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; 
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FaPlus, FaTrash, FaEdit, FaEye, FaBook, FaSearch, FaFilter } from 'react-icons/fa'; // ✅ เพิ่ม FaSearch, FaFilter
 import Swal from 'sweetalert2';
-import './CourseList.css'; 
+import './CourseList.css';
 
 export default function CourseList({ isAdmin }) {
   const [courses, setCourses] = useState([]);
-  const [myPayments, setMyPayments] = useState([]); 
+  const [myPayments, setMyPayments] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // ✅ เพิ่ม State สำหรับจัดการการค้นหาและตัวกรอง
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortOrder, setSortOrder] = useState('default'); 
+  const [sortOrder, setSortOrder] = useState('default');
 
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const fetchData = async () => {
     setLoading(true);
@@ -57,7 +57,7 @@ export default function CourseList({ isAdmin }) {
       try {
         await axios.delete(`http://localhost:3000/courses/${id}`);
         Swal.fire('ลบสำเร็จ!', 'คอร์สนี้ถูกลบออกจากระบบแล้ว', 'success');
-        fetchData(); 
+        fetchData();
       } catch (error) {
         console.error('ลบข้อมูลไม่สำเร็จ', error);
         Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถลบคอร์สได้ กรุณาลองใหม่อีกครั้ง', 'error');
@@ -69,22 +69,22 @@ export default function CourseList({ isAdmin }) {
   const getProcessedCourses = () => {
     // 1. กรองสิทธิ์และคอร์สที่ซื้อไปแล้ว (โค้ดเดิมของคุณ)
     let filtered = courses.filter(course => {
-      if (isAdmin) return true; 
-      if (!course.isActive) return false;       
-      
+      if (isAdmin) return true;
+      if (!course.isActive) return false;
+
       const relatedPayments = myPayments.filter(item => {
         if (item.course && String(item.course.id) === String(course.id)) return true;
         if (item.courses && item.courses.some(c => String(c.id) === String(course.id))) return true;
         if (String(item.id) === String(course.id)) return true;
         return false;
       });
-            
+
       if (relatedPayments.length > 0) {
         const shouldHide = relatedPayments.some(p => {
           const status = p.status ? p.status.toLowerCase() : '';
           return status === 'approved' || status === 'pending';
         });
-        if (shouldHide) return false; 
+        if (shouldHide) return false;
       }
       return true;
     });
@@ -92,8 +92,8 @@ export default function CourseList({ isAdmin }) {
     // 2. กรองจากคำค้นหา (Search)
     if (searchTerm.trim() !== '') {
       const lowerCaseTerm = searchTerm.toLowerCase();
-      filtered = filtered.filter(course => 
-        course.title.toLowerCase().includes(lowerCaseTerm) || 
+      filtered = filtered.filter(course =>
+        course.title.toLowerCase().includes(lowerCaseTerm) ||
         (course.shortDescription && course.shortDescription.toLowerCase().includes(lowerCaseTerm))
       );
     }
@@ -116,13 +116,13 @@ export default function CourseList({ isAdmin }) {
 
   return (
     <div className="course-container">
-      
+
       <div className="course-header">
         <div>
           <h2 className="course-title">คอร์สเรียนทั้งหมด</h2>
           <p className="course-subtitle">พบ {coursesToShow.length} คอร์สที่พร้อมให้คุณเรียนรู้</p>
         </div>
-        
+
         {isAdmin && (
           <Link to="/add" style={{ textDecoration: 'none' }}>
             <button className="btn btn-add-course">
@@ -134,7 +134,7 @@ export default function CourseList({ isAdmin }) {
 
       {/* ✅ แถบเครื่องมือ Search & Filter */}
       <div style={{ display: 'flex', gap: '15px', marginBottom: '30px', flexWrap: 'wrap', alignItems: 'center', backgroundColor: '#f4f7f6', padding: '15px 20px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-        
+
         {/* ช่องค้นหา */}
         <div style={{ flex: '1 1 300px', display: 'flex', alignItems: 'center', backgroundColor: '#fff', padding: '10px 15px', borderRadius: '8px', border: '1px solid #cbd5e1', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
           <FaSearch style={{ color: '#94a3b8', marginRight: '10px' }} />
@@ -172,7 +172,7 @@ export default function CourseList({ isAdmin }) {
         ) : (
           coursesToShow.map((course) => (
             <div key={course.id} className="course-card">
-              
+
               {isAdmin && (
                 <div className={`badge-status ${course.isActive ? 'badge-active' : 'badge-inactive'}`}>
                   {course.isActive ? '• กำลังเปิดขาย' : '• ซ่อนอยู่'}
@@ -181,9 +181,9 @@ export default function CourseList({ isAdmin }) {
 
               <div className="course-cover">
                 {course.coverImageUrl ? (
-                  <img 
-                    src={course.coverImageUrl ? course.coverImageUrl : 'https://via.placeholder.com/300x200'} 
-                    alt={course.title} 
+                  <img
+                    src={course.coverImageUrl ? course.coverImageUrl : 'https://via.placeholder.com/300x200'}
+                    alt={course.title}
                     className="course-image"
                   />
                 ) : (
@@ -192,7 +192,7 @@ export default function CourseList({ isAdmin }) {
                   </div>
                 )}
               </div>
-              
+
               <div className="course-body">
                 <h3 className="course-name">{course.title}</h3>
                 <p className="course-desc">
@@ -204,7 +204,8 @@ export default function CourseList({ isAdmin }) {
                     <span className="sale-price">
                       ฿{Number(course.salePrice).toLocaleString()}
                     </span>
-                    {course.originalPrice && (
+
+                    {course.originalPrice && Number(course.originalPrice) !== Number(course.salePrice) && (
                       <span className="original-price">
                         ฿{Number(course.originalPrice).toLocaleString()}
                       </span>

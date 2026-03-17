@@ -10,7 +10,7 @@ import {
     FaInstagram
 } from 'react-icons/fa';
 import Swal from 'sweetalert2';
-import './Contact.css'; // 🟢 ดึงไฟล์ CSS มาใช้ตรงนี้
+import './contact.css'; // 🟢 ดึงไฟล์ CSS มาใช้ตรงนี้
 
 export default function Contact() {
     const [formData, setFormData] = useState({
