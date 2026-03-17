@@ -59,7 +59,7 @@ export default function Profile() {
           phone: fetchedPhone,
           role: data.role === 'admin' ? 'ผู้ดูแลระบบ (Admin)' : 'นักเรียน (Student)',
           email: data.email || 'ยังไม่ระบุอีเมล',
-          profilePicture: data.profilePicture ? `http://localhost:3000${data.profilePicture}` : null
+          profilePicture: data.profilePicture ? data.profilePicture : null
         });
         
         setEditData({
@@ -105,7 +105,7 @@ export default function Profile() {
         }
       });
 
-      const newPicUrl = `http://localhost:3000${response.data.profilePicture}`;
+      const newPicUrl = response.data.profilePicture;
       setUserData(prev => ({ ...prev, profilePicture: newPicUrl }));
 
       const currentUser = JSON.parse(localStorage.getItem('user')) || {};

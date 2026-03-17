@@ -181,7 +181,11 @@ export default function CourseList({ isAdmin }) {
 
               <div className="course-cover">
                 {course.coverImageUrl ? (
-                  <img src={`http://localhost:3000${course.coverImageUrl}`} alt={course.title} />
+                  <img 
+                    src={course.coverImageUrl ? course.coverImageUrl : 'https://via.placeholder.com/300x200'} 
+                    alt={course.title} 
+                    className="course-image"
+                  />
                 ) : (
                   <div className="course-cover-placeholder">
                     <FaBook />

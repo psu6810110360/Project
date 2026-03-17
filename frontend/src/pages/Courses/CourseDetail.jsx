@@ -165,13 +165,13 @@ export default function CourseDetail() {
           <div className="media-wrapper">
             {activeMedia === 0 ? (
               <img 
-                src={course.coverImageUrl ? `http://localhost:3000${course.coverImageUrl}` : 'https://via.placeholder.com/800x450'} 
+                src={course.coverImageUrl ? course.coverImageUrl : 'https://via.placeholder.com/800x400'} 
                 alt="Course Cover" 
                 className="media-content"
               />
             ) : (
               <video 
-                src={`http://localhost:3000${course.sampleVideoUrl}`} 
+                src={course.sampleVideoUrl} 
                 controls autoPlay 
                 className="media-content"
               />
@@ -303,7 +303,7 @@ export default function CourseDetail() {
               ]).map((inst, idx) => (
                 <div key={idx} className="instructor-item">
                   <img 
-                    src={inst.imageUrl ? `http://localhost:3000${inst.imageUrl}` : 'https://via.placeholder.com/60'} 
+                    src={inst.imageUrl ? inst.imageUrl : 'https://via.placeholder.com/60'} 
                     alt={inst.name} 
                     className="instructor-img"
                   />

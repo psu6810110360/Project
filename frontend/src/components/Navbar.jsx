@@ -219,7 +219,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn }) {
                   {/* ✅ 4. เช็คว่ามี profilePic ไหม ถ้ามีให้โชว์รูป ถ้าไม่มีให้โชว์ไอคอนเดิม */}
                   {profilePic ? (
                     <img 
-                      src={profilePic.startsWith('http') ? profilePic : `http://localhost:3000${profilePic}`} 
+                      src={profilePic} 
                       alt="Profile" 
                       style={{ 
                         width: '24px', 

@@ -1,3 +1,4 @@
+// Cart.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -81,7 +82,7 @@ export default function Cart() {
 
                 {/* รูปปก */}
                 {item.coverImageUrl ? (
-                  <img src={`http://localhost:3000${item.coverImageUrl}`} alt="cover" className="cart-img" />
+                  <img src={item.coverImageUrl} alt="cover" className="cart-img" />
                 ) : (
                   <div className="cart-img" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <FaBookOpen style={{ fontSize: '30px', color: '#ccc' }} />

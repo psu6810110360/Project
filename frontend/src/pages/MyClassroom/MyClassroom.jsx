@@ -175,7 +175,7 @@ const MyClassroom = () => {
       <div className="course-card" style={{ position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
         
         <img 
-          src={course.coverImageUrl ? `http://localhost:3000${course.coverImageUrl}` : 'https://via.placeholder.com/400x200?text=No+Cover'} 
+          src={course.coverImageUrl ? course.coverImageUrl : 'https://via.placeholder.com/400x200?text=No+Cover'} 
           alt={course.title}
           style={{ width: '100%', height: '180px', objectFit: 'cover', opacity: (isRevoked || isExpired) ? 0.6 : 1, filter: (isRevoked || isExpired) ? 'grayscale(80%)' : 'none' }}
         />

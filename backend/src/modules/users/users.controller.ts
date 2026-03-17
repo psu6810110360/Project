@@ -8,6 +8,8 @@ import { FileInterceptor } from '@nestjs/platform-express'; // 🟢 เพิ่
 import { diskStorage } from 'multer'; // 🟢 เพิ่ม Import
 import { extname } from 'path'; // 🟢 เพิ่ม Import
 import { UsersService } from './users.service';
+import { memoryStorage } from 'multer'; 
+import { uploadToSupabase } from '../../utils/supabase-upload.util';
 
 @Controller('users')
 export class UsersController {
@@ -54,23 +56,18 @@ export class UsersController {
   @UseGuards(AuthGuard('jwt'))
   @Post('upload-profile')
   @UseInterceptors(FileInterceptor('profilePicture', {
-    storage: diskStorage({
-      destination: './uploads/profiles', // โฟลเดอร์ปลายทาง
-      filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        const ext = extname(file.originalname);
-        cb(null, `profile-${uniqueSuffix}${ext}`); // ตั้งชื่อไฟล์ใหม่
-      },
-    }),
+    storage: memoryStorage(),
   }))
-  uploadProfilePicture(@Request() req: any, @UploadedFile() file: Express.Multer.File) {
+  async uploadProfilePicture(@Request() req: any, @UploadedFile() file: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException('ไม่พบไฟล์รูปภาพ กรุณาแนบไฟล์มาด้วย');
     }
+
+    const fileUrl = await uploadToSupabase(file, 'profiles');
     const userId = req.user.id || req.user.sub;
-    const filePath = `/uploads/profiles/${file.filename}`;
     
-    return this.usersService.updateProfilePicture(+userId, filePath);
+    
+    return this.usersService.updateProfilePicture(+userId, fileUrl);
   }
   // ===============================================
 
