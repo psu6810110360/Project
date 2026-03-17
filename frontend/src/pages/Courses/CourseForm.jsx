@@ -18,7 +18,8 @@ export default function CourseForm() {
   // ==========================================
   const [formData, setFormData] = useState({
     title: '', shortDescription: '', isActive: true, originalPrice: '', salePrice: '',
-    suitableFor: '', classTime: ''
+    suitableFor: [], // ✅ เปลี่ยนเป็น Array สำหรับเก็บค่า ม.4, ม.5, ม.6
+    classTime: ''
   });
 
   // ✅ State สำหรับเก็บ วัน, ชม., นาที, วิ. แยกกัน
@@ -51,14 +52,27 @@ export default function CourseForm() {
     if (isEditMode) {
       axios.get(`http://localhost:3000/courses/${id}`).then((res) => {
         const course = res.data;
+        
+        // ✅ แปลงค่าเหมาะสำหรับ (suitableFor) จาก String กลับเป็น Array
+        let parsedSuitableFor = [];
+        if (course.suitableFor) {
+          parsedSuitableFor = course.suitableFor.split(',').map(item => item.trim());
+        }
+
+        // ✅ ดึงเฉพาะตัวเลขจาก classTime (เผื่อใน DB มีคำว่า " ชั่วโมง" ติดมา)
+        let parsedClassTime = '';
+        if (course.classTime) {
+          parsedClassTime = course.classTime.replace(/\D/g, ''); 
+        }
+
         setFormData({
           title: course.title || '',
           shortDescription: course.shortDescription || '',
           isActive: course.isActive === true || String(course.isActive) === "true" || course.isActive === 1,
           originalPrice: course.originalPrice || '',
           salePrice: course.salePrice || '',
-          suitableFor: course.suitableFor || '',
-          classTime: course.classTime || ''
+          suitableFor: parsedSuitableFor,
+          classTime: parsedClassTime
         });
 
         if (course.courseContents) {
@@ -110,14 +124,38 @@ export default function CourseForm() {
     setFormData((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
+  // ✅ ฟังก์ชันจัดการ Checkbox ของ "เหมาะสำหรับ"
+  const handleSuitableForChange = (level) => {
+    setFormData(prev => {
+      const newSuitableFor = prev.suitableFor.includes(level)
+        ? prev.suitableFor.filter(item => item !== level)
+        : [...prev.suitableFor, level];
+      
+      // จัดเรียงลำดับ ม.4 -> ม.5 -> ม.6 ให้สวยงาม
+      const order = ['ม.4', 'ม.5', 'ม.6'];
+      newSuitableFor.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+      
+      return { ...prev, suitableFor: newSuitableFor };
+    });
+  };
+
   const handleSubmitDetails = async (e) => {
-    e.preventDefault(); // ✅ ป้องกันหน้าเว็บรีเฟรช
-    const data = new FormData(); // ✅ สร้าง FormData สำหรับส่งไฟล์
+    e.preventDefault(); 
+    const data = new FormData(); 
 
     // จัดการข้อมูล Text ปกติ
     Object.keys(formData).forEach(key => {
       if (key === 'isActive') {
         data.append(key, formData.isActive ? 'true' : 'false');
+      } else if (key === 'salePrice') {
+        // ✅ หากราคาขายว่างเปล่า ให้ใช้ราคาเดิมแทน
+        data.append(key, formData.salePrice || formData.originalPrice);
+      } else if (key === 'suitableFor') {
+        // ✅ แปลง Array เป็น String ก่อนส่งเข้า DB
+        data.append(key, formData.suitableFor.join(', '));
+      } else if (key === 'classTime') {
+        // ✅ เติมคำว่า " ชั่วโมง" ให้ตอนส่งเข้า Database
+        data.append(key, formData.classTime ? `${formData.classTime} ชั่วโมง` : '');
       } else { 
         data.append(key, formData[key]);
       }
@@ -293,7 +331,7 @@ export default function CourseForm() {
         <form onSubmit={handleSubmitDetails} className="form-layout">
           
           <div>
-            <label className="form-label">ชื่อคอร์ส:</label>
+            <label className="form-label">ชื่อคอร์ส: <span className="required-star">*</span></label>
             <input type="text" name="title" value={formData.title} onChange={handleChange} required className="form-input" />
           </div>
           <div>
@@ -303,12 +341,12 @@ export default function CourseForm() {
           
           <div className="form-row">
             <div className="form-col">
-              <label className="form-label">ราคาเดิม:</label>
+              <label className="form-label">ราคาเดิม: <span className="required-star">*</span></label>
               <input type="number" name="originalPrice" value={formData.originalPrice} onChange={handleChange} required className="form-input" />
             </div>
             <div className="form-col">
-              <label className="form-label highlight">ราคาขาย:</label>
-              <input type="number" name="salePrice" value={formData.salePrice} onChange={handleChange} required className="form-input highlight" />
+              <label className="form-label highlight">ราคาขาย (ปล่อยว่างได้):</label>
+              <input type="number" name="salePrice" value={formData.salePrice} onChange={handleChange} placeholder="หากไม่กรอกจะใช้ราคาเดิม" className="form-input highlight" />
             </div>
           </div>
 
@@ -326,7 +364,7 @@ export default function CourseForm() {
           <hr className="divider" />
           
           <div>
-            <label className="form-label">รายชื่อครูผู้สอน:</label>
+            <label className="form-label">รายชื่อครูผู้สอน: <span className="required-star">*</span></label>
             {instructors.map((inst, index) => (
               <div key={index} className="item-card item-row">
                 <div style={{ flex: 1 }}>
@@ -342,15 +380,39 @@ export default function CourseForm() {
 
           <hr className="divider" />
 
-          {/* ✅ แถวใหม่ที่ปรับช่องกรอกเวลาเป็น 4 ช่อง */}
+          {/* ✅ แถวใหม่ที่ปรับช่องเหมาะสำหรับ และ ช่องเวลาเรียน */}
           <div className="form-row">
             <div className="form-col" style={{ flex: 1 }}>
               <label className="form-label">เหมาะสำหรับ:</label>
-              <input type="text" name="suitableFor" value={formData.suitableFor} onChange={handleChange} placeholder="เช่น นักเรียน ม.4-6" className="form-input" />
+              {/* ✅ เปลี่ยนเป็น Checkbox เลือกหลายตัวได้ */}
+              <div className="checkbox-group">
+                {['ม.4', 'ม.5', 'ม.6'].map(level => (
+                  <label key={level} className="checkbox-label">
+                    <input 
+                      type="checkbox" 
+                      checked={formData.suitableFor.includes(level)}
+                      onChange={() => handleSuitableForChange(level)}
+                    />
+                    {level}
+                  </label>
+                ))}
+              </div>
             </div>
             <div className="form-col" style={{ flex: 1 }}>
-              <label className="form-label"> เวลาเรียน:</label>
-              <input type="text" name="classTime" value={formData.classTime} onChange={handleChange} placeholder="เช่น เสาร์-อาทิตย์ 09:00-12:00" className="form-input" />
+              <label className="form-label">เวลาเรียน:</label>
+              {/* ✅ เปลี่ยน Type เป็น Number และใส่หน่วยชั่วโมง */}
+              <div className="input-with-unit">
+                <input 
+                  type="number" 
+                  name="classTime" 
+                  value={formData.classTime} 
+                  onChange={handleChange} 
+                  placeholder="เช่น 30" 
+                  className="form-input" 
+                  min="0"
+                />
+                <span className="unit-text">ชั่วโมง</span>
+              </div>
             </div>
           </div>
 
